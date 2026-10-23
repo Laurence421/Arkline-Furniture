@@ -123,3 +123,8 @@
 .kind.pref{background:var(--muted-bg);color:var(--ink)}
 .qc .viber{color:hsl(266 45% 45%);border-color:hsl(266 45% 75%)}
 .qc .msgr{color:hsl(214 89% 45%);border-color:hsl(214 70% 78%)}
+
+/* sections inside admin tabs: spacing comes from the tab grid, not the site-wide section padding */
+.admin section.panel-wrap{padding-block:0}
+.pc .f2,.tforms .f2{align-items:end}
+.pc .f2 label{align-content:end}
