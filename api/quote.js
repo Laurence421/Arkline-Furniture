@@ -1,4 +1,6 @@
-// POST /api/quote — Feature B. Saves a quotation request to Supabase and emails Arkline (Feature C).
+// POST /api/quote — saves a quotation request to Supabase and emails Arkline.
+// Host-neutral: handleQuote(request, env). Cloudflare Pages calls it from functions/api/quote.js;
+// POST below serves Vercel and the Vite dev server.
 import { createClient } from "@supabase/supabase-js";
 import { ALL, PROJECT_TYPES, pt } from "../src/data.js";
 
@@ -8,7 +10,9 @@ const json = (body, status = 200) => Response.json(body, { status });
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 const field = (fd, k, max) => String(fd.get(k) ?? "").trim().slice(0, max);
 
-export async function POST(request) {
+export const POST = request => handleQuote(request, process.env);
+
+export async function handleQuote(request, env) {
   let fd;
   try { fd = await request.formData(); } catch { return json({ error: "Invalid form submission." }, 400); }
 
@@ -35,11 +39,20 @@ export async function POST(request) {
   const min = items.reduce((s, i) => s + ALL[i.id].min * i.qty, 0);
   const max = items.reduce((s, i) => s + ALL[i.id].max * i.qty, 0);
 
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  // Cloudflare Turnstile: enforced only when the secret is configured.
+  if (env.TURNSTILE_SECRET_KEY) {
+    const v = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      body: new URLSearchParams({ secret: env.TURNSTILE_SECRET_KEY, response: field(fd, "cf-turnstile-response", 2048), remoteip: request.headers.get("cf-connecting-ip") || "" })
+    }).then(r => r.json()).catch(() => ({ success: false }));
+    if (!v.success) return json({ error: "Please complete the security check and send again." }, 400);
+  }
+
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set");
     return json({ error: "Our quotation form is temporarily unavailable. Please call or email us instead." }, 503);
   }
-  const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
   let attachment_path = null;
   const photo = fd.get("photo");
@@ -65,14 +78,14 @@ export async function POST(request) {
   }
 
   // The lead is saved; a failed alert is logged but never fails the request.
-  try { await notify(db, row, { name, phone: okPhone ? phone : "", email: okEmail ? email : "", type, message, items, min, max, attachment_path }); }
+  try { await notify(env, db, row, { name, phone: okPhone ? phone : "", email: okEmail ? email : "", type, message, items, min, max, attachment_path }); }
   catch (e) { console.error("notify", e); }
 
   return json({ ok: true, id: row.id });
 }
 
-async function notify(db, row, q) {
-  const key = process.env.RESEND_API_KEY, to = process.env.NOTIFY_EMAIL, from = process.env.NOTIFY_FROM;
+async function notify(env, db, row, q) {
+  const key = env.RESEND_API_KEY, to = env.NOTIFY_EMAIL, from = env.NOTIFY_FROM || "Arkline Website <onboarding@resend.dev>";
   if (!key || !to || !from) return;
   let photoLink = "";
   if (q.attachment_path) {

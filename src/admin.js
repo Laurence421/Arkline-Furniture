@@ -30,8 +30,83 @@ async function route(session){
     icons(); return;
   }
   $("#login").hidden=true; $("#app").hidden=false;
-  load();
+  load(); loadQuotes();
 }
+
+/* tabs */
+$("#atabs").onclick=e=>{
+  const b=e.target.closest("[data-tab]"); if(!b) return;
+  $("#atabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  $("#tab-quotes").hidden=b.dataset.tab!=="quotes"; $("#tab-photos").hidden=b.dataset.tab!=="photos";
+};
+
+/* quotes */
+const STATUS={new:"New",contacted:"Contacted",quoted:"Quoted",closed:"Closed"};
+let quotes=[], qfilter="active", qsearch="";
+const peso=n=>"₱"+Number(n).toLocaleString("en-PH");
+const when=d=>new Date(d).toLocaleString("en-PH",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
+async function loadQuotes(){
+  const {data,error}=await supabase.from("quotation_requests").select("*").order("created_at",{ascending:false}).limit(500);
+  if(error){ show($("#qerr"),"Couldn't load requests: "+error.message); return; }
+  quotes=data; renderQuotes();
+}
+function renderQuotes(){
+  const n=k=>k==="all"?quotes.length:k==="active"?quotes.filter(q=>q.status!=="closed").length:quotes.filter(q=>q.status===k).length;
+  const fresh=n("new"); $("#newc").textContent=fresh; $("#newc").hidden=!fresh;
+  $("#qcount").textContent=plural(quotes.length,"request");
+  $("#qfilters").innerHTML=[["active","Open"],...Object.entries(STATUS),["all","All"]]
+    .map(([k,l])=>`<button class="chip${k===qfilter?" on":""}" data-qf="${k}">${l}<small>${n(k)}</small></button>`).join("");
+  const s=qsearch.toLowerCase().replace(/^#/,"");
+  const vis=quotes.filter(q=>(qfilter==="all"||(qfilter==="active"?q.status!=="closed":q.status===qfilter))
+    &&(!s||[q.id,q.full_name,q.mobile,q.email,q.message].some(v=>String(v??"").toLowerCase().includes(s))));
+  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(quotes.length?"No requests match.":"No quotation requests yet. They'll appear here as soon as a customer sends the form.");
+  icons();
+}
+function card(q){
+  const items=(q.quote_items||[]);
+  const subj=encodeURIComponent(`Arkline quotation #${q.id}`);
+  return `<article class="qc st-${q.status}" data-id="${q.id}">
+    <div class="qc-top">
+      <div><div class="qc-id">#${q.id} · ${when(q.created_at)}</div><h3>${esc(q.full_name)}</h3><div class="meta">${esc(q.project_type)}${q.mobile?" · "+esc(q.mobile):""}${q.email?" · "+esc(q.email):""}</div></div>
+      <select data-status aria-label="Status of request #${q.id}">${Object.entries(STATUS).map(([k,l])=>`<option value="${k}"${k===q.status?" selected":""}>${l}</option>`).join("")}</select>
+    </div>
+    <div class="acts2">
+      ${q.mobile?`<a class="btn btn-dark" href="tel:${esc(q.mobile)}"><i data-lucide="phone"></i>Call</a><a class="btn btn-outline" href="sms:${esc(q.mobile)}"><i data-lucide="message-square"></i>Text</a>`:""}
+      ${q.email?`<a class="btn btn-outline" href="mailto:${esc(q.email)}?subject=${subj}"><i data-lucide="mail"></i>Email</a>`:""}
+      ${q.attachment_path?`<button class="btn btn-outline" data-photo="${esc(q.attachment_path)}"><i data-lucide="image"></i>Reference photo</button>`:""}
+    </div>
+    ${q.message?`<div class="msg">${esc(q.message)}</div>`:""}
+    ${items.length?`<ul class="items">${items.map(i=>`<li><b>${i.qty} ×</b> ${esc(i.id)} ${esc(i.name)}</li>`).join("")}</ul>
+      <div class="est">Estimate ${q.estimate_min===q.estimate_max?peso(q.estimate_min):peso(q.estimate_min)+" – "+peso(q.estimate_max)}</div>`:""}
+    <label>Notes <span class="hint">Private. Saved when you click away.</span><textarea data-notes maxlength="5000" placeholder="e.g. Called 10/24, sending quotation Friday">${esc(q.notes||"")}</textarea></label>
+  </article>`;
+}
+$("#qfilters").onclick=e=>{const b=e.target.closest("[data-qf]"); if(b){qfilter=b.dataset.qf; renderQuotes();}};
+$("#qsearch").oninput=e=>{qsearch=e.target.value.trim(); renderQuotes();};
+$("#qlist").addEventListener("change",async e=>{
+  const sel=e.target.closest("[data-status]"); if(!sel) return;
+  const q=quotes.find(x=>x.id===+sel.closest(".qc").dataset.id), prev=q.status;
+  sel.disabled=true;
+  const {error}=await supabase.from("quotation_requests").update({status:sel.value}).eq("id",q.id);
+  sel.disabled=false;
+  if(error){ sel.value=prev; show($("#qerr"),"Couldn't change status: "+error.message); return; }
+  q.status=sel.value; toast(`#${q.id} marked ${STATUS[q.status]}`); renderQuotes();
+});
+$("#qlist").addEventListener("focusout",async e=>{
+  const ta=e.target.closest("[data-notes]"); if(!ta) return;
+  const q=quotes.find(x=>x.id===+ta.closest(".qc").dataset.id);
+  if((q.notes||"")===ta.value) return;
+  const {error}=await supabase.from("quotation_requests").update({notes:ta.value||null}).eq("id",q.id);
+  if(error){ show($("#qerr"),/notes/.test(error.message)?"Notes need one database update: run supabase/002_quotes_admin.sql in Supabase.":"Couldn't save notes: "+error.message); return; }
+  q.notes=ta.value||null; toast(`Notes saved for #${q.id}`);
+});
+$("#qlist").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-photo]"); if(!b) return;
+  const w=window.open("","_blank");
+  const {data,error}=await supabase.storage.from("quote-attachments").createSignedUrl(b.dataset.photo,600);
+  if(error){ w?.close(); show($("#qerr"),"Couldn't open the photo: "+error.message); return; }
+  if(w) w.location=data.signedUrl; else location.href=data.signedUrl;
+});
 $("#logout").onclick=()=>supabase.auth.signOut();
 
 /* load + render */

@@ -31,6 +31,28 @@
   <div class="panel" id="login" hidden></div>
 
   <div id="app" hidden>
+    <div class="tabs" role="tablist" id="atabs">
+      <button role="tab" aria-selected="true" data-tab="quotes"><i data-lucide="inbox"></i>Quotes <span class="badge" id="newc" hidden></span></button>
+      <button role="tab" aria-selected="false" data-tab="photos"><i data-lucide="images"></i>Photos</button>
+    </div>
+
+    <div id="tab-quotes" class="tabpane">
+      <section class="panel-wrap">
+        <div class="head" style="margin-bottom:20px">
+          <span class="pill"><i data-lucide="inbox"></i>Quotation requests</span>
+          <h2>Requests from the <span class="grad">website</span> <small class="count" id="qcount"></small></h2>
+          <p>Newest first. Change the status as you work on each request; notes are private to Arkline.</p>
+        </div>
+        <div class="qtools">
+          <div class="filters" id="qfilters" style="margin:0"></div>
+          <label class="search" for="qsearch"><i data-lucide="search"></i><input id="qsearch" type="search" placeholder="Search name, phone, email, #number"></label>
+        </div>
+        <p class="err" id="qerr" role="alert" hidden></p>
+        <div class="qlist" id="qlist"></div>
+      </section>
+    </div>
+
+    <div id="tab-photos" class="tabpane" hidden>
     <section class="panel-wrap">
       <div class="head" style="margin-bottom:24px">
         <span class="pill"><i data-lucide="image-plus"></i>Add project photos</span>
@@ -77,6 +99,7 @@
       </div>
       <div class="gallery" id="tlist"></div>
     </section>
+    </div>
   </div>
 </main>
 

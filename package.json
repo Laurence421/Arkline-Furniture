@@ -4,15 +4,16 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
-    "dev:static": "vite",
+    "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "webp": "node scripts/to-webp.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0"
   },
   "devDependencies": {
+    "sharp": "^0.34.5",
     "vite": "^8.3.5"
   }
 }

@@ -278,3 +278,12 @@ form.q.auth{box-shadow:var(--shadow-card);border:1px solid var(--line)}
 .link:hover{color:var(--ink)}
 .link.fp{justify-self:end;margin-top:-8px}
 .denied{display:grid;gap:14px}
+
+/* chat buttons + floating Messenger button + Turnstile slot */
+.chats{gap:8px}
+.chats .btn{padding:8px 14px;font-size:.85rem}
+.fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:70;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:999px;background:var(--gradient-hero);color:var(--dark);font-weight:800;text-decoration:none;box-shadow:var(--shadow-glow);transition:transform .25s}
+.fab:hover{transform:translateY(-2px)}
+.fab svg{width:20px;height:20px}
+@media (max-width:540px){.fab span{display:none}.fab{padding:14px}}
+.ts{min-height:65px}

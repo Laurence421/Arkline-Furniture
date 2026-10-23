@@ -121,7 +121,7 @@
 <section id="about">
   <div class="wrap split">
     <div class="photo">
-      <img src="/img/p34.jpg" alt="Executive office with custom desk and wall cabinets by Arkline" loading="lazy">
+      <img src="/img/p34.webp" alt="Executive office with custom desk and wall cabinets by Arkline" loading="lazy">
       <div class="logo-card"><img src="/img/logo.png" alt="Arkline Home and Office Furniture Shop logo"></div>
     </div>
     <div>
@@ -186,6 +186,7 @@
           <div class="v">0927 343 6747 <button class="copy" data-copy="0927 343 6747">Copy</button></div>
           <div class="v">0964 823 2183 <button class="copy" data-copy="0964 823 2183">Copy</button></div></div></div>
         <div class="irow"><div class="i"><i data-lucide="mail"></i></div><div style="min-width:0"><div class="k">Email</div><div class="v">arklinehomeandofficefurnitures@gmail.com <button class="copy" data-copy="arklinehomeandofficefurnitures@gmail.com">Copy</button></div></div></div>
+        <div class="irow" id="msgrow" hidden><div class="i"><i data-lucide="messages-square"></i></div><div><div class="k">Chat with us</div><div class="v chats" id="chats"></div></div></div>
       </div>
     </div>
     <form class="q" id="qform" novalidate>
@@ -202,6 +203,7 @@
       <label for="f-photo">Reference photo <span class="hint">Optional. A layout, sketch or photo of furniture you like.</span><input id="f-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/heic"></label>
       <label class="hp" aria-hidden="true">Website<input id="f-web" name="website" tabindex="-1" autocomplete="off"></label>
       <div class="qsum" id="qsum"></div>
+      <div id="ts" class="ts" hidden></div>
       <p class="err" id="ferr" role="alert" hidden></p>
       <button class="btn btn-primary" type="submit" id="qsend"><i data-lucide="send"></i><span>Send request</span></button>
       <p class="reply-note"><i data-lucide="clock"></i>We usually reply within one business day.</p>
@@ -210,6 +212,8 @@
   </div>
 </section>
 </main>
+
+<a class="fab" id="fab" hidden target="_blank" rel="noopener" aria-label="Message us on Messenger"><i data-lucide="message-circle"></i><span>Message us</span></a>
 
 <footer>
   <div class="wrap">

@@ -12,7 +12,7 @@ export const CATS = {
   "Printer Table":[20,41,59,140,188]
 };
 export const ORDER = Object.keys(CATS);
-export const img = n => "/img/p"+n+".jpg";
+export const img = n => "/img/p"+n+".webp";
 
 // Bundled gallery photos, interleaved by category. Admins can hide any of them (hidden_photos table).
 export const BUNDLED = [];
@@ -48,6 +48,9 @@ export const TABLES=[["001",42000,48000,"Executive desk with side pedestal",2400
  ["013",6000,7500,"Wood-grain desk, white frame",1400,700,null,["Price depends on size and finish","Full front modesty panel","Dual cable grommets"]],
  ["014",10275,10275,"Table with locking pedestal",1200,600,null,["Fixed 3-drawer pedestal, central lock","A4 and legal filing drawer","Rust-resistant steel frame"]]
 ].map(([c,min,max,name,L,W,x,f])=>({id:"OFT-"+c,name,min,max,L,W,x,f}));
+
+// Chat links. Leave "" to hide the button. messenger: "https://m.me/<PageName>", viber: "09XXXXXXXXX".
+export const CONTACT = { messenger: "", viber: "" };
 
 export const ALL=Object.fromEntries([...CHAIRS,...TABLES].map(i=>[i.id,i]));
 export const PROJECT_TYPES=["Office fit-out","Home furniture","Commercial / institutional","Single items"];

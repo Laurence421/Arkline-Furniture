@@ -1,4 +1,4 @@
-import { CATS, ORDER, img, BUNDLED, CHAIRS, TABLES, ALL, pt } from "./data.js";
+import { CATS, ORDER, img, BUNDLED, CHAIRS, TABLES, ALL, CONTACT, pt } from "./data.js";
 import { supabase, photoUrl } from "./supabase.js";
 import { toWebp } from "./image.js";
 
@@ -159,6 +159,28 @@ const navs=[...document.querySelectorAll(".links a")];
 const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting)navs.forEach(l=>l.classList.toggle("on",l.getAttribute("href")==="#"+en.target.id));}),{rootMargin:"-45% 0px -50% 0px"});
 document.querySelectorAll("main section[id]").forEach(s=>io.observe(s));
 
+/* chat buttons (shown only when CONTACT has values) */
+(function chats(){
+  const viber=CONTACT.viber.replace(/\D/g,"").replace(/^0/,"63");
+  const links=[
+    CONTACT.messenger&&`<a class="btn btn-glass" href="${CONTACT.messenger}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>Messenger</a>`,
+    viber&&`<a class="btn btn-glass" href="viber://chat?number=%2B${viber}"><i data-lucide="phone"></i>Viber ${CONTACT.viber}</a>`
+  ].filter(Boolean);
+  if(!links.length) return;
+  $("#chats").innerHTML=links.join(""); $("#msgrow").hidden=false;
+  if(CONTACT.messenger){ $("#fab").href=CONTACT.messenger; $("#fab").hidden=false; }
+})();
+
+/* Cloudflare Turnstile spam check (only when a site key is configured) */
+const TS_KEY=import.meta.env.VITE_TURNSTILE_SITE_KEY;
+let tsWidget=null;
+if(TS_KEY){
+  window.onTurnstileLoad=()=>{ $("#ts").hidden=false; tsWidget=turnstile.render("#ts",{sitekey:TS_KEY,theme:"light"}); };
+  const s=document.createElement("script");
+  s.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad"; s.async=true;
+  document.head.appendChild(s);
+}
+
 /* quotation form → /api/quote */
 const FALLBACK="Please call 0962 269 8229 or email arklinehomeandofficefurnitures@gmail.com instead.";
 function formError(m){ $("#ferr").hidden=!m; $("#ferr").textContent=m; }
@@ -187,12 +209,13 @@ $("#qform").addEventListener("submit",async e=>{
     const j=await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(j.error||"Something went wrong sending your request.");
     $("#qform").reset(); quote={}; save(); renderQuote(); renderCatalogue();
-    $("#fsent").textContent=`Thanks, ${name.split(" ")[0]}! Your request is in. We usually reply within one business day.`;
+    $("#fsent").textContent=`Thanks, ${name.split(" ")[0]}! Your request${j.id?" #"+j.id:""} is in. We usually reply within one business day.${j.id?" Mention #"+j.id+" when you message us.":""}`;
     $("#fsent").hidden=false; $("#fsent").focus();
   }catch(err){
     formError(err instanceof TypeError?"We couldn't reach our server. "+FALLBACK:err.message);
   }finally{
     btn.disabled=false; label.textContent="Send request";
+    if(tsWidget!=null) try{ turnstile.reset(tsWidget); }catch(e){}
   }
 });
 

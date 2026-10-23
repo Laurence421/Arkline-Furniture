@@ -22,3 +22,33 @@
 .admin .tile{cursor:default}
 .admin .tile:hover img{transform:none}
 .admin .empty{grid-column:1/-1}
+
+/* tabs + quotes */
+#app{display:grid;gap:40px}
+#atabs{margin:0;justify-self:start}
+#atabs button{display:inline-flex;align-items:center;gap:8px}
+#atabs svg{width:17px;height:17px}
+.tabpane{display:grid;gap:56px}
+.qtools{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:20px}
+.search{position:relative;flex:1 1 260px;max-width:380px;display:block}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted)}
+.search input{padding-left:40px;background:var(--card)}
+.qlist{display:grid;gap:14px}
+.qc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-card);padding:20px;display:grid;gap:14px;min-width:0}
+.qc.st-new{border-left:4px solid var(--walnut-2)}
+.qc-top{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.qc-id{font-size:.78rem;font-weight:800;color:var(--muted);letter-spacing:.04em}
+.qc h3{font-size:1.25rem;margin-top:2px}
+.qc .meta{color:var(--muted);font-size:.88rem}
+.qc select{width:auto;padding:8px 12px;font-weight:700}
+.qc .acts2{display:flex;gap:8px;flex-wrap:wrap}
+.qc .acts2 .btn{padding:8px 14px;font-size:.85rem}
+.qc .msg{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:12px 14px;font-size:.93rem;overflow-wrap:anywhere}
+.qc .items{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:.9rem}
+.qc .items b{font-variant-numeric:tabular-nums}
+.qc .est{font-weight:800;color:var(--walnut);font-variant-numeric:tabular-nums}
+.qc textarea{min-height:64px;background:var(--bg)}
+.qc .saved{font-size:.78rem;color:var(--ok);font-weight:700}
+.stp{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;background:var(--muted-bg);color:var(--muted)}
+.stp.new{background:hsl(30 58% 50%/.16);color:var(--walnut)}
+.stp.quoted{background:hsl(145 45% 32%/.12);color:var(--ok)}

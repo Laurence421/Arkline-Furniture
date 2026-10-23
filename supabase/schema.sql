@@ -66,6 +66,7 @@ create table if not exists public.quotation_requests (
   estimate_min int,
   estimate_max int,
   attachment_path text,
+  notes text check (char_length(notes) <= 5000),
   status text not null default 'new' check (status in ('new','contacted','quoted','closed')),
   check (mobile is not null or email is not null)
 );
