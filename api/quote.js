@@ -22,7 +22,19 @@ async function priceList(db) {
   return prices;
 }
 
+// Spam guard: at most 5 sends per visitor IP per 10 minutes (per server instance; Cloudflare always sends the IP).
+const LIMIT = 5, WINDOW = 10 * 60_000, hits = new Map();
+function tooMany(ip) {
+  if (!ip) return false;
+  const now = Date.now(), recent = (hits.get(ip) || []).filter(t => now - t < WINDOW);
+  if (hits.size > 5000) hits.clear(); // keep memory bounded
+  hits.set(ip, [...recent, now]);
+  return recent.length >= LIMIT;
+}
+
 export async function handleQuote(request, env) {
+  if (tooMany(request.headers.get("cf-connecting-ip")))
+    return json({ error: "You've sent several requests in a short time. Please wait a few minutes, or call or message us." }, 429);
   let fd;
   try { fd = await request.formData(); } catch { return json({ error: "Invalid form submission." }, 400); }
 
