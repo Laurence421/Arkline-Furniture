@@ -43,6 +43,7 @@ function gmailDraft(q){
   return "https://mail.google.com/mail/?"+p;
 }
 async function route(session){
+  if(recovering) return; // a reset-password link is open: the "Set a new password" form stays until it's saved
   $("#logout").hidden=!session;
   if(!session){ $("#login").hidden=false; $("#app").hidden=true; auth.show("signin"); return; }
   const {data:isAdmin,error}=await supabase.rpc("is_admin");
@@ -289,9 +290,12 @@ else{
     title:"Admin sign in", sub:"Use the Arkline admin account.",
     onPasswordSet:async()=>{ recovering=false; route((await supabase.auth.getSession()).data.session); }
   });
+  // A reset-password link signs the user in first; ask for the new password before opening the admin.
+  // Spot it from the link itself, because "signed in" can arrive before "password recovery".
+  const showReset=()=>{ recovering=true; $("#app").hidden=true; $("#login").hidden=false; $("#logout").hidden=true; auth.show("reset"); };
+  if(/(^|[#&?])type=recovery(&|$)/.test(location.hash+"&"+location.search.slice(1))) showReset();
   supabase.auth.onAuthStateChange((ev,session)=>{
-    // A reset-password link signs the user in first; ask for the new password before opening the admin.
-    if(ev==="PASSWORD_RECOVERY"){ recovering=true; $("#app").hidden=true; $("#login").hidden=false; $("#logout").hidden=true; setTimeout(()=>auth.show("reset"),0); return; }
+    if(ev==="PASSWORD_RECOVERY"){ if(!recovering) setTimeout(showReset,0); recovering=true; return; }
     if(recovering||ev==="TOKEN_REFRESHED"||ev==="USER_UPDATED") return;
     if(ev==="SIGNED_IN"&&session?.user?.id&&session.user.id===signedInId) return; // password re-check in the Account tab
     signedInId=session?.user?.id||null;

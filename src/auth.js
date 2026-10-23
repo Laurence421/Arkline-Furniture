@@ -39,7 +39,7 @@ export function mountAuth(root, { title = "Sign in", sub = "", onPasswordSet } =
       <label>Email<input name="email" type="email" autocomplete="username" required></label>
       ${tail("mail", "Send reset link")}
       <button type="button" class="link" data-v="signin"><i data-lucide="arrow-left"></i>Back to sign in</button>`,
-    reset: () => `${head("Set a new password", "At least 8 characters.")}
+    reset: () => `${head("Set a new password", "At least 8 characters, with letters and numbers.")}
       <label>New password<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
       <label>Confirm new password<input name="confirm" type="password" autocomplete="new-password" required></label>
       ${tail("key-round", "Save new password")}`,
@@ -52,6 +52,7 @@ export function mountAuth(root, { title = "Sign in", sub = "", onPasswordSet } =
     if (f.email && !/^\S+@\S+\.\S+$/.test(email)) m = "Enter a valid email.";
     else if (view === "signin" && !password) m = "Enter your password.";
     else if (view === "reset" && password.length < 8) m = "Use at least 8 characters.";
+    else if (view === "reset" && (!/[A-Za-z]/.test(password) || !/\d/.test(password))) m = "Mix letters and numbers so it's harder to guess.";
     else if (view === "reset" && password !== f.confirm.value) m = "The two passwords don't match.";
     if (m) return msg("err", m);
     msg("err"); btn.disabled = true; span.textContent = "Please wait…";
