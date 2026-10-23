@@ -91,6 +91,8 @@ create policy "admins delete project photos" on storage.objects
 create policy "admins read quote attachments" on storage.objects
   for select to authenticated using (bucket_id = 'quote-attachments' and public.is_admin());
 
--- Make the client an admin (replace the email, run after creating the user):
--- insert into public.admins (user_id)
---   select id from auth.users where email = 'arklinehomeandofficefurnitures@gmail.com';
+-- Make the client an admin. First create the user in Authentication → Users → Add user
+-- (email arklinefurniture3@gmail.com, tick "Auto Confirm User"), then run:
+insert into public.admins (user_id)
+  select id from auth.users where email = 'arklinefurniture3@gmail.com'
+on conflict do nothing;

@@ -16,8 +16,8 @@ Design rationale: [docs/adr/ADR-001-vercel-supabase-stack.md](docs/adr/ADR-001-v
 
 1. **Supabase**: create a project, open SQL Editor and run `supabase/schema.sql`.
    - Authentication → Providers → Email: turn off **Allow new users to sign up**.
-   - Authentication → Users → **Add user** for the client (email + password).
-   - Run the commented `insert into public.admins …` line at the bottom of the schema with that email.
+   - Authentication → Users → **Add user**: `arklinefurniture3@gmail.com`, set a password, tick **Auto Confirm User**.
+   - Run the `insert into public.admins …` statement at the bottom of the schema again (it's a no-op until that user exists).
 2. **Resend** (for new-quote emails): create an account, verify a domain, create an API key.
    Without it, requests are still saved; you just don't get the email.
 3. **Env vars**: copy `.env.example` to `.env.local` for local dev, and add the same values in
