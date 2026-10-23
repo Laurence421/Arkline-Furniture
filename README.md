@@ -11,6 +11,8 @@ How it works, for the client: [docs/arkline-website-flow.pdf](docs/arkline-websi
 | `admin.html`, `src/admin.js`, `src/auth.js` | `/admin`: Quotes inbox, photo upload, Trash; Google / email sign-in with password reset |
 | `api/quote.js` | Quote handler: validates, spam check, saves to Supabase, emails Arkline |
 | `functions/api/quote.js` | Cloudflare Pages wrapper for the handler (`POST /api/quote`) |
+| `api/site-data.js`, `functions/api/site-data.js` | `GET /api/site-data`: gallery, prices and text in one request, cached 30 s (100 visitors ≈ one set of database reads) |
+| `src/icons.js` | The icons the site uses, bundled. Add new `data-lucide` names here |
 | `src/data.js`, `src/content.js` | Built-in catalogue and website text (used until the admin saves changes), photo list, chat links |
 | `supabase/schema.sql`, `002_quotes_admin.sql`, `003_prices_and_text.sql` | Tables, access rules, storage buckets; notes; editable products and text |
 | `.github/workflows/keep-supabase-awake.yml` | Daily ping so the free Supabase project never pauses |
