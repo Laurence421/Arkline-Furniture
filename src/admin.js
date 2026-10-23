@@ -261,10 +261,18 @@ function render(){
     ...BUNDLED.filter(b=>hidden.has(b.n)).map(b=>({at:hidden.get(b.n),html:tile(b.src,b.cat,b.cat,
       `<div class="acts"><button data-unhide="${b.n}"><i data-lucide="rotate-ccw"></i>Restore</button></div>`)}))
   ].sort((a,b)=>a.at<b.at?1:-1);
-  $("#tcount").textContent=plural(trash.length,"photo");
+  $("#tcount").textContent=plural(trash.length,"photo"); $("#gtcount").textContent=trash.length||"";
   $("#tlist").innerHTML=trash.length?trash.map(t=>t.html).join(""):empty("Trash is empty.");
   icons();
 }
+// Shortcut to Trash at the bottom of the Photos tab; once Trash is on screen it takes you back to the top.
+let atTrash=false;
+new IntersectionObserver(([e])=>{
+  atTrash=e.isIntersecting; const b=$("#gotrash");
+  b.classList.toggle("up",atTrash); b.setAttribute("aria-label",atTrash?"Back to top":"Go to Trash");
+  b.querySelector("span").textContent=atTrash?"Top":"Trash";
+}).observe($("#trash"));
+$("#gotrash").onclick=()=>atTrash?scrollTo({top:0,behavior:"smooth"}):$("#trash").scrollIntoView({behavior:"smooth",block:"start"});
 $("#afilters").onclick=e=>{const b=e.target.closest("[data-cat]"); if(b){filter=b.dataset.cat; render();}};
 $("#bfilters").onclick=e=>{const b=e.target.closest("[data-cat]"); if(b){bfilter=b.dataset.cat; render();}};
 
