@@ -64,6 +64,7 @@ $("#atabs").onclick=e=>{
   const b=e.target.closest("[data-tab]"); if(!b) return;
   $("#atabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b));
   for(const t of ["quotes","photos","prices","text","account"]) $("#tab-"+t).hidden=b.dataset.tab!==t;
+  $("#amenu-label").textContent=b.textContent.trim().replace(/\d+$/,"").trim(); menuOpen(false); scrollTo({top:0});
   b.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}); // keep the chosen tab visible in the scrolling bar on phones
 };
 
@@ -166,6 +167,13 @@ $("#qlist").addEventListener("click",async e=>{
   if(w) w.location=data.signedUrl; else location.href=data.signedUrl;
 });
 $("#logout").onclick=()=>supabase.auth.signOut();
+
+/* phone menu: ☰ opens the section list (#atabs); shown only while the dashboard is */
+function menuOpen(on){ $("#atabs").classList.toggle("open",on); $("#amenu").setAttribute("aria-expanded",on); $("#amenu").setAttribute("aria-label",on?"Close menu":"Open menu"); }
+$("#amenu").onclick=e=>{ e.stopPropagation(); menuOpen(!$("#atabs").classList.contains("open")); };
+document.addEventListener("click",e=>{ if($("#atabs").classList.contains("open")&&!e.target.closest("#atabs")) menuOpen(false); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") menuOpen(false); });
+new MutationObserver(()=>{ $("#amenu").hidden=$("#app").hidden; if($("#app").hidden) menuOpen(false); }).observe($("#app"),{attributes:true,attributeFilter:["hidden"]});
 
 /* load + render */
 async function load(){
