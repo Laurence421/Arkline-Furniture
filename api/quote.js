@@ -26,8 +26,8 @@ export async function handleQuote(request, env) {
   const message = field(fd, "message", 5000);
   const okPhone = /^(09|\+639)\d{9}$/.test(phone), okEmail = /^\S+@\S+\.\S+$/.test(email);
 
-  if (!name) return json({ error: "Add your name so we know who to address the quotation to." }, 400);
-  if (!okPhone && !okEmail) return json({ error: "Add a mobile number (09XX XXX XXXX) or an email so we can send your quotation." }, 400);
+  if (!name) return json({ error: "Add your name so we know who to send the price to." }, 400);
+  if (!okPhone && !okEmail) return json({ error: "Add a mobile number (09XX XXX XXXX) or an email so we can send you the price." }, 400);
   if (!PROJECT_TYPES.includes(type)) return json({ error: "Choose a project type." }, 400);
 
   let raw = [];
@@ -45,7 +45,7 @@ export async function handleQuote(request, env) {
 
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set");
-    return json({ error: "Our quotation form is temporarily unavailable. Please call or email us instead." }, 503);
+    return json({ error: "Our price request form is temporarily unavailable. Please call or email us instead." }, 503);
   }
   const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
@@ -102,14 +102,14 @@ async function notify(env, db, row, q) {
   const list = q.items.length
     ? `<ul>${q.items.map(i => `<li>${i.qty} × ${esc(i.id)} ${esc(i.name)}</li>`).join("")}</ul><p>Estimated total: ${esc(pt({ min: q.min, max: q.max }))}</p>`
     : "<p>No catalogue items selected.</p>";
-  const html = `<h2>New quotation request #${row.id}</h2>
+  const html = `<h2>New price request #${row.id}</h2>
     <p><b>${esc(q.name)}</b> · ${esc(q.type)}</p>
     <p>Mobile: ${esc(q.phone || "—")}<br>Email: ${esc(q.email || "—")}</p>
     <p style="white-space:pre-wrap">${esc(q.message || "(no message)")}</p>${list}${photoLink}`;
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to, subject: `New quotation request #${row.id} from ${q.name}`, html, ...(q.email && { reply_to: q.email }) })
+    body: JSON.stringify({ from, to, subject: `New price request #${row.id} from ${q.name}`, html, ...(q.email && { reply_to: q.email }) })
   });
   if (!r.ok) throw new Error(`Resend ${r.status}: ${await r.text()}`);
 }

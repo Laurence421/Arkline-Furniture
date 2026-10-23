@@ -4,7 +4,7 @@ export const CONTENT_DEFAULTS = {
   "hero.location": "Novaliches, Quezon City",
   "hero.title": "Building spaces that inspire *productivity.*",
   "hero.lede": "Custom and ready-made furniture for offices, homes, commercial and institutional projects. We design, fabricate, deliver and install.",
-  "shop.lede": "Add items to your quote list and send it to us. Final prices depend on size, laminate finish and customization.",
+  "shop.lede": "Add items to your list and send it to us. Final prices depend on size, laminate finish and customization.",
   "services": [
     { t: "Office furniture", items: ["Executive tables & workstations", "Cubicle and glass partitions", "Conference tables", "Reception counters", "Cabinets & mobile pedestals"] },
     { t: "Home furniture", items: ["Kitchen cabinets", "Wardrobes and closets", "TV cabinets", "Bedroom, living & dining", "Custom home storage"] },
@@ -14,16 +14,16 @@ export const CONTENT_DEFAULTS = {
   "about.title": "Furniture that works as hard as *you do*.",
   "about.lead": "Arkline Home and Office Furniture Shop is a trusted provider of high-quality, customized and ready-made furniture for homes, offices, commercial establishments and institutional projects. We design, manufacture and supply functional, durable and modern furniture that improves productivity, comfort and aesthetics.",
   "steps": [
-    { t: "Request a quotation", d: "Send your layout, sizes or your quote list. We reply with a formal quotation." },
+    { t: "Ask for a price", d: "Send your layout, sizes or your list. We reply with the full price and details." },
     { t: "Confirm with 70% down", d: "The balance is paid before delivery unless otherwise agreed." },
     { t: "Production", d: "Lead time starts once the down payment and final specs are approved." },
     { t: "Delivery & setup", d: "Schedules depend on weather, site access and unforeseen circumstances." },
     { t: "Inspect within 24h", d: "Check items on delivery and report any concern within 24 hours." }
   ],
   "faq": [
-    { t: "How do I request the updated furniture pricelist?", d: "Message us by email or on our Facebook page, or use the quotation form below. Tell us what furniture you need and we'll send the current pricelist." },
-    { t: "How do I make an order?", d: "Request a quotation, approve the specifications, then pay the 70% down payment to confirm. Production starts after that." },
-    { t: "How do I make a payment?", d: "A 70% down payment confirms all orders. The remaining balance is paid before delivery unless otherwise agreed. Payment details come with your quotation." },
+    { t: "How do I request the updated furniture pricelist?", d: "Message us by email or on our Facebook page, or use the form below. Tell us what furniture you need and we'll send the current pricelist." },
+    { t: "How do I make an order?", d: "Ask for a price, approve the specifications, then pay the 70% down payment to confirm. Production starts after that." },
+    { t: "How do I make a payment?", d: "A 70% down payment confirms all orders. The remaining balance is paid before delivery unless otherwise agreed. Payment details come with your price." },
     { t: "Can I change my order after confirming?", d: "Yes, but changes after confirmation may affect the price and delivery schedule." },
     { t: "Can I cancel a customized order?", d: "Customized and made-to-order items are non-refundable and non-cancellable once production has started." },
     { t: "What does the warranty cover?", d: "Manufacturing defects only. It doesn't cover damage from misuse, accidents or improper handling." }

@@ -95,7 +95,7 @@ document.addEventListener("keydown",e=>{
 /* catalogue */
 let quote={}; try{quote=JSON.parse(localStorage.getItem("ark-quote")||"{}")||{};}catch(e){}
 const save=()=>{try{localStorage.setItem("ark-quote",JSON.stringify(quote));}catch(e){}};
-const addBtn=it=>quote[it.id]?`<button class="btn btn-outline add in" data-add="${it.id}"><i data-lucide="check"></i>In quote list</button>`:`<button class="btn btn-outline add" data-add="${it.id}"><i data-lucide="plus"></i>Add to quote</button>`;
+const addBtn=it=>quote[it.id]?`<button class="btn btn-outline add in" data-add="${it.id}"><i data-lucide="check"></i>On your list</button>`:`<button class="btn btn-outline add" data-add="${it.id}"><i data-lucide="plus"></i>Add to list</button>`;
 const li_=f=>f.map(x=>`<li><i data-lucide="check"></i><span>${esc(x)}</span></li>`).join("");
 function plan(t){
   const W=2600,H=1800,ox=110,oy=170; let g="";
@@ -122,7 +122,7 @@ document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
 });
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-add]"); if(!b) return;
-  const id=b.dataset.add; if(quote[id]) delete quote[id]; else {quote[id]=1; toast(id+" added to your quote list");}
+  const id=b.dataset.add; if(quote[id]) delete quote[id]; else {quote[id]=1; toast(id+" added to your list");}
   save(); renderCatalogue(); renderQuote();
 });
 
@@ -134,9 +134,9 @@ function renderQuote(){
   $("#qitems").innerHTML=ids.length?ids.map(id=>{const it=ALL[id];return `<div class="qi"><div class="th">${it.image?`<img src="${esc(it.image)}" alt="">`:`<i data-lucide="table-2"></i>`}</div>
     <div style="min-width:0"><div class="nm">${esc(it.name)}</div><div class="sub">${id} · ${pt({min:it.min*quote[id],max:it.max*quote[id]})}</div><button class="rm" data-rm="${id}">Remove</button></div>
     <div class="qty"><button data-q="${id}" data-d="-1" aria-label="Fewer">−</button><b>${quote[id]}</b><button data-q="${id}" data-d="1" aria-label="More">+</button></div></div>`}).join("")
-    :`<div class="empty"><i data-lucide="clipboard-list"></i><p>No items yet. Tap "Add to quote" on any chair or table.</p></div>`;
+    :`<div class="empty"><i data-lucide="clipboard-list"></i><p>No items yet. Tap "Add to list" on any chair or table.</p></div>`;
   $("#qtotal").textContent=n?pt({min:a,max:z}):"₱0";
-  $("#qsum").innerHTML=n?`<b style="color:var(--ink)">${n} item${n>1?"s":""} from your quote list will be included</b> · est. ${pt({min:a,max:z})}<br>${ids.map(id=>quote[id]+" × "+id).join(", ")}`:`Your quote list is empty. You can add chairs or tables from the <a href="#shop">shop</a>.`;
+  $("#qsum").innerHTML=n?`<b style="color:var(--ink)">${n} item${n>1?"s":""} from your list will be included</b> · est. ${pt({min:a,max:z})}<br>${ids.map(id=>quote[id]+" × "+id).join(", ")}`:`Your list is empty. You can add chairs or tables from the <a href="#shop">shop</a>.`;
   icons();
 }
 $("#qitems").addEventListener("click",e=>{
@@ -149,8 +149,8 @@ function openDrawer(){$("#drawer").classList.add("open");$("#drawer").setAttribu
 function closeDrawer(){$("#drawer").classList.remove("open");$("#drawer").setAttribute("aria-hidden","true");$("#scrim").hidden=true;}
 $("#openQ").onclick=openDrawer; $("#closeQ").onclick=closeDrawer; $("#scrim").onclick=closeDrawer;
 $("#toForm").onclick=()=>{closeDrawer();$("#contact").scrollIntoView();setTimeout(()=>$("#f-name").focus({preventScroll:true}),450);};
-$("#copyList").onclick=()=>{const ids=Object.keys(quote);if(!ids.length){toast("Your quote list is empty");return;}const{a,z}=totals();
-  copy("Arkline quotation request\n"+ids.map(id=>`${quote[id]} x ${id} ${ALL[id].name} (${pt(ALL[id])})`).join("\n")+`\nEstimated total: ${pt({min:a,max:z})}`,"Quote list copied");};
+$("#copyList").onclick=()=>{const ids=Object.keys(quote);if(!ids.length){toast("Your list is empty");return;}const{a,z}=totals();
+  copy("Arkline price request\n"+ids.map(id=>`${quote[id]} x ${id} ${ALL[id].name} (${pt(ALL[id])})`).join("\n")+`\nEstimated total: ${pt({min:a,max:z})}`,"List copied");};
 
 /* misc */
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
@@ -192,8 +192,8 @@ $("#qform").addEventListener("submit",async e=>{
   e.preventDefault();
   const name=$("#f-name").value.trim(),phone=$("#f-phone").value.replace(/[\s-]/g,""),email=$("#f-email").value.trim(),file=$("#f-photo").files[0];
   let m="";
-  if(!name) m="Add your name so we know who to address the quotation to.";
-  else if(!/^(09|\+639)\d{9}$/.test(phone)&&!/^\S+@\S+\.\S+$/.test(email)) m="Add a mobile number (09XX XXX XXXX) or an email so we can send your quotation.";
+  if(!name) m="Add your name so we know who to send the price to.";
+  else if(!/^(09|\+639)\d{9}$/.test(phone)&&!/^\S+@\S+\.\S+$/.test(email)) m="Add a mobile number (09XX XXX XXXX) or an email so we can send you the price.";
   else if(file&&!file.type.startsWith("image/")) m="The reference photo must be an image.";
   else if(file&&file.size>25*1024*1024) m="The reference photo is over 25 MB. Try a smaller one.";
   formError(m); $("#fsent").hidden=true;

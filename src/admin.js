@@ -25,14 +25,14 @@ function gmailDraft(q){
   const est=q.estimate_min===q.estimate_max?peso(q.estimate_min):`${peso(q.estimate_min)} – ${peso(q.estimate_max)}`;
   const body=[
     `Hi ${first},`, "",
-    `Thank you for your quotation request #${q.id} (${q.project_type}).`, "",
+    `Thank you for your price request #${q.id} (${q.project_type}).`, "",
     ...(items.length?["You asked about:",...items.map(i=>`- ${i.qty} × ${i.id} ${i.name}`),`Estimated total: ${est}`,"(Final price depends on size, laminate finish and customization.)",""]:[]),
     ...(q.message?["Your notes:",`"${q.message}"`,""]:[]),
-    "[Write the quotation details here]", "",
+    "[Write the full price and details here]", "",
     "Feel free to reply to this email or call us at 0962 269 8229.", "",
     "Best regards,", "Arkline Home & Office Furniture", "101 Lydia St., Brgy. Sta. Monica, Novaliches, Quezon City"
   ].join("\n");
-  const p=new URLSearchParams({view:"cm",fs:"1",to:q.email,su:`Arkline quotation #${q.id}`,body});
+  const p=new URLSearchParams({view:"cm",fs:"1",to:q.email,su:`Arkline price for request #${q.id}`,body});
   if(adminEmail) p.set("authuser",adminEmail);
   return "https://mail.google.com/mail/?"+p;
 }
@@ -61,7 +61,7 @@ $("#atabs").onclick=e=>{
 };
 
 /* quotes */
-const STATUS={new:"New",contacted:"Contacted",quoted:"Quoted",closed:"Closed"};
+const STATUS={new:"New",contacted:"Contacted",quoted:"Price sent",closed:"Closed"};
 let quotes=[], qfilter="active", qsearch="";
 const peso=n=>"₱"+Number(n).toLocaleString("en-PH");
 const when=d=>new Date(d).toLocaleString("en-PH",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
@@ -79,7 +79,7 @@ function renderQuotes(){
   const s=qsearch.toLowerCase().replace(/^#/,"");
   const vis=quotes.filter(q=>(qfilter==="all"||(qfilter==="active"?q.status!=="closed":q.status===qfilter))
     &&(!s||[q.id,q.full_name,q.mobile,q.email,q.message].some(v=>String(v??"").toLowerCase().includes(s))));
-  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(quotes.length?"No requests match.":"No quotation requests yet. They'll appear here as soon as a customer sends the form.");
+  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(quotes.length?"No requests match.":"No price requests yet. They'll appear here as soon as a customer sends the form.");
   icons();
 }
 function card(q){
@@ -97,7 +97,7 @@ function card(q){
     ${q.message?`<div class="msg">${esc(q.message)}</div>`:""}
     ${items.length?`<ul class="items">${items.map(i=>`<li><b>${i.qty} ×</b> ${esc(i.id)} ${esc(i.name)}</li>`).join("")}</ul>
       <div class="est">Estimate ${q.estimate_min===q.estimate_max?peso(q.estimate_min):peso(q.estimate_min)+" – "+peso(q.estimate_max)}</div>`:""}
-    <label>Notes <span class="hint">Private. Saved when you click away.</span><textarea data-notes maxlength="5000" placeholder="e.g. Called 10/24, sending quotation Friday">${esc(q.notes||"")}</textarea></label>
+    <label>Notes <span class="hint">Private. Saved when you click away.</span><textarea data-notes maxlength="5000" placeholder="e.g. Called 10/24, sending the price Friday">${esc(q.notes||"")}</textarea></label>
   </article>`;
 }
 $("#qfilters").onclick=e=>{const b=e.target.closest("[data-qf]"); if(b){qfilter=b.dataset.qf; renderQuotes();}};
