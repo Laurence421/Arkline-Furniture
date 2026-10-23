@@ -121,6 +121,28 @@ function card(q){
 }
 $("#qfilters").onclick=e=>{const b=e.target.closest("[data-qf]"); if(b){qfilter=b.dataset.qf; renderQuotes();}};
 $("#qsearch").oninput=e=>{qsearch=e.target.value.trim(); renderQuotes();};
+
+/* Download: every request (Trash included, marked) as a CSV that opens in Excel or Google Sheets.
+   Arkline's own backup, since the free Supabase plan keeps none. */
+$("#qexport").onclick=async()=>{
+  const btn=$("#qexport"); busy(btn,true,"Preparing…");
+  const {data,error}=await supabase.from("quotation_requests").select("*").order("id");
+  busy(btn,false,"Download");
+  if(error) return show($("#qerr"),"Couldn't download: "+error.message);
+  const cell=v=>{ const s=String(v??""); return /[",\n\r]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
+  const abs=u=>u?new URL(u,location.origin).href:"";
+  const cols=[["Number",q=>q.id],["Date",q=>new Date(q.created_at).toLocaleString("en-PH")],["Type",kindOf],["Status",q=>STATUS[q.status]||q.status],
+    ["In Trash",q=>q.deleted_at?"yes":""],["Name",q=>q.full_name],["Mobile",q=>q.mobile],["Email",q=>q.email],["Contact by",q=>q.contact_pref],["Facebook",q=>q.facebook],
+    ["Project type",q=>q.project_type],["Items",q=>(q.quote_items||[]).map(i=>`${i.qty} x ${i.id} ${i.name}`).join("; ")],
+    ["Total from (PHP)",q=>q.estimate_min],["Total to (PHP)",q=>q.estimate_max],["Liked photos",q=>(q.liked_photos||[]).map(l=>`${l.cat}: ${abs(l.src)}`).join(" ; ")],
+    ["Reference photo",q=>q.attachment_path?"yes":""],["Message",q=>q.message],["Private notes",q=>q.notes]];
+  const csv="﻿"+[cols.map(c=>c[0]),...data.map(q=>cols.map(c=>c[1](q)))].map(r=>r.map(cell).join(",")).join("\r\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download=`arkline-requests-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast(`${plural(data.length,"request")} downloaded`);
+};
 $("#qlist").addEventListener("change",async e=>{
   const sel=e.target.closest("[data-status]"); if(!sel) return;
   const q=quotes.find(x=>x.id===+sel.closest(".qc").dataset.id), prev=q.status;

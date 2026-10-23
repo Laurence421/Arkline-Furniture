@@ -48,7 +48,10 @@
         </div>
         <div class="qtools">
           <div class="filters" id="qfilters" style="margin:0"></div>
-          <label class="search" for="qsearch"><i data-lucide="search"></i><input id="qsearch" type="search" placeholder="Search name, phone, email, #number"></label>
+          <div class="qtools-r">
+            <label class="search" for="qsearch"><i data-lucide="search"></i><input id="qsearch" type="search" placeholder="Search name, phone, email, #number"></label>
+            <button class="btn btn-outline" id="qexport" type="button" title="Download every request as a spreadsheet (opens in Excel or Google Sheets)"><i data-lucide="download"></i><span>Download</span></button>
+          </div>
         </div>
         <p class="err" id="qerr" role="alert" hidden></p>
         <div class="qlist" id="qlist"></div>

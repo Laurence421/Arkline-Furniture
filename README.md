@@ -6,7 +6,7 @@ A production website for **Arkline Home & Office Furniture**, a custom furniture
 
 ![Arkline home page](docs/screenshots/home.jpg)
 
-> 📄 **[Download the website guide (PDF)](docs/arkline-website-flow.pdf)**: how orders reach Arkline and how the admin runs the site · [This README as a PDF](docs/README.pdf)
+> 📄 **[Website guide (PDF)](docs/arkline-website-flow.pdf)**: how orders reach Arkline · **[Admin guide (PDF)](docs/admin-guide.pdf)**: how the team runs the site · [This README as a PDF](docs/README.pdf)
 
 ---
 
@@ -38,7 +38,7 @@ Also: Messenger and Viber buttons, a fully responsive layout ([phone view](docs/
 
 | | |
 |---|---|
-| ![Requests inbox](docs/screenshots/admin-requests.jpg) | **Requests inbox**: orders and price requests with status (New → Contacted → Price sent → Closed), search, private notes, liked photos, and one-tap **Call, Text, Viber, Messenger** or **Reply in Gmail** with a drafted reply. |
+| ![Requests inbox](docs/screenshots/admin-requests.jpg) | **Requests inbox**: orders and price requests with status (New → Contacted → Price sent → Closed), search, private notes, liked photos, one-tap **Call, Text, Viber, Messenger** or **Reply in Gmail** with a drafted reply, Trash with restore, and a **Download** backup that opens in Excel. |
 | ![Prices](docs/screenshots/admin-prices.jpg) | **Prices**: edit, add, hide or delete products and photos. Quote estimates always use these prices, recalculated on the server. |
 | ![Website text](docs/screenshots/admin-text.jpg) | **Website text**: edit the hero, services, steps, FAQs and contact details, with "Restore original" for each section. |
 | ![Photos and Trash](docs/screenshots/admin-photos.jpg) | **Photos**: upload from a phone (converted to WebP in the browser), Trash with restore, delete forever. |

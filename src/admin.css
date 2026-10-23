@@ -214,3 +214,9 @@ div.q.auth{background:var(--card);color:var(--ink);border:1px solid var(--line);
   #atabs button svg{width:20px;height:20px}
   #atabs button .badge{margin-left:auto}
 }
+
+/* requests toolbar: search + download */
+.qtools-r{display:flex;gap:10px;align-items:center;flex:1 1 380px;justify-content:flex-end;min-width:0}
+.qtools-r .search{flex:1 1 240px}
+#qexport{padding:11px 18px;flex:none}
+@media (max-width:640px){.qtools-r{flex-wrap:nowrap}#qexport{padding:11px 14px}#qexport span{display:none}}
