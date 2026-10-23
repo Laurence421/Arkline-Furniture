@@ -119,7 +119,7 @@ src/
   icons.js, image.js           Bundled icons; in-browser WebP conversion
 api/                           Host-neutral handlers: quote.js, site-data.js
 functions/api/                 Cloudflare Pages Function wrappers
-supabase/                      schema.sql, then migrations 002–005
+supabase/                      schema.sql, then migrations 002–006
 public/                        Images, _headers (security and cache headers)
 .github/workflows/             Daily ping that keeps the free Supabase project awake
 docs/                          ADR, client flow PDF, screenshots, this README as a PDF
@@ -138,7 +138,7 @@ Without Supabase keys the site still runs on its built-in data, and the form wor
 
 ## Set up your own copy
 
-1. **Supabase**: create a free project. In the SQL Editor, run `supabase/schema.sql`, then `002` to `005` in order.
+1. **Supabase**: create a free project. In the SQL Editor, run `supabase/schema.sql`, then `002` to `006` in order.
 2. **Admin**: under Authentication → Users, add the admin user. Run the `insert into public.admins …` line at the end of `schema.sql` with that email. Then turn off public sign-ups.
 3. **Google sign-in (optional)**: create an OAuth client in Google Cloud with redirect URI `https://<project>.supabase.co/auth/v1/callback`, enable Google in Supabase, and add your site URLs under Authentication → URL Configuration.
 4. **Deploy**: in Cloudflare Pages → Connect to Git, set the build command to `npm run build` and the output to `dist`, and add the environment variables below.

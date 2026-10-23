@@ -76,24 +76,29 @@ async function loadQuotes(){
   if(error){ show($("#qerr"),"Couldn't load requests: "+error.message); return; }
   quotes=data; renderQuotes();
 }
+// Requests in Trash have deleted_at set; every other view leaves them out.
+const inTrash=q=>!!q.deleted_at;
+const inView=(q,k)=>k==="trash"?inTrash(q):!inTrash(q)&&(k==="all"||(k==="active"?q.status!=="closed":q.status===k));
 function renderQuotes(){
-  const n=k=>k==="all"?quotes.length:k==="active"?quotes.filter(q=>q.status!=="closed").length:quotes.filter(q=>q.status===k).length;
+  const n=k=>quotes.filter(q=>inView(q,k)).length;
   const fresh=n("new"); $("#newc").textContent=fresh; $("#newc").hidden=!fresh;
-  $("#qcount").textContent=plural(quotes.length,"request");
-  $("#qfilters").innerHTML=[["active","Open"],...Object.entries(STATUS),["all","All"]]
-    .map(([k,l])=>`<button class="chip${k===qfilter?" on":""}" data-qf="${k}">${l}<small>${n(k)}</small></button>`).join("");
+  $("#qcount").textContent=plural(quotes.filter(q=>!inTrash(q)).length,"request");
+  $("#qfilters").innerHTML=[["active","Open"],...Object.entries(STATUS),["all","All"],["trash","Trash"]]
+    .map(([k,l])=>`<button class="chip${k===qfilter?" on":""}${k==="trash"?" trash":""}" data-qf="${k}">${k==="trash"?'<i data-lucide="trash-2"></i>':""}${l}<small>${n(k)}</small></button>`).join("");
   const s=qsearch.toLowerCase().replace(/^#/,"");
-  const vis=quotes.filter(q=>(qfilter==="all"||(qfilter==="active"?q.status!=="closed":q.status===qfilter))
+  const vis=quotes.filter(q=>inView(q,qfilter)
     &&(!s||[q.id,q.full_name,q.mobile,q.email,q.message].some(v=>String(v??"").toLowerCase().includes(s))));
-  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(quotes.length?"No requests match.":"No price requests yet. They'll appear here as soon as a customer sends the form.");
+  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(qfilter==="trash"?"Trash is empty.":quotes.length?"No requests match.":"No price requests yet. They'll appear here as soon as a customer sends the form.");
   icons();
 }
 function card(q){
   const items=(q.quote_items||[]);
-  return `<article class="qc st-${q.status}" data-id="${q.id}">
+  return `<article class="qc st-${q.status}${inTrash(q)?" trashed":""}" data-id="${q.id}">
     <div class="qc-top">
       <div><div class="qc-id"><span class="kind ${(q.quote_items||[]).length?"order":"price"}">${kindOf(q)}</span>${q.contact_pref?`<span class="kind pref">Prefers ${esc(q.contact_pref)}</span>`:""} #${q.id} · ${when(q.created_at)}</div><h3>${esc(q.full_name)}</h3><div class="meta">${esc(q.project_type)}${q.mobile?" · "+esc(q.mobile):""}${q.email?" · "+esc(q.email):""}</div></div>
-      <select data-status aria-label="Status of request #${q.id}">${Object.entries(STATUS).map(([k,l])=>`<option value="${k}"${k===q.status?" selected":""}>${l}</option>`).join("")}</select>
+      ${inTrash(q)
+        ?`<div class="qc-trash"><span class="hint">In Trash since ${when(q.deleted_at)}</span><button class="btn btn-outline" data-qrestore><i data-lucide="rotate-ccw"></i>Restore</button><button class="btn btn-outline pc-del" data-qforever><i data-lucide="x"></i>Delete forever</button></div>`
+        :`<div class="qc-side"><select data-status aria-label="Status of request #${q.id}">${Object.entries(STATUS).map(([k,l])=>`<option value="${k}"${k===q.status?" selected":""}>${l}</option>`).join("")}</select><button class="mini qdel" data-qdel title="Move to Trash" aria-label="Move request #${q.id} to Trash"><i data-lucide="trash-2"></i></button></div>`}
     </div>
     <div class="acts2">
       ${q.mobile?`<a class="btn btn-dark" href="tel:${esc(q.mobile)}"><i data-lucide="phone"></i>Call</a><a class="btn btn-outline" href="sms:${esc(q.mobile)}"><i data-lucide="message-square"></i>Text</a>`:""}
@@ -129,6 +134,28 @@ $("#qlist").addEventListener("focusout",async e=>{
   const {error}=await supabase.from("quotation_requests").update({notes:ta.value||null}).eq("id",q.id);
   if(error){ show($("#qerr"),/notes/.test(error.message)?"Notes need one database update: run supabase/002_quotes_admin.sql in Supabase.":"Couldn't save notes: "+error.message); return; }
   q.notes=ta.value||null; toast(`Notes saved for #${q.id}`);
+});
+const TRASH_DB="Deleting requests needs one database update: run supabase/006_request_trash.sql in the Supabase SQL Editor.";
+$("#qlist").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-qdel],[data-qrestore],[data-qforever]"); if(!b) return;
+  const q=quotes.find(x=>x.id===+b.closest(".qc").dataset.id), who=`#${q.id} ${q.full_name}`;
+  if(b.dataset.qdel!==undefined){
+    if(!await confirmDialog({title:`Move request ${who} to Trash?`,message:"It leaves the inbox but stays saved. You can restore it from Trash at any time.",confirmLabel:"Move to Trash",danger:true,icon:"trash-2"})) return;
+    const at=new Date().toISOString(), {error}=await supabase.from("quotation_requests").update({deleted_at:at}).eq("id",q.id);
+    if(error) return show($("#qerr"),/deleted_at/.test(error.message)?TRASH_DB:"Couldn't delete: "+error.message);
+    q.deleted_at=at; toast(`${who} moved to Trash`);
+  } else if(b.dataset.qrestore!==undefined){
+    const {error}=await supabase.from("quotation_requests").update({deleted_at:null}).eq("id",q.id);
+    if(error) return show($("#qerr"),"Couldn't restore: "+error.message);
+    q.deleted_at=null; toast(`${who} restored`);
+  } else {
+    if(!await confirmDialog({title:`Delete request ${who} forever?`,message:`The request${q.attachment_path?" and the customer's photo are":" is"} erased from the database and can't be restored.`,confirmLabel:"Delete forever",danger:true})) return;
+    const {data,error}=await supabase.from("quotation_requests").delete().eq("id",q.id).select("id");
+    if(error||!data?.length) return show($("#qerr"),error&&!/policy/i.test(error.message)?"Couldn't delete: "+error.message:TRASH_DB);
+    if(q.attachment_path) await supabase.storage.from("quote-attachments").remove([q.attachment_path]);
+    quotes=quotes.filter(x=>x!==q); toast(`${who} deleted forever`);
+  }
+  show($("#qerr")); renderQuotes();
 });
 $("#qlist").addEventListener("click",async e=>{
   const b=e.target.closest("[data-photo]"); if(!b) return;

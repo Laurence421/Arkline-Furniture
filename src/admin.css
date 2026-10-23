@@ -135,3 +135,13 @@
 /* info cards that are not forms (account tab, "not an admin" message) get the same card look */
 div.q.auth{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:24px;padding:clamp(20px,3.4vw,34px);display:grid;gap:16px;box-shadow:var(--shadow-card)}
 .acct .f2{align-items:end}
+
+/* request trash */
+.qc-side{display:flex;gap:8px;align-items:center}
+.qc .qdel{color:var(--err)}
+.qc .qdel:hover{background:var(--err);color:var(--on-dark);border-color:var(--err)}
+.qc.trashed{opacity:.8;border-left:4px solid var(--line)}
+.qc-trash{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.qc-trash .btn{padding:8px 14px;font-size:.85rem}
+.chip.trash{display:inline-flex;align-items:center;gap:6px}
+.chip.trash svg{width:14px;height:14px}
