@@ -33,7 +33,7 @@
     <nav class="links" id="links">
       <a href="#projects">Projects</a><a href="#shop">Shop</a><a href="#services">Services</a><a href="#about">About</a><a href="#faq">FAQs</a><a href="#contact">Contact</a>
     </nav>
-    <button class="btn btn-dark qbtn" id="openQ" aria-label="Open your list"><i data-lucide="clipboard-list"></i><span class="lbl">My list</span><span class="badge" id="qc">0</span></button>
+    <button class="btn btn-dark qbtn" id="openQ" aria-label="Open your order"><i data-lucide="clipboard-list"></i><span class="lbl">My order</span><span class="badge" id="qc">0</span></button>
     <button class="menu" id="menu" aria-expanded="false" aria-controls="links" aria-label="Menu"><i data-lucide="menu"></i></button>
   </div>
 </header>
@@ -76,7 +76,7 @@
     <div class="head">
       <span class="pill"><i data-lucide="badge-check"></i>Projects done</span>
       <h2>Take a look at the <span class="grad">work</span> we've done.</h2>
-      <p>Quality furniture solutions, built for comfort, productivity and style. Tap any photo to view it full screen.</p>
+      <p>Quality furniture solutions, built for comfort, productivity and style. Tap any photo to view it full screen, then tap "I want one like this" to ask for a price.</p>
     </div>
     <div class="filters" id="filters" role="toolbar" aria-label="Filter projects"></div>
     <div class="gallery" id="gallery"></div>
@@ -145,7 +145,7 @@
       <h2>Five steps from price to <span class="grad">installed</span>.</h2>
     </div>
     <div class="steps" id="steps">
-      <div class="step"><h3>Ask for a price</h3><p>Send your layout, sizes or your list. We reply with the full price and details.</p></div>
+      <div class="step"><h3>Order or ask for a price</h3><p>Order from the shop, or send your layout and sizes for custom work. We reply with the full price and details.</p></div>
       <div class="step"><h3>Confirm with 70% down</h3><p>The balance is paid before delivery unless otherwise agreed.</p></div>
       <div class="step"><h3>Production</h3><p>Lead time starts once the down payment and final specs are approved.</p></div>
       <div class="step"><h3>Delivery &amp; setup</h3><p>Schedules depend on weather, site access and unforeseen circumstances.</p></div>
@@ -190,7 +190,7 @@
       </div>
     </div>
     <form class="q" id="qform" novalidate>
-      <div><h3 style="font-size:1.5rem">Ask for a price</h3><p style="color:var(--muted);font-size:.92rem;margin-top:4px">Tell us what you need and we'll send you the full price and details.</p></div>
+      <div><h3 style="font-size:1.5rem" id="fhead">Ask for a price</h3><p style="color:var(--muted);font-size:.92rem;margin-top:4px" id="fsub">Tell us your space and what you need. We'll send you the full price and details.</p></div>
       <div class="f2">
         <label for="f-name">Full name<input id="f-name" name="name" autocomplete="name" maxlength="120" placeholder="Juan Dela Cruz"></label>
         <label for="f-phone">Mobile number<input id="f-phone" name="phone" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="09XX XXX XXXX"></label>
@@ -205,7 +205,7 @@
       <div class="qsum" id="qsum"></div>
       <div id="ts" class="ts" hidden></div>
       <p class="err" id="ferr" role="alert" hidden></p>
-      <button class="btn btn-primary" type="submit" id="qsend"><i data-lucide="send"></i><span>Send request</span></button>
+      <button class="btn btn-primary" type="submit" id="qsend"><i data-lucide="send"></i><span>Ask for a price</span></button>
       <p class="reply-note"><i data-lucide="clock"></i><span data-c="contact.reply">We usually reply within one business day.</span></p>
       <p class="sent" id="fsent" role="status" tabindex="-1" hidden></p>
     </form>
@@ -227,20 +227,20 @@
 </footer>
 
 <div class="scrim" id="scrim" hidden></div>
-<aside class="drawer" id="drawer" aria-label="Your list" aria-hidden="true">
-  <div class="dh"><h3 style="font-size:1.4rem">Your list</h3><button class="iconbtn" id="closeQ" aria-label="Close your list"><i data-lucide="x"></i></button></div>
+<aside class="drawer" id="drawer" aria-label="Your order" aria-hidden="true">
+  <div class="dh"><h3 style="font-size:1.4rem" id="dhead">Your order</h3><button class="iconbtn" id="closeQ" aria-label="Close your order"><i data-lucide="x"></i></button></div>
   <div class="items" id="qitems"></div>
   <div>
     <div class="tot"><span>Estimated total</span><span class="price" id="qtotal">₱0</span></div>
     <div style="display:grid;gap:10px">
-      <button class="btn btn-primary" id="toForm"><i data-lucide="arrow-right"></i>Ask for the price</button>
+      <button class="btn btn-primary" id="toForm"><i data-lucide="arrow-right"></i><span>Continue</span></button>
       <button class="btn btn-outline" id="copyList"><i data-lucide="copy"></i>Copy list as text</button>
     </div>
   </div>
 </aside>
 
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Project photo viewer">
-  <div class="bar"><span id="lbCap"></span><button class="x" id="lbX"><i data-lucide="x"></i>Close</button></div>
+  <div class="bar"><span id="lbCap"></span><span class="lbacts"><button class="btn btn-primary lblike" id="lbLike"><i data-lucide="heart"></i><span>I want one like this</span></button><button class="x" id="lbX"><i data-lucide="x"></i>Close</button></span></div>
   <div class="stage"><img id="lbImg" alt=""><button class="nb prev" id="lbPrev" aria-label="Previous photo"><i data-lucide="chevron-left"></i></button><button class="nb next" id="lbNext" aria-label="Next photo"><i data-lucide="chevron-right"></i></button></div>
   <div class="strip" id="lbStrip"></div>
 </div>

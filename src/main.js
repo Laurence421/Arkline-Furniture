@@ -29,14 +29,18 @@ function restart(){ clearInterval(timer); if(!matchMedia("(prefers-reduced-motio
 
 /* categories + gallery */
 let filter="All", shown=12, visible=[];
+let likes=[]; try{likes=JSON.parse(localStorage.getItem("ark-likes")||"[]")||[];}catch(e){}
+const saveLikes=()=>{try{localStorage.setItem("ark-likes",JSON.stringify(likes));}catch(e){}};
+const isLiked=p=>likes.some(l=>l.src===p.src);
+const fromLabel=c=>{const f=(TEXT["gallery.from"]||{})[c]; return f&&f.price?`from ${pt({min:f.price,max:f.price})}${f.unit?" "+f.unit:""}`:"";};
 function buildCats(){
-  $("#cats").innerHTML = ORDER.map(c=>`<button class="cat" data-go="${c}"><img src="${cover(c)}" alt="${c} project" loading="lazy"><span class="lbl"><b>${c}</b><span>${count(c)} photos</span></span></button>`).join("");
+  $("#cats").innerHTML = ORDER.map(c=>`<button class="cat" data-go="${c}"><img src="${cover(c)}" alt="${c} project" loading="lazy"><span class="lbl"><b>${c}${fromLabel(c)?`<small class="from">${esc(fromLabel(c))}</small>`:""}</b><span>${count(c)} photos</span></span></button>`).join("");
   $("#filters").innerHTML = ["All",...ORDER].map(c=>`<button class="chip" data-cat="${c}">${c}<small>${count(c)}</small></button>`).join("");
 }
 $("#cats").onclick=e=>{const b=e.target.closest("[data-go]"); if(!b) return; setFilter(b.dataset.go); $("#projects").scrollIntoView();};
 $("#filters").onclick=e=>{const b=e.target.closest("[data-cat]"); if(b) setFilter(b.dataset.cat);};
 function buildGallery(){
-  $("#gallery").innerHTML = PHOTOS.map((p,i)=>`<button class="tile" data-i="${i}" aria-label="View ${p.cat} photo"><img src="${p.src}" alt="${esc(alt(p))}" loading="${i<6?"eager":"lazy"}"><span class="tag">${p.cat}</span><span class="zoom"><i data-lucide="maximize-2"></i></span></button>`).join("");
+  $("#gallery").innerHTML = PHOTOS.map((p,i)=>`<button class="tile${isLiked(p)?" liked":""}" data-i="${i}" aria-label="View ${p.cat} photo"><img src="${p.src}" alt="${esc(alt(p))}" loading="${i<6?"eager":"lazy"}"><span class="tag">${p.cat}</span><span class="heart" aria-hidden="true"><i data-lucide="heart"></i></span><span class="zoom"><i data-lucide="maximize-2"></i></span></button>`).join("");
   icons();
 }
 $("#gallery").onclick=e=>{const t=e.target.closest(".tile"); if(t) openLb(PHOTOS[+t.dataset.i]);};
@@ -78,12 +82,20 @@ function openLb(p){ lastF=document.activeElement; li=visible.indexOf(p); $("#lb"
 function closeLb(){ $("#lb").hidden=true; document.body.style.overflow=""; lastF&&lastF.focus(); }
 function renderLb(){
   const p=visible[li]; $("#lbImg").src=p.src; $("#lbImg").alt=alt(p);
-  $("#lbCap").textContent=`${p.cat} · ${li+1} of ${visible.length}`;
+  $("#lbCap").textContent=`${p.cat}${fromLabel(p.cat)?" · "+fromLabel(p.cat):""} · ${li+1} of ${visible.length}`;
+  const on=isLiked(p); $("#lbLike").classList.toggle("on",on);
+  $("#lbLike").querySelector("span").textContent=on?"Added to your request":"I want one like this";
   $("#lbStrip").innerHTML=visible.map((v,i)=>`<img src="${v.src}" alt="" data-k="${i}" class="${i===li?"on":""}">`).join("");
   $("#lbStrip").children[li]?.scrollIntoView({block:"nearest",inline:"center"});
 }
 $("#lbStrip").onclick=e=>{const k=e.target.dataset.k; if(k!=null){li=+k;renderLb();}};
 const stepLb=d=>{li=(li+d+visible.length)%visible.length;renderLb();};
+$("#lbLike").onclick=()=>{
+  const p=visible[li];
+  if(isLiked(p)) likes=likes.filter(l=>l.src!==p.src);
+  else { likes.push({src:p.src,cat:p.cat}); toast(`${p.cat} photo added. We'll price one like it for you.`); }
+  saveLikes(); renderLb(); renderQuote(); document.querySelector(`.tile[data-i="${PHOTOS.indexOf(p)}"]`)?.classList.toggle("liked",isLiked(p));
+};
 $("#lbPrev").onclick=()=>stepLb(-1); $("#lbNext").onclick=()=>stepLb(1); $("#lbX").onclick=closeLb;
 let tx=0; $("#lb").addEventListener("touchstart",e=>tx=e.touches[0].clientX,{passive:true});
 $("#lb").addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50) stepLb(d<0?1:-1);});
@@ -95,7 +107,7 @@ document.addEventListener("keydown",e=>{
 /* catalogue */
 let quote={}; try{quote=JSON.parse(localStorage.getItem("ark-quote")||"{}")||{};}catch(e){}
 const save=()=>{try{localStorage.setItem("ark-quote",JSON.stringify(quote));}catch(e){}};
-const addBtn=it=>quote[it.id]?`<button class="btn btn-outline add in" data-add="${it.id}"><i data-lucide="check"></i>On your list</button>`:`<button class="btn btn-outline add" data-add="${it.id}"><i data-lucide="plus"></i>Add to list</button>`;
+const addBtn=it=>quote[it.id]?`<button class="btn btn-outline add in" data-add="${it.id}"><i data-lucide="check"></i>In your order</button>`:`<button class="btn btn-outline add" data-add="${it.id}"><i data-lucide="plus"></i>Add to order</button>`;
 const li_=f=>f.map(x=>`<li><i data-lucide="check"></i><span>${esc(x)}</span></li>`).join("");
 function plan(t){
   const W=2600,H=1800,ox=110,oy=170; let g="";
@@ -122,7 +134,7 @@ document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
 });
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-add]"); if(!b) return;
-  const id=b.dataset.add; if(quote[id]) delete quote[id]; else {quote[id]=1; toast(id+" added to your list");}
+  const id=b.dataset.add; if(quote[id]) delete quote[id]; else {quote[id]=1; toast(id+" added to your order");}
   save(); renderCatalogue(); renderQuote();
 });
 
@@ -130,27 +142,48 @@ document.addEventListener("click",e=>{
 function totals(){let a=0,z=0,n=0;for(const[id,q] of Object.entries(quote)){const it=ALL[id];if(!it)continue;a+=it.min*q;z+=it.max*q;n+=q;}return{a,z,n};}
 function renderQuote(){
   const ids=Object.keys(quote).filter(id=>ALL[id]); const{a,z,n}=totals();
-  $("#qc").textContent=n;
+  $("#qc").textContent=n+likes.length;
   $("#qitems").innerHTML=ids.length?ids.map(id=>{const it=ALL[id];return `<div class="qi"><div class="th">${it.image?`<img src="${esc(it.image)}" alt="">`:`<i data-lucide="table-2"></i>`}</div>
     <div style="min-width:0"><div class="nm">${esc(it.name)}</div><div class="sub">${id} · ${pt({min:it.min*quote[id],max:it.max*quote[id]})}</div><button class="rm" data-rm="${id}">Remove</button></div>
     <div class="qty"><button data-q="${id}" data-d="-1" aria-label="Fewer">−</button><b>${quote[id]}</b><button data-q="${id}" data-d="1" aria-label="More">+</button></div></div>`}).join("")
-    :`<div class="empty"><i data-lucide="clipboard-list"></i><p>No items yet. Tap "Add to list" on any chair or table.</p></div>`;
+    :(likes.length?"":`<div class="empty"><i data-lucide="clipboard-list"></i><p>Nothing here yet. Tap "Add to order" on a chair or table, or "I want one like this" on a project photo.</p></div>`);
+  if(likes.length) $("#qitems").insertAdjacentHTML("beforeend",`<div class="likes"><div class="k">Want one like these <span>· priced for you</span></div><div class="lgrid">${likes.map((l,i)=>`<figure><img src="${esc(l.src)}" alt="${esc(l.cat)}"><figcaption>${esc(l.cat)}</figcaption><button class="rm" data-unlike="${i}">Remove</button></figure>`).join("")}</div></div>`);
   $("#qtotal").textContent=n?pt({min:a,max:z}):"₱0";
-  $("#qsum").innerHTML=n?`<b style="color:var(--ink)">${n} item${n>1?"s":""} from your list will be included</b> · est. ${pt({min:a,max:z})}<br>${ids.map(id=>quote[id]+" × "+id).join(", ")}`:`Your list is empty. You can add chairs or tables from the <a href="#shop">shop</a>.`;
+  const sum=[];
+  if(n) sum.push(`<b style="color:var(--ink)">Your order: ${n} item${n>1?"s":""}</b> · total ${pt({min:a,max:z})}<br>${ids.map(id=>quote[id]+" × "+id).join(", ")}`);
+  if(likes.length) sum.push(`<b style="color:var(--ink)">Price one like ${likes.length>1?"these":"this"}:</b><span class="lthumbs">${likes.map(l=>`<img src="${esc(l.src)}" alt="${esc(l.cat)}" title="${esc(l.cat)}">`).join("")}</span>`);
+  $("#qsum").innerHTML=sum.length?sum.join("<hr>"):`Ordering from the <a href="#shop">shop</a>? Add items first. For custom work, just describe it below.`;
+  updateMode(n);
   icons();
 }
 $("#qitems").addEventListener("click",e=>{
   const q=e.target.closest("[data-q]"),r=e.target.closest("[data-rm]");
   if(q){const id=q.dataset.q;quote[id]=Math.max(1,Math.min(99,quote[id]+ +q.dataset.d));}
   if(r) delete quote[r.dataset.rm];
-  if(q||r){save();renderQuote();renderCatalogue();}
+  const u=e.target.closest("[data-unlike]");
+  if(u){ likes.splice(+u.dataset.unlike,1); saveLikes(); buildGallery(); applyFilter(); }
+  if(q||r||u){save();renderQuote();renderCatalogue();}
 });
 function openDrawer(){$("#drawer").classList.add("open");$("#drawer").setAttribute("aria-hidden","false");$("#scrim").hidden=false;$("#closeQ").focus();}
 function closeDrawer(){$("#drawer").classList.remove("open");$("#drawer").setAttribute("aria-hidden","true");$("#scrim").hidden=true;}
 $("#openQ").onclick=openDrawer; $("#closeQ").onclick=closeDrawer; $("#scrim").onclick=closeDrawer;
 $("#toForm").onclick=()=>{closeDrawer();$("#contact").scrollIntoView();setTimeout(()=>$("#f-name").focus({preventScroll:true}),450);};
-$("#copyList").onclick=()=>{const ids=Object.keys(quote);if(!ids.length){toast("Your list is empty");return;}const{a,z}=totals();
-  copy("Arkline price request\n"+ids.map(id=>`${quote[id]} x ${id} ${ALL[id].name} (${pt(ALL[id])})`).join("\n")+`\nEstimated total: ${pt({min:a,max:z})}`,"List copied");};
+$("#copyList").onclick=()=>{const ids=Object.keys(quote);if(!ids.length){toast("Add shop items to copy your order");return;}const{a,z}=totals();
+  copy("Arkline order\n"+ids.map(id=>`${quote[id]} x ${id} ${ALL[id].name} (${pt(ALL[id])})`).join("\n")+`\nEstimated total: ${pt({min:a,max:z})}`,"List copied");};
+
+/* form adapts: shop items = an order; otherwise a price request (custom work or liked photos) */
+function updateMode(n=totals().n){
+  const order=n>0, liked=likes.length>0;
+  $("#fhead").textContent=order?"Send my order":"Ask for a price";
+  $("#fsub").textContent=order
+    ?`We'll confirm stock, delivery fee and the 70% down payment within one business day.${liked?" We'll also price the photos you liked.":""}`
+    :liked?"Tell us your size or how many seats, and we'll price one like the photo for you."
+    :"Tell us your space and what you need. We'll send you the full price and details.";
+  $("#f-msg").placeholder=order?"e.g. Deliver to Makati, 3rd floor, no elevator":liked?"e.g. 8 seats like the photo, gray laminate, 60 sqm office":"e.g. 12-seat workstation for a 60 sqm office, gray laminate";
+  $("#qsend span").textContent=order?"Send my order":"Ask for a price";
+  $("#dhead").textContent=order?"Your order":"Your request";
+  $("#toForm span").textContent=order?"Continue to order":"Continue to ask for a price";
+}
 
 /* misc */
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
@@ -209,16 +242,18 @@ $("#qform").addEventListener("submit",async e=>{
       catch(err){ if(file.size<=5*1024*1024) fd.set("photo",file); else throw new Error("We couldn't read that photo. Try a JPG or PNG under 5 MB."); }
     }
     fd.set("items",JSON.stringify(Object.keys(quote).filter(id=>ALL[id]).map(id=>({id,qty:quote[id]}))));
+    fd.set("liked",JSON.stringify(likes));
+    const wasOrder=Object.keys(quote).some(id=>ALL[id]);
     const r=await fetch("/api/quote",{method:"POST",body:fd});
     const j=await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(j.error||"Something went wrong sending your request.");
-    $("#qform").reset(); quote={}; save(); renderQuote(); renderCatalogue();
-    $("#fsent").textContent=`Thanks, ${name.split(" ")[0]}! Your request${j.id?" #"+j.id:""} is in. We usually reply within one business day.${j.id?" Mention #"+j.id+" when you message us.":""}`;
+    $("#qform").reset(); quote={}; save(); likes=[]; saveLikes(); renderQuote(); renderCatalogue(); buildGallery(); applyFilter();
+    $("#fsent").textContent=`Thanks, ${name.split(" ")[0]}! Your ${wasOrder?"order":"request"}${j.id?" #"+j.id:""} is in. ${wasOrder?"We'll confirm delivery and payment":"We'll send you the full price and details"} within one business day.${j.id?" Mention #"+j.id+" when you message us.":""}`;
     $("#fsent").hidden=false; $("#fsent").focus();
   }catch(err){
     formError(err instanceof TypeError?"We couldn't reach our server. "+FALLBACK():err.message);
   }finally{
-    btn.disabled=false; label.textContent="Send request";
+    btn.disabled=false; updateMode();
     if(tsWidget!=null) try{ turnstile.reset(tsWidget); }catch(e){}
   }
 });
@@ -247,7 +282,7 @@ async function loadSiteData(){
     ALL=Object.fromEntries(items.map(i=>[i.id,i]));
     $("#statItems").textContent=items.length; renderCatalogue(); renderQuote();
   }
-  if(!c.error&&c.data.length){ for(const r of c.data) if(r.key in CONTENT_DEFAULTS) TEXT[r.key]=r.value; applyText(); }
+  if(!c.error&&c.data.length){ for(const r of c.data) if(r.key in CONTENT_DEFAULTS) TEXT[r.key]=r.value; applyText(); buildCats(); setFilter(filter); }
 }
 
 buildSlides(); restart(); renderCatalogue(); renderQuote(); icons();

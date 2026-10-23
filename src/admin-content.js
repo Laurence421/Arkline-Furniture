@@ -1,5 +1,5 @@
 // /admin "Prices" and "Website text" tabs: edit the products table and the site_content table.
-import { fromRow } from "./data.js";
+import { fromRow, ORDER } from "./data.js";
 import { CONTENT_DEFAULTS, CONTENT_SECTIONS } from "./content.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
@@ -136,7 +136,39 @@ const keysOf = s => s.list?[s.list]:s.fields.map(f=>f[0]);
 export async function loadText(){
   const {data,error}=await supabase.from("site_content").select("key,value");
   if(error){ show($("#terr"),missingTable(error)?MIGRATE:"Couldn't load the text: "+error.message); return; }
-  show($("#terr")); saved=Object.fromEntries(data.map(r=>[r.key,r.value])); renderText();
+  show($("#terr")); saved=Object.fromEntries(data.map(r=>[r.key,r.value])); renderText(); renderFrom();
+}
+
+/* "Starts at" prices per gallery category (site_content key gallery.from) */
+function renderFrom(){
+  const g=saved["gallery.from"]||{};
+  $("#gfrom").innerHTML=`<div class="gfrom">${ORDER.map(c=>`<div class="gfrow"><b>${c}</b>
+      <label class="sr" style="gap:4px;font-size:.78rem">From (₱)<input type="number" inputmode="numeric" min="1" step="1" data-gp="${c}" value="${g[c]?.price??""}" placeholder="e.g. 18000"></label>
+      <label class="sr" style="gap:4px;font-size:.78rem">Unit <span class="hint">optional</span><input data-gu="${c}" maxlength="30" value="${esc(g[c]?.unit??"")}" placeholder="per seat"></label></div>`).join("")}</div>
+    <p class="err" hidden></p>
+    <div class="tf-foot"><button class="btn btn-primary" type="submit"><i data-lucide="save"></i><span>Save starting prices</span></button></div>`;
+  icons();
+}
+function bindFrom(){
+  $("#gfrom").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const f=e.target, err=f.querySelector(".err"), g={};
+    for(const c of ORDER){
+      const v=f.querySelector(`[data-gp="${CSS.escape(c)}"]`).value, u=f.querySelector(`[data-gu="${CSS.escape(c)}"]`).value.trim();
+      if(!v) continue;
+      if(!Number.isInteger(+v)||+v<1) return fail(err,`${c}: use a whole peso amount, or leave it empty.`);
+      g[c]={price:+v,...(u&&{unit:u})};
+    }
+    err.hidden=true;
+    const btn=f.querySelector("[type=submit]"); busy(btn,true,"Saving…");
+    const {error}=Object.keys(g).length
+      ?await supabase.from("site_content").upsert({key:"gallery.from",value:g,updated_at:new Date().toISOString()})
+      :await supabase.from("site_content").delete().eq("key","gallery.from");
+    busy(btn,false,"Save starting prices");
+    if(error) return fail(err,/check constraint|violates/i.test(error.message)?"This needs one database update: run supabase/004_orders_and_liked_photos.sql in the Supabase SQL Editor.":"Couldn't save: "+error.message);
+    if(Object.keys(g).length) saved["gallery.from"]=g; else delete saved["gallery.from"];
+    toast("Starting prices saved. They're live on the website.");
+  });
 }
 const TOOLS=`<div class="rep-tools"><button type="button" class="mini" data-mv="-1" title="Move up" aria-label="Move up"><i data-lucide="arrow-up"></i></button><button type="button" class="mini" data-mv="1" title="Move down" aria-label="Move down"><i data-lucide="arrow-down"></i></button><button type="button" class="mini" data-rm-row title="Remove" aria-label="Remove"><i data-lucide="x"></i></button></div>`;
 function rowHtml(s,r){
@@ -206,4 +238,4 @@ function bindText(){
   });
 }
 
-export function initContentTabs(showToast){ toast=showToast; bindPrices(); bindText(); }
+export function initContentTabs(showToast){ toast=showToast; bindPrices(); bindText(); bindFrom(); }

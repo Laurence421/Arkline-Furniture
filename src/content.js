@@ -4,7 +4,7 @@ export const CONTENT_DEFAULTS = {
   "hero.location": "Novaliches, Quezon City",
   "hero.title": "Building spaces that inspire *productivity.*",
   "hero.lede": "Custom and ready-made furniture for offices, homes, commercial and institutional projects. We design, fabricate, deliver and install.",
-  "shop.lede": "Add items to your list and send it to us. Final prices depend on size, laminate finish and customization.",
+  "shop.lede": "Add items to your order and send it to us. Final prices depend on size, laminate finish and customization.",
   "services": [
     { t: "Office furniture", items: ["Executive tables & workstations", "Cubicle and glass partitions", "Conference tables", "Reception counters", "Cabinets & mobile pedestals"] },
     { t: "Home furniture", items: ["Kitchen cabinets", "Wardrobes and closets", "TV cabinets", "Bedroom, living & dining", "Custom home storage"] },
@@ -14,7 +14,7 @@ export const CONTENT_DEFAULTS = {
   "about.title": "Furniture that works as hard as *you do*.",
   "about.lead": "Arkline Home and Office Furniture Shop is a trusted provider of high-quality, customized and ready-made furniture for homes, offices, commercial establishments and institutional projects. We design, manufacture and supply functional, durable and modern furniture that improves productivity, comfort and aesthetics.",
   "steps": [
-    { t: "Ask for a price", d: "Send your layout, sizes or your list. We reply with the full price and details." },
+    { t: "Order or ask for a price", d: "Order from the shop, or send your layout and sizes for custom work. We reply with the full price and details." },
     { t: "Confirm with 70% down", d: "The balance is paid before delivery unless otherwise agreed." },
     { t: "Production", d: "Lead time starts once the down payment and final specs are approved." },
     { t: "Delivery & setup", d: "Schedules depend on weather, site access and unforeseen circumstances." },
@@ -32,7 +32,9 @@ export const CONTENT_DEFAULTS = {
   "contact.mobiles": ["0962 269 8229", "0927 343 6747", "0964 823 2183"],
   "contact.email": "arklinehomeandofficefurnitures@gmail.com",
   "contact.reply": "We usually reply within one business day.",
-  "footer.tagline": "Creating functional spaces, delivering quality furniture solutions."
+  "footer.tagline": "Creating functional spaces, delivering quality furniture solutions.",
+  // "Starts at" price per gallery category, set in /admin → Prices. { "Workstation": { price: 18000, unit: "per seat" } }
+  "gallery.from": {}
 };
 
 // What the admin "Website text" tab shows, in page order.

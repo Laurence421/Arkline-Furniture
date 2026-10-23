@@ -21,19 +21,22 @@ let rows=[], hidden=new Map(), filter="All", bfilter="All";
 let auth, recovering=false, adminEmail="";
 
 // Gmail compose in a new tab, from the signed-in admin's Google account, with a drafted reply.
+// Shop items = an order; only liked photos or a description = a price request.
+const kindOf=q=>{ const o=(q.quote_items||[]).length>0, l=(q.liked_photos||[]).length>0; return o&&l?"Order + price request":o?"Order":"Price request"; };
 function gmailDraft(q){
-  const first=q.full_name.split(" ")[0], items=q.quote_items||[];
+  const first=q.full_name.split(" ")[0], items=q.quote_items||[], liked=q.liked_photos||[], order=items.length>0;
   const est=q.estimate_min===q.estimate_max?peso(q.estimate_min):`${peso(q.estimate_min)} – ${peso(q.estimate_max)}`;
   const body=[
     `Hi ${first},`, "",
-    `Thank you for your price request #${q.id} (${q.project_type}).`, "",
-    ...(items.length?["You asked about:",...items.map(i=>`- ${i.qty} × ${i.id} ${i.name}`),`Estimated total: ${est}`,"(Final price depends on size, laminate finish and customization.)",""]:[]),
+    `Thank you for your ${order?"order":"price request"} #${q.id} (${q.project_type}).`, "",
+    ...(order?["Your order:",...items.map(i=>`- ${i.qty} × ${i.id} ${i.name}`),`Total from our shop prices: ${est}`,""]:[]),
+    ...(liked.length?["You'd like one like these:",...liked.map(l=>`- ${l.cat}: ${new URL(l.src,location.origin).href}`),""]:[]),
     ...(q.message?["Your notes:",`"${q.message}"`,""]:[]),
-    "[Write the full price and details here]", "",
+    order?"[Confirm availability, delivery date, delivery fee and the 70% down payment here]":"[Write the full price and details here]", "",
     "Feel free to reply to this email or call us at 0962 269 8229.", "",
     "Best regards,", "Arkline Home & Office Furniture", "101 Lydia St., Brgy. Sta. Monica, Novaliches, Quezon City"
   ].join("\n");
-  const p=new URLSearchParams({view:"cm",fs:"1",to:q.email,su:`Arkline price for request #${q.id}`,body});
+  const p=new URLSearchParams({view:"cm",fs:"1",to:q.email,su:order?`Arkline order #${q.id}`:`Arkline price for request #${q.id}`,body});
   if(adminEmail) p.set("authuser",adminEmail);
   return "https://mail.google.com/mail/?"+p;
 }
@@ -87,7 +90,7 @@ function card(q){
   const items=(q.quote_items||[]);
   return `<article class="qc st-${q.status}" data-id="${q.id}">
     <div class="qc-top">
-      <div><div class="qc-id">#${q.id} · ${when(q.created_at)}</div><h3>${esc(q.full_name)}</h3><div class="meta">${esc(q.project_type)}${q.mobile?" · "+esc(q.mobile):""}${q.email?" · "+esc(q.email):""}</div></div>
+      <div><div class="qc-id"><span class="kind ${(q.quote_items||[]).length?"order":"price"}">${kindOf(q)}</span> #${q.id} · ${when(q.created_at)}</div><h3>${esc(q.full_name)}</h3><div class="meta">${esc(q.project_type)}${q.mobile?" · "+esc(q.mobile):""}${q.email?" · "+esc(q.email):""}</div></div>
       <select data-status aria-label="Status of request #${q.id}">${Object.entries(STATUS).map(([k,l])=>`<option value="${k}"${k===q.status?" selected":""}>${l}</option>`).join("")}</select>
     </div>
     <div class="acts2">
@@ -97,7 +100,8 @@ function card(q){
     </div>
     ${q.message?`<div class="msg">${esc(q.message)}</div>`:""}
     ${items.length?`<ul class="items">${items.map(i=>`<li><b>${i.qty} ×</b> ${esc(i.id)} ${esc(i.name)}</li>`).join("")}</ul>
-      <div class="est">Estimate ${q.estimate_min===q.estimate_max?peso(q.estimate_min):peso(q.estimate_min)+" – "+peso(q.estimate_max)}</div>`:""}
+      <div class="est">Order total ${q.estimate_min===q.estimate_max?peso(q.estimate_min):peso(q.estimate_min)+" – "+peso(q.estimate_max)}</div>`:""}
+    ${(q.liked_photos||[]).length?`<div class="liked"><div class="hint">Wants one like ${q.liked_photos.length>1?"these":"this"}:</div><div class="lrow">${q.liked_photos.map(l=>`<a href="${esc(l.src)}" target="_blank" rel="noopener" title="${esc(l.cat)}"><img src="${esc(l.src)}" alt="${esc(l.cat)}"><span>${esc(l.cat)}</span></a>`).join("")}</div></div>`:""}
     <label>Notes <span class="hint">Private. Saved when you click away.</span><textarea data-notes maxlength="5000" placeholder="e.g. Called 10/24, sending the price Friday">${esc(q.notes||"")}</textarea></label>
   </article>`;
 }

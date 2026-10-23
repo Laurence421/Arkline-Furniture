@@ -106,3 +106,17 @@
 .btn-danger{background:var(--err);color:var(--on-dark)}
 .btn-danger:hover{transform:translateY(-2px);filter:brightness(1.08)}
 .pc-del{color:var(--err)!important}
+
+/* request type + liked photos */
+.kind{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-right:4px;vertical-align:1px}
+.kind.order{background:hsl(145 45% 32%/.12);color:var(--ok)}
+.kind.price{background:hsl(30 58% 50%/.16);color:var(--walnut)}
+.qc .liked{display:grid;gap:6px}
+.qc .lrow{display:flex;gap:8px;flex-wrap:wrap}
+.qc .lrow a{display:grid;gap:3px;text-decoration:none;font-size:.72rem;font-weight:700;color:var(--muted);width:96px}
+.qc .lrow img{width:96px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+/* starting prices editor */
+.gfrom{display:grid;gap:10px}
+.gfrow{display:grid;grid-template-columns:minmax(140px,1.2fr) 1fr 1fr;gap:10px;align-items:center}
+.gfrow b{font-size:.92rem}
+@media (max-width:600px){.gfrow{grid-template-columns:1fr 1fr}.gfrow b{grid-column:1/-1}}

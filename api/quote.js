@@ -2,7 +2,7 @@
 // Host-neutral: handleQuote(request, env). Cloudflare Pages calls it from functions/api/quote.js;
 // POST below serves Vercel and the Vite dev server.
 import { createClient } from "@supabase/supabase-js";
-import { ALL, PROJECT_TYPES, fromRow, pt } from "../src/data.js";
+import { ALL, BUNDLED, CATS, PROJECT_TYPES, fromRow, pt } from "../src/data.js";
 
 const MAX_PHOTO = 5 * 1024 * 1024;
 const PHOTO_TYPES = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
@@ -33,6 +33,14 @@ export async function handleQuote(request, env) {
   let raw = [];
   try { raw = JSON.parse(field(fd, "items", 4000) || "[]"); } catch {}
   raw = (Array.isArray(raw) ? raw : []).filter(i => typeof i?.id === "string").slice(0, 50);
+
+  // Gallery photos the customer tapped "I want one like this" on: only our own photos are accepted.
+  let liked = [];
+  try { liked = JSON.parse(field(fd, "liked", 4000) || "[]"); } catch {}
+  const bundled = new Set(BUNDLED.map(b => b.src)), uploads = `${env.SUPABASE_URL}/storage/v1/object/public/project-photos/`;
+  liked = (Array.isArray(liked) ? liked : [])
+    .filter(l => CATS[l?.cat] && typeof l.src === "string" && (bundled.has(l.src) || (env.SUPABASE_URL && l.src.startsWith(uploads))))
+    .slice(0, 12).map(l => ({ cat: l.cat, src: l.src }));
 
   // Cloudflare Turnstile: enforced only when the secret is configured.
   if (env.TURNSTILE_SECRET_KEY) {
@@ -73,11 +81,18 @@ export async function handleQuote(request, env) {
     if (error) { console.error("attachment upload", error); return json({ error: "We couldn't upload your photo. Try again, or send without it." }, 502); }
   }
 
-  const { data: row, error } = await db.from("quotation_requests").insert({
+  const record = {
     full_name: name, mobile: okPhone ? phone : null, email: okEmail ? email : null,
     project_type: type, message: message || null, quote_items: items,
-    estimate_min: items.length ? min : null, estimate_max: items.length ? max : null, attachment_path
-  }).select("id, created_at").single();
+    estimate_min: items.length ? min : null, estimate_max: items.length ? max : null, attachment_path, liked_photos: liked
+  };
+  let { data: row, error } = await db.from("quotation_requests").insert(record).select("id, created_at").single();
+  if (error && /liked_photos/.test(error.message)) {
+    // Database not updated yet (004): keep the liked photos in the message instead of losing the request.
+    const { liked_photos, ...rest } = record;
+    if (liked.length) rest.message = [message, "Liked photos: " + liked.map(l => `${l.cat} (${l.src})`).join(", ")].filter(Boolean).join("\n\n");
+    ({ data: row, error } = await db.from("quotation_requests").insert(rest).select("id, created_at").single());
+  }
   if (error) {
     console.error("insert quote", error);
     if (attachment_path) await db.storage.from("quote-attachments").remove([attachment_path]);
@@ -85,7 +100,8 @@ export async function handleQuote(request, env) {
   }
 
   // The lead is saved; a failed alert is logged but never fails the request.
-  try { await notify(env, db, row, { name, phone: okPhone ? phone : "", email: okEmail ? email : "", type, message, items, min, max, attachment_path }); }
+  const origin = new URL(request.url).origin;
+  try { await notify(env, db, row, { name, phone: okPhone ? phone : "", email: okEmail ? email : "", type, message, items, min, max, attachment_path, liked: liked.map(l => ({ ...l, url: new URL(l.src, origin).href })) }); }
   catch (e) { console.error("notify", e); }
 
   return json({ ok: true, id: row.id });
@@ -99,17 +115,21 @@ async function notify(env, db, row, q) {
     const { data } = await db.storage.from("quote-attachments").createSignedUrl(q.attachment_path, 60 * 60 * 24 * 7);
     if (data) photoLink = `<p><a href="${esc(data.signedUrl)}">View reference photo</a> (link works for 7 days)</p>`;
   }
+  const what = q.items.length ? "order" : "price request";
   const list = q.items.length
-    ? `<ul>${q.items.map(i => `<li>${i.qty} × ${esc(i.id)} ${esc(i.name)}</li>`).join("")}</ul><p>Estimated total: ${esc(pt({ min: q.min, max: q.max }))}</p>`
-    : "<p>No catalogue items selected.</p>";
-  const html = `<h2>New price request #${row.id}</h2>
+    ? `<h3>Order</h3><ul>${q.items.map(i => `<li>${i.qty} × ${esc(i.id)} ${esc(i.name)}</li>`).join("")}</ul><p>Total from the shop prices: ${esc(pt({ min: q.min, max: q.max }))}</p>`
+    : "";
+  const likes = q.liked.length
+    ? `<h3>Wants one like these</h3><p>${q.liked.map(l => `<a href="${esc(l.url)}"><img src="${esc(l.url)}" alt="${esc(l.cat)}" width="140" style="border-radius:8px;margin:0 6px 6px 0"></a>`).join("")}</p>`
+    : "";
+  const html = `<h2>New ${what} #${row.id}</h2>
     <p><b>${esc(q.name)}</b> · ${esc(q.type)}</p>
     <p>Mobile: ${esc(q.phone || "—")}<br>Email: ${esc(q.email || "—")}</p>
-    <p style="white-space:pre-wrap">${esc(q.message || "(no message)")}</p>${list}${photoLink}`;
+    <p style="white-space:pre-wrap">${esc(q.message || "(no message)")}</p>${list}${likes}${photoLink}`;
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to, subject: `New price request #${row.id} from ${q.name}`, html, ...(q.email && { reply_to: q.email }) })
+    body: JSON.stringify({ from, to, subject: `New ${what} #${row.id} from ${q.name}`, html, ...(q.email && { reply_to: q.email }) })
   });
   if (!r.ok) throw new Error(`Resend ${r.status}: ${await r.text()}`);
 }
