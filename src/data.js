@@ -9,7 +9,8 @@ export const CATS = {
   "Toilet Partition":[21,22,38,120,169],
   "Kitchen Cabinet":[162,39,53,115,180],
   "Cabinet":[116,11,15,50,54,171],
-  "Printer Table":[20,41,59,140,188]
+  "Printer Table":[20,41,59,140,188],
+  "Operable Wall":[300,301,302,303]
 };
 export const ORDER = Object.keys(CATS);
 export const img = n => "/img/p"+n+".webp";

@@ -2,7 +2,7 @@
 // Host-neutral: handleQuote(request, env). Cloudflare Pages calls it from functions/api/quote.js;
 // POST below serves Vercel and the Vite dev server.
 import { createClient } from "@supabase/supabase-js";
-import { ALL, BUNDLED, CATS, CONTACT_PREFS, PROJECT_TYPES, fromRow, pt } from "../src/data.js";
+import { ALL, BUNDLED, CONTACT_PREFS, PROJECT_TYPES, fromRow, pt } from "../src/data.js";
 
 const MAX_PHOTO = 5 * 1024 * 1024;
 const PHOTO_TYPES = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
@@ -66,7 +66,8 @@ export async function handleQuote(request, env) {
   try { liked = JSON.parse(field(fd, "liked", 4000) || "[]"); } catch {}
   const bundled = new Set(BUNDLED.map(b => b.src)), uploads = `${env.SUPABASE_URL}/storage/v1/object/public/project-photos/`;
   liked = (Array.isArray(liked) ? liked : [])
-    .filter(l => CATS[l?.cat] && typeof l.src === "string" && (bundled.has(l.src) || (env.SUPABASE_URL && l.src.startsWith(uploads))))
+    // the photo must be one of Arkline's own; its category can be any name the admin created
+    .filter(l => typeof l?.cat === "string" && l.cat.length >= 2 && l.cat.length <= 40 && typeof l.src === "string" && (bundled.has(l.src) || (env.SUPABASE_URL && l.src.startsWith(uploads))))
     .slice(0, 12).map(l => ({ cat: l.cat, src: l.src }));
 
   // Cloudflare Turnstile: enforced only when the secret is configured.

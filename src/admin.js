@@ -3,6 +3,7 @@ import "./icons.js";
 // Uploaded photos: projects.deleted_at set = in Trash. Bundled photos: a hidden_photos row = in Trash.
 import { ORDER, BUNDLED, messengerUrl, viberUrl } from "./data.js";
 import { loadProducts, loadText, initContentTabs } from "./admin-content.js";
+import { categories, loadCategories, isBuiltIn, addCategory, deleteCategory } from "./categories.js";
 import { renderAccount, initAccount } from "./admin-account.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
@@ -57,7 +58,8 @@ async function route(session){
   }
   adminEmail=session.user.email; renderAccount(session.user);
   $("#login").hidden=true; $("#app").hidden=false;
-  load(); loadQuotes(); loadProducts(); loadText();
+  load(); loadQuotes(); loadProducts();
+  loadCategories().then(err=>{ renderCats(); if(err) show($("#caterr"),err); render(); loadText(); });
 }
 
 /* tabs */
@@ -209,7 +211,8 @@ async function load(){
   rows=p.data; hidden=new Map(h.data.map(r=>[r.photo,r.created_at]));
   render();
 }
-const chips=(cur,n)=>["All",...ORDER].map(c=>`<button class="chip${c===cur?" on":""}" data-cat="${c}">${c}<small>${n(c)}</small></button>`).join("");
+// uploaded photos can be in any category; the bundled ones only in the built-in ones
+const chips=(cur,n,list=categories())=>["All",...list].map(c=>`<button class="chip${c===cur?" on":""}" data-cat="${esc(c)}">${esc(c)}<small>${n(c)}</small></button>`).join("");
 const tile=(src,cat,label,btn)=>`<div class="tile"><img src="${src}" alt="${esc(label)}" loading="lazy"><span class="tag">${esc(cat)}</span>${btn}</div>`;
 const trashBtn=attr=>`<button class="del" ${attr} aria-label="Move to Trash" title="Move to Trash"><i data-lucide="trash-2"></i></button>`;
 const empty=m=>`<div class="empty"><i data-lucide="image-off"></i><p>${m}</p></div>`;
@@ -226,7 +229,7 @@ function render(){
   const shown=BUNDLED.filter(b=>!hidden.has(b.n));
   const bn=c=>shown.filter(b=>c==="All"||b.cat===c).length;
   $("#bcount").textContent=`${shown.length} of ${BUNDLED.length} showing`;
-  $("#bfilters").innerHTML=chips(bfilter,bn);
+  $("#bfilters").innerHTML=chips(bfilter,bn,ORDER);
   const bvis=shown.filter(b=>bfilter==="All"||b.cat===bfilter);
   $("#blist").innerHTML=bvis.length?bvis.map(b=>tile(b.src,b.cat,b.cat,trashBtn(`data-hide="${b.n}"`))).join("")
     :empty(`All original${bfilter==="All"?"":" "+esc(bfilter)} photos are in Trash.`);
@@ -276,7 +279,31 @@ document.addEventListener("click",async e=>{
 function toast(m){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.innerHTML=`<i data-lucide="check-circle-2"></i>`;t.append(m);document.body.appendChild(t);icons();setTimeout(()=>t.remove(),2300);}
 
 /* upload */
-$("#u-cat").innerHTML=ORDER.map(c=>`<option>${c}</option>`).join("");
+/* categories: pick one for the upload, add a new one, remove one the admin added */
+function renderCats(selected=$("#u-cat").value){
+  $("#u-cat").innerHTML=categories().map(c=>`<option${c===selected?" selected":""}>${esc(c)}</option>`).join("");
+  const own=categories().filter(c=>!isBuiltIn(c));
+  $("#catlist").innerHTML=own.length?own.map(c=>`<span class="catchip">${esc(c)}<button type="button" class="mini" data-delcat="${esc(c)}" title="Remove ${esc(c)}" aria-label="Remove ${esc(c)}"><i data-lucide="x"></i></button></span>`).join(""):`<span class="hint">No added categories yet.</span>`;
+  icons();
+}
+renderCats();
+async function addCat(){
+  const btn=$("#addcat"); busy(btn,true,"Adding…");
+  const err=await addCategory($("#newcat").value);
+  busy(btn,false,"Add category"); show($("#caterr"),err);
+  if(err) return;
+  const name=categories().at(-1); $("#newcat").value=""; renderCats(name); render(); loadText();
+  toast(`"${name}" added. Choose photos and Upload to show it on the website.`);
+}
+$("#addcat").onclick=addCat;
+$("#newcat").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); addCat(); } }); // don't submit the upload form
+$("#catlist").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-delcat]"); if(!b) return;
+  const name=b.dataset.delcat;
+  if(!await confirmDialog({title:`Remove the "${name}" category?`,message:"It disappears from the category list. Photos already in it must be deleted forever first.",confirmLabel:"Remove category",danger:true})) return;
+  const err=await deleteCategory(name); show($("#caterr"),err);
+  if(!err){ renderCats(); render(); loadText(); toast(`"${name}" removed`); }
+});
 $("#u-files").onchange=()=>{
   $("#queue").innerHTML=[...$("#u-files").files].map((f,i)=>`<div class="qitem" id="qi${i}"><img src="${URL.createObjectURL(f)}" alt=""><span>Ready</span></div>`).join("");
 };

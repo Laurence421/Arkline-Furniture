@@ -115,7 +115,16 @@
       </div>
       <form class="q" id="up" novalidate>
         <div class="f2">
-          <label for="u-cat">Category<select id="u-cat" required></select></label>
+          <div class="catpick">
+            <label for="u-cat">Category<select id="u-cat" required></select></label>
+            <details class="catman" id="catman">
+              <summary><i data-lucide="plus"></i>Add or remove a category</summary>
+              <div class="catrow"><input id="newcat" maxlength="40" placeholder="New category, e.g. Operable Wall" aria-label="New category name"><button type="button" class="btn btn-outline" id="addcat"><i data-lucide="plus"></i><span>Add category</span></button></div>
+              <p class="err" id="caterr" role="alert" hidden></p>
+              <div class="catlist" id="catlist"></div>
+              <p class="hint">Built-in categories can't be removed. One you added can be removed once it has no photos.</p>
+            </details>
+          </div>
           <label for="u-cap">Caption <span class="hint">Optional, used as the photo's description</span><input id="u-cap" maxlength="200" placeholder="e.g. 8-seat workstation, Makati office"></label>
         </div>
         <label for="u-files">Photos<input id="u-files" type="file" accept="image/*" multiple required></label>

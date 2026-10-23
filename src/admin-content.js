@@ -1,5 +1,6 @@
 // /admin "Prices" and "Website text" tabs: edit the products table and the site_content table.
-import { fromRow, ORDER, messengerUrl, viberUrl } from "./data.js";
+import { fromRow, messengerUrl, viberUrl } from "./data.js";
+import { categories } from "./categories.js";
 import { CONTENT_DEFAULTS, CONTENT_SECTIONS } from "./content.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
@@ -145,10 +146,10 @@ export async function loadText(){
 /* "Starts at" prices per gallery category (site_content key gallery.from) */
 function renderFrom(){
   const g=saved["gallery.from"]||{};
-  $("#gfrom").innerHTML=`<div class="gfrom">${ORDER.map(c=>`<div class="gfrow"><b>${c}</b>
-      <label class="sr" style="gap:4px;font-size:.78rem">From (₱)<input type="number" inputmode="numeric" min="1" step="1" data-gp="${c}" value="${g[c]?.price??""}" placeholder="e.g. 18000"></label>
-      <label class="sr" style="gap:4px;font-size:.78rem">Unit<input data-gu="${c}" maxlength="30" value="${esc(g[c]?.unit??"")}" placeholder="per seat (optional)"></label>
-      <button type="button" class="mini gclear" data-gclear="${c}" title="Clear ${c}" aria-label="Clear the ${c} price"><i data-lucide="x"></i></button></div>`).join("")}</div>
+  $("#gfrom").innerHTML=`<div class="gfrom">${categories().map(c=>`<div class="gfrow"><b>${esc(c)}</b>
+      <label class="sr" style="gap:4px;font-size:.78rem">From (₱)<input type="number" inputmode="numeric" min="1" step="1" data-gp="${esc(c)}" value="${g[c]?.price??""}" placeholder="e.g. 18000"></label>
+      <label class="sr" style="gap:4px;font-size:.78rem">Unit<input data-gu="${esc(c)}" maxlength="30" value="${esc(g[c]?.unit??"")}" placeholder="per seat (optional)"></label>
+      <button type="button" class="mini gclear" data-gclear="${esc(c)}" title="Clear ${esc(c)}" aria-label="Clear the ${esc(c)} price"><i data-lucide="x"></i></button></div>`).join("")}</div>
     <p class="err" hidden></p>
     <div class="tf-foot"><button class="btn btn-primary" type="submit"><i data-lucide="save"></i><span>Save starting prices</span></button>
       <button type="button" class="btn btn-outline" data-gclearall><i data-lucide="x"></i>Clear all</button>
@@ -161,13 +162,13 @@ function bindFrom(){
   // ✕ empties one row, Clear all empties every row; nothing changes on the website until Save.
   $("#gfrom").addEventListener("click",e=>{
     const one=e.target.closest("[data-gclear]"), all=e.target.closest("[data-gclearall]"); if(!one&&!all) return;
-    for(const c of all?ORDER:[one.dataset.gclear]) for(const a of ["gp","gu"]) $("#gfrom").querySelector(`[data-${a}="${CSS.escape(c)}"]`).value="";
+    for(const c of all?categories():[one.dataset.gclear]) for(const a of ["gp","gu"]) $("#gfrom").querySelector(`[data-${a}="${CSS.escape(c)}"]`).value="";
     dirty(true);
   });
   $("#gfrom").addEventListener("submit",async e=>{
     e.preventDefault();
     const f=e.target, err=f.querySelector(".err"), g={};
-    for(const c of ORDER){
+    for(const c of categories()){
       const v=f.querySelector(`[data-gp="${CSS.escape(c)}"]`).value, u=f.querySelector(`[data-gu="${CSS.escape(c)}"]`).value.trim();
       if(!v) continue;
       if(!Number.isInteger(+v)||+v<1) return fail(err,`${c}: use a whole peso amount, or leave it empty.`);

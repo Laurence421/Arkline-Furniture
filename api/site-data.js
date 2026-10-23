@@ -22,11 +22,12 @@ export async function handleSiteData(request, env) {
 
 async function load(url, key) {
   const db = createClient(url, key, { auth: { persistSession: false } });
-  const [p, h, pr, c] = await Promise.all([
+  const [p, h, pr, c, cat] = await Promise.all([
     db.from("projects").select("category,storage_path,caption").is("deleted_at", null).order("created_at", { ascending: false }),
     db.from("hidden_photos").select("photo"),
     db.from("products").select("*").eq("visible", true).order("sort").order("id"),
-    db.from("site_content").select("key,value")
+    db.from("site_content").select("key,value"),
+    db.from("categories").select("name").order("sort").order("created_at")
   ]);
   if ([p, h, pr, c].every(r => r.error)) throw new Error(p.error.message);
   const base = `${url}/storage/v1/object/public/project-photos/`;
@@ -35,6 +36,7 @@ async function load(url, key) {
     projects: p.error ? null : p.data.map(r => ({ src: base + r.storage_path, cat: r.category, alt: r.caption })),
     hidden: h.error ? null : h.data.map(r => r.photo),
     products: pr.error ? null : pr.data,
-    content: c.error ? null : c.data
+    content: c.error ? null : c.data,
+    categories: cat.error ? null : cat.data.map(r => r.name)
   };
 }

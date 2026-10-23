@@ -12,7 +12,10 @@ const $ = s => document.querySelector(s);
 // Uploads from /admin come first, then bundled photos minus the ones an admin deleted (loadRemote).
 let PHOTOS = BUNDLED;
 const count = c => c==="All" ? PHOTOS.length : PHOTOS.filter(p=>p.cat===c).length;
-const cover = c => PHOTOS.find(p=>p.cat===c)?.src || img(CATS[c][0]);
+const cover = c => PHOTOS.find(p=>p.cat===c)?.src || (CATS[c] ? img(CATS[c][0]) : "");
+// Category order: the admin's list from the database (built-in ones first until it loads). Only categories with photos show.
+let CATEGORIES = [...ORDER];
+const shownCats = () => CATEGORIES.filter(c => count(c) > 0);
 const alt = p => p.alt || p.cat+" completed by Arkline";
 
 /* hero slideshow */
@@ -36,13 +39,13 @@ const saveLikes=()=>{try{localStorage.setItem("ark-likes",JSON.stringify(likes))
 const isLiked=p=>likes.some(l=>l.src===p.src);
 const fromLabel=c=>{const f=(TEXT["gallery.from"]||{})[c]; return f&&f.price?`from ${pt({min:f.price,max:f.price})}${f.unit?" "+f.unit:""}`:"";};
 function buildCats(){
-  $("#cats").innerHTML = ORDER.map(c=>`<button class="cat" data-go="${c}"><img src="${cover(c)}" alt="${c} project" loading="lazy"><span class="lbl"><b>${c}${fromLabel(c)?`<small class="from">${esc(fromLabel(c))}</small>`:""}</b><span>${count(c)} photos</span></span></button>`).join("");
-  $("#filters").innerHTML = ["All",...ORDER].map(c=>`<button class="chip" data-cat="${c}">${c}<small>${count(c)}</small></button>`).join("");
+  $("#cats").innerHTML = shownCats().map(c=>`<button class="cat" data-go="${esc(c)}"><img src="${cover(c)}" alt="${esc(c)} project" loading="lazy"><span class="lbl"><b>${esc(c)}${fromLabel(c)?`<small class="from">${esc(fromLabel(c))}</small>`:""}</b><span>${count(c)} photos</span></span></button>`).join("");
+  $("#filters").innerHTML = ["All",...shownCats()].map(c=>`<button class="chip" data-cat="${esc(c)}">${esc(c)}<small>${count(c)}</small></button>`).join("");
 }
 $("#cats").onclick=e=>{const b=e.target.closest("[data-go]"); if(!b) return; setFilter(b.dataset.go); $("#projects").scrollIntoView();};
 $("#filters").onclick=e=>{const b=e.target.closest("[data-cat]"); if(b) setFilter(b.dataset.cat);};
 function buildGallery(){
-  $("#gallery").innerHTML = PHOTOS.map((p,i)=>`<button class="tile${isLiked(p)?" liked":""}" data-i="${i}" aria-label="View ${p.cat} photo"><img src="${p.src}" alt="${esc(alt(p))}" loading="lazy"><span class="tag">${p.cat}</span><span class="heart" aria-hidden="true"><i data-lucide="heart"></i></span><span class="zoom"><i data-lucide="maximize-2"></i></span></button>`).join("");
+  $("#gallery").innerHTML = PHOTOS.map((p,i)=>`<button class="tile${isLiked(p)?" liked":""}" data-i="${i}" aria-label="View ${esc(p.cat)} photo"><img src="${p.src}" alt="${esc(alt(p))}" loading="lazy"><span class="tag">${esc(p.cat)}</span><span class="heart" aria-hidden="true"><i data-lucide="heart"></i></span><span class="zoom"><i data-lucide="maximize-2"></i></span></button>`).join("");
   icons();
 }
 $("#gallery").onclick=e=>{const t=e.target.closest(".tile"); if(t) openLb(PHOTOS[+t.dataset.i]);};
@@ -63,7 +66,8 @@ const siteData=fetch("/api/site-data").then(r=>r.ok?r.json():null).catch(()=>nul
 function applyGallery(d){
   if(!d?.projects||!d?.hidden) return;
   const hidden=new Set(d.hidden);
-  PHOTOS=[...d.projects.filter(p=>CATS[p.cat]),...BUNDLED.filter(b=>!hidden.has(b.n))];
+  if(d.categories?.length) CATEGORIES=[...d.categories,...ORDER.filter(c=>!d.categories.includes(c))];
+  PHOTOS=[...d.projects,...BUNDLED.filter(b=>!hidden.has(b.n))];
 }
 // Wait briefly for admin changes so deleted photos don't flash in, then render regardless.
 async function initGallery(){
