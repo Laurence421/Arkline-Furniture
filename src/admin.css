@@ -1,0 +1,25 @@
+/* Admin page: reuses the site tokens and components from styles.css. */
+.admin{padding-block:40px 80px;display:grid;gap:56px}
+.panel{max-width:440px;margin:40px auto 0;box-shadow:var(--shadow-card);border:1px solid var(--line)}
+.panel .sub{color:var(--muted);font-size:.92rem;margin-top:4px}
+.admin form.q{box-shadow:var(--shadow-card);border:1px solid var(--line)}
+.admin h2{font-size:clamp(1.8rem,3.6vw,2.6rem)}
+.count{font-family:var(--f-body);font-size:1rem;color:var(--muted);font-weight:700;letter-spacing:0}
+.queue{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.queue:empty{display:none}
+.qitem{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:var(--muted-bg)}
+.qitem img{width:100%;height:100%;object-fit:cover}
+.qitem span{position:absolute;inset:auto 0 0;padding:4px 8px;font-size:.72rem;font-weight:700;background:hsl(36 33% 96%/.92)}
+.qitem.done span{color:var(--ok)} .qitem.fail span{color:var(--err)}
+.tile .del{position:absolute;right:12px;top:12px;width:38px;height:38px;border-radius:50%;border:0;background:hsl(36 33% 96%/.92);color:var(--err);display:grid;place-items:center}
+.tile .del svg{width:18px;height:18px}
+.tile .del:hover{background:var(--err);color:var(--on-dark)}
+.tile.off img{opacity:.35;filter:grayscale(1)}
+.tile .acts{position:absolute;inset:auto 12px 12px;display:flex;gap:8px;flex-wrap:wrap}
+.tile .acts button{border:0;border-radius:999px;padding:7px 14px;font-size:.8rem;font-weight:700;display:inline-flex;gap:6px;align-items:center;background:var(--ink);color:var(--on-dark)}
+.tile .acts .forever{background:hsl(36 33% 96%/.92);color:var(--err)}
+.tile .acts .forever:hover{background:var(--err);color:var(--on-dark)}
+.tile .acts svg{width:15px;height:15px}
+.admin .tile{cursor:default}
+.admin .tile:hover img{transform:none}
+.admin .empty{grid-column:1/-1}

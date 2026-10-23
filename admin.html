@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Arkline Admin</title>
+<link rel="icon" type="image/png" href="/img/logo-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/src/styles.css">
+<link rel="stylesheet" href="/src/admin.css">
+<script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="Back to the Arkline site">
+      <img src="/img/logo-mark.png" alt="Arkline logo" width="56" height="50">
+      <div><b>ARK<span>LINE</span></b><small>Project uploads</small></div>
+    </a>
+    <button class="btn btn-outline" id="logout" hidden><i data-lucide="log-out"></i>Sign out</button>
+  </div>
+</header>
+
+<main class="wrap admin">
+  <p class="err" id="cfg" hidden>Supabase isn't configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then rebuild.</p>
+
+  <form class="q panel" id="login" hidden novalidate>
+    <div><h3 style="font-size:1.5rem">Sign in</h3><p class="sub">Use the admin account Arkline was given.</p></div>
+    <label for="l-email">Email<input id="l-email" type="email" autocomplete="username" required></label>
+    <label for="l-pass">Password<input id="l-pass" type="password" autocomplete="current-password" required></label>
+    <p class="err" id="lerr" role="alert" hidden></p>
+    <button class="btn btn-primary" type="submit" id="lbtn"><i data-lucide="log-in"></i><span>Sign in</span></button>
+  </form>
+
+  <div id="app" hidden>
+    <section class="panel-wrap">
+      <div class="head" style="margin-bottom:24px">
+        <span class="pill"><i data-lucide="image-plus"></i>Add project photos</span>
+        <h2>Upload completed <span class="grad">work</span></h2>
+        <p>Photos are resized and converted to WebP before upload, about 150–250 KB each. They appear on the site's Projects gallery right away.</p>
+      </div>
+      <form class="q" id="up" novalidate>
+        <div class="f2">
+          <label for="u-cat">Category<select id="u-cat" required></select></label>
+          <label for="u-cap">Caption <span class="hint">Optional, used as the photo's description</span><input id="u-cap" maxlength="200" placeholder="e.g. 8-seat workstation, Makati office"></label>
+        </div>
+        <label for="u-files">Photos<input id="u-files" type="file" accept="image/*" multiple required></label>
+        <div class="queue" id="queue"></div>
+        <p class="err" id="uerr" role="alert" hidden></p>
+        <button class="btn btn-primary" type="submit" id="ubtn"><i data-lucide="upload"></i><span>Upload</span></button>
+      </form>
+    </section>
+
+    <section class="panel-wrap">
+      <div class="head" style="margin-bottom:20px">
+        <span class="pill"><i data-lucide="images"></i>Uploaded</span>
+        <h2>On the site <small class="count" id="count"></small></h2>
+        <p>Photos uploaded through this page. Delete moves a photo to Trash.</p>
+      </div>
+      <div class="filters" id="afilters"></div>
+      <div class="gallery" id="list"></div>
+    </section>
+
+    <section class="panel-wrap">
+      <div class="head" style="margin-bottom:20px">
+        <span class="pill"><i data-lucide="folder-open"></i>Original photos</span>
+        <h2>Bundled with the site <small class="count" id="bcount"></small></h2>
+        <p>The photos the website launched with. Delete moves a photo to Trash.</p>
+      </div>
+      <div class="filters" id="bfilters"></div>
+      <div class="gallery" id="blist"></div>
+    </section>
+
+    <section class="panel-wrap" id="trash">
+      <div class="head" style="margin-bottom:20px">
+        <span class="pill"><i data-lucide="trash-2"></i>Trash</span>
+        <h2>Deleted photos <small class="count" id="tcount"></small></h2>
+        <p>Not shown on the website. Restore puts a photo back in the gallery. Uploaded photos can also be deleted forever.</p>
+      </div>
+      <div class="gallery" id="tlist"></div>
+    </section>
+  </div>
+</main>
+
+<script type="module" src="/src/admin.js"></script>
+</body>
+</html>

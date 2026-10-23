@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Arkline Home &amp; Office Furniture | Novaliches, Quezon City</title>
+<meta name="description" content="Custom and ready-made office, home, commercial and institutional furniture. Arkline designs, fabricates, delivers and installs. Request a free quotation.">
+<meta name="theme-color" content="#f7f3ee">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Arkline Home & Office Furniture">
+<meta property="og:description" content="Building spaces that inspire productivity. Custom furniture from Novaliches, Quezon City.">
+<meta property="og:image" content="/img/p186.jpg">
+<link rel="icon" type="image/png" href="/img/logo-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/src/styles.css">
+<script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FurnitureStore","name":"Arkline Home and Office Furniture Shop",
+ "address":{"@type":"PostalAddress","streetAddress":"101 Lydia St., Brgy. Sta. Monica","addressLocality":"Novaliches, Quezon City","addressCountry":"PH"},
+ "telephone":"+639622698229","email":"arklinehomeandofficefurnitures@gmail.com","priceRange":"₱₱"}
+</script>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Arkline home">
+      <img src="/img/logo-mark.png" alt="Arkline logo" width="56" height="50">
+      <div><b>ARK<span>LINE</span></b><small>Home &amp; Office Furniture</small></div>
+    </a>
+    <nav class="links" id="links">
+      <a href="#projects">Projects</a><a href="#shop">Shop</a><a href="#services">Services</a><a href="#about">About</a><a href="#faq">FAQs</a><a href="#contact">Contact</a>
+    </nav>
+    <button class="btn btn-dark qbtn" id="openQ" aria-label="Open quote list"><i data-lucide="clipboard-list"></i><span class="lbl">Quote</span><span class="badge" id="qc">0</span></button>
+    <button class="menu" id="menu" aria-expanded="false" aria-controls="links" aria-label="Menu"><i data-lucide="menu"></i></button>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="slides" id="slides"></div>
+  <div class="wrap">
+    <span class="pill fade-up"><i data-lucide="map-pin"></i>Novaliches, Quezon City</span>
+    <h1 class="fade-up d1">Building spaces that inspire <span class="grad">productivity.</span></h1>
+    <p class="lede fade-up d2">Custom and ready-made furniture for offices, homes, commercial and institutional projects. We design, fabricate, deliver and install.</p>
+    <div class="ctas fade-up d3">
+      <a class="btn btn-primary" href="#projects"><i data-lucide="images"></i>View our projects</a>
+      <a class="btn btn-glass" href="#contact"><i data-lucide="message-circle"></i>Free consultation</a>
+    </div>
+    <div class="hero-foot fade-up d4">
+      <div class="stats">
+        <div><b>9</b><span>project types</span></div>
+        <div><b>27</b><span>catalogue items</span></div>
+        <div><b>24h</b><span>delivery inspection window</span></div>
+      </div>
+      <div class="dots"><span class="slide-cap" id="slideCap"></span><span id="dots" class="dots"></span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="head center">
+      <span class="pill"><i data-lucide="layout-grid"></i>What we build</span>
+      <h2>Explore by <span class="grad">category</span></h2>
+      <p>Pick a type to see the finished installations we've delivered.</p>
+    </div>
+    <div class="cats" id="cats"></div>
+  </div>
+</section>
+
+<section id="projects" class="alt">
+  <div class="wrap">
+    <div class="head">
+      <span class="pill"><i data-lucide="badge-check"></i>Projects done</span>
+      <h2>Take a look at the <span class="grad">work</span> we've done.</h2>
+      <p>Quality furniture solutions, built for comfort, productivity and style. Tap any photo to view it full screen.</p>
+    </div>
+    <div class="filters" id="filters" role="toolbar" aria-label="Filter projects"></div>
+    <div class="gallery" id="gallery"></div>
+    <div class="more"><button class="btn btn-outline" id="moreBtn"><i data-lucide="plus"></i>Show more projects</button></div>
+  </div>
+</section>
+
+<section id="shop">
+  <div class="wrap">
+    <div class="head">
+      <span class="pill"><i data-lucide="shopping-bag"></i>Shop now</span>
+      <h2>Chairs and office tables, <span class="grad">priced</span>.</h2>
+      <p>Add items to your quote list and send it to us. Final prices depend on size, laminate finish and customization.</p>
+    </div>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="chairs">Ergonomic chairs</button>
+      <button role="tab" aria-selected="false" data-tab="tables">Office tables</button>
+    </div>
+    <div id="pane-chairs" class="grid"></div>
+    <div id="pane-tables" hidden>
+      <p class="note"><i data-lucide="ruler"></i>Top-view plans share one scale so you can compare sizes. Grid squares are 300 mm.</p>
+      <div class="grid" id="tgrid"></div>
+    </div>
+  </div>
+</section>
+
+<section id="services" class="alt">
+  <div class="wrap">
+    <div class="head center">
+      <span class="pill"><i data-lucide="hammer"></i>Services</span>
+      <h2>From one desk to a full <span class="grad">fit-out</span>.</h2>
+    </div>
+    <div class="svc">
+      <div class="card"><div class="ico"><i data-lucide="briefcase"></i></div><h3>Office furniture</h3><ul><li><i data-lucide="check"></i>Executive tables &amp; workstations</li><li><i data-lucide="check"></i>Cubicle and glass partitions</li><li><i data-lucide="check"></i>Conference tables</li><li><i data-lucide="check"></i>Reception counters</li><li><i data-lucide="check"></i>Cabinets &amp; mobile pedestals</li></ul></div>
+      <div class="card"><div class="ico"><i data-lucide="sofa"></i></div><h3>Home furniture</h3><ul><li><i data-lucide="check"></i>Kitchen cabinets</li><li><i data-lucide="check"></i>Wardrobes and closets</li><li><i data-lucide="check"></i>TV cabinets</li><li><i data-lucide="check"></i>Bedroom, living &amp; dining</li><li><i data-lucide="check"></i>Custom home storage</li></ul></div>
+      <div class="card"><div class="ico"><i data-lucide="building-2"></i></div><h3>Commercial &amp; institutional</h3><ul><li><i data-lucide="check"></i>Toilet partitions</li><li><i data-lucide="check"></i>School &amp; library furniture</li><li><i data-lucide="check"></i>Training tables</li><li><i data-lucide="check"></i>Retail display fixtures</li><li><i data-lucide="check"></i>Custom commercial interiors</li></ul></div>
+      <div class="card"><div class="ico"><i data-lucide="pencil-ruler"></i></div><h3>Custom solutions</h3><ul><li><i data-lucide="check"></i>Design consultation</li><li><i data-lucide="check"></i>Space planning</li><li><i data-lucide="check"></i>Furniture fabrication</li><li><i data-lucide="check"></i>Installation services</li><li><i data-lucide="check"></i>Project management</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap split">
+    <div class="photo">
+      <img src="/img/p34.jpg" alt="Executive office with custom desk and wall cabinets by Arkline" loading="lazy">
+      <div class="logo-card"><img src="/img/logo.png" alt="Arkline Home and Office Furniture Shop logo"></div>
+    </div>
+    <div>
+      <span class="pill"><i data-lucide="sparkles"></i>About us</span>
+      <h2 style="margin-top:16px">Furniture that works as hard as <span class="grad">you do</span>.</h2>
+      <p class="lead">Arkline Home and Office Furniture Shop is a trusted provider of high-quality, customized and ready-made furniture for homes, offices, commercial establishments and institutional projects. We design, manufacture and supply functional, durable and modern furniture that improves productivity, comfort and aesthetics.</p>
+      <div class="feats" style="margin-top:32px">
+        <div class="feat"><div class="ico"><i data-lucide="ruler"></i></div><h3>Customized solutions</h3><p>Every project is tailored to your space, requirements and budget.</p></div>
+        <div class="feat"><div class="ico"><i data-lucide="wallet"></i></div><h3>Competitive pricing</h3><p>Cost-effective furniture without compromising quality.</p></div>
+        <div class="feat"><div class="ico"><i data-lucide="truck"></i></div><h3>Delivery &amp; setup</h3><p>Reliable delivery and professional installation.</p></div>
+        <div class="feat"><div class="ico"><i data-lucide="headset"></i></div><h3>Customer support</h3><p>We're here to help at every step.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="head center">
+      <span class="pill"><i data-lucide="list-checks"></i>How to order</span>
+      <h2>Five steps from quote to <span class="grad">installed</span>.</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>Request a quotation</h3><p>Send your layout, sizes or your quote list. We reply with a formal quotation.</p></div>
+      <div class="step"><h3>Confirm with 70% down</h3><p>The balance is paid before delivery unless otherwise agreed.</p></div>
+      <div class="step"><h3>Production</h3><p>Lead time starts once the down payment and final specs are approved.</p></div>
+      <div class="step"><h3>Delivery &amp; setup</h3><p>Schedules depend on weather, site access and unforeseen circumstances.</p></div>
+      <div class="step"><h3>Inspect within 24h</h3><p>Check items on delivery and report any concern within 24 hours.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap faq">
+    <div class="head" style="margin:0">
+      <span class="pill"><i data-lucide="circle-help"></i>FAQs &amp; terms</span>
+      <h2>Good to know <span class="grad">before</span> you order.</h2>
+      <p>Still unsure? Message us and we'll walk you through it.</p>
+      <a class="btn btn-dark" href="#contact" style="justify-self:start;margin-top:8px"><i data-lucide="send"></i>Ask a question</a>
+    </div>
+    <div class="acc">
+      <details open><summary>How do I request the updated furniture pricelist?<i data-lucide="plus"></i></summary><p>Message us by email or on our Facebook page, or use the quotation form below. Tell us what furniture you need and we'll send the current pricelist.</p></details>
+      <details><summary>How do I make an order?<i data-lucide="plus"></i></summary><p>Request a quotation, approve the specifications, then pay the 70% down payment to confirm. Production starts after that.</p></details>
+      <details><summary>How do I make a payment?<i data-lucide="plus"></i></summary><p>A 70% down payment confirms all orders. The remaining balance is paid before delivery unless otherwise agreed. Payment details come with your quotation.</p></details>
+      <details><summary>Can I change my order after confirming?<i data-lucide="plus"></i></summary><p>Yes, but changes after confirmation may affect the price and delivery schedule.</p></details>
+      <details><summary>Can I cancel a customized order?<i data-lucide="plus"></i></summary><p>Customized and made-to-order items are non-refundable and non-cancellable once production has started.</p></details>
+      <details><summary>What does the warranty cover?<i data-lucide="plus"></i></summary><p>Manufacturing defects only. It doesn't cover damage from misuse, accidents or improper handling.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="contact">
+  <div class="wrap cgrid">
+    <div>
+      <span class="pill"><i data-lucide="phone"></i>Contact us</span>
+      <h2 style="margin-top:16px">Let's build your <span class="grad">ideal</span> workspace.</h2>
+      <p style="color:var(--on-dark-muted);margin-top:16px;max-width:46ch">Reach out for inquiries, quotations or any help you need. From planning to installation, we've got you covered.</p>
+      <div class="info">
+        <div class="irow"><div class="i"><i data-lucide="map-pin"></i></div><div><div class="k">Office address</div><div class="v">101 Lydia St., Brgy. Sta. Monica, Novaliches, Quezon City</div></div></div>
+        <div class="irow"><div class="i"><i data-lucide="smartphone"></i></div><div><div class="k">Mobile</div>
+          <div class="v">0962 269 8229 <button class="copy" data-copy="0962 269 8229">Copy</button></div>
+          <div class="v">0927 343 6747 <button class="copy" data-copy="0927 343 6747">Copy</button></div>
+          <div class="v">0964 823 2183 <button class="copy" data-copy="0964 823 2183">Copy</button></div></div></div>
+        <div class="irow"><div class="i"><i data-lucide="mail"></i></div><div style="min-width:0"><div class="k">Email</div><div class="v">arklinehomeandofficefurnitures@gmail.com <button class="copy" data-copy="arklinehomeandofficefurnitures@gmail.com">Copy</button></div></div></div>
+      </div>
+    </div>
+    <form class="q" id="qform" novalidate>
+      <div><h3 style="font-size:1.5rem">Request a free quotation</h3><p style="color:var(--muted);font-size:.92rem;margin-top:4px">Tell us what you need and we'll send a formal quotation.</p></div>
+      <div class="f2">
+        <label for="f-name">Full name<input id="f-name" name="name" autocomplete="name" maxlength="120" placeholder="Juan Dela Cruz"></label>
+        <label for="f-phone">Mobile number<input id="f-phone" name="phone" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="09XX XXX XXXX"></label>
+      </div>
+      <div class="f2">
+        <label for="f-email">Email<input id="f-email" name="email" type="email" autocomplete="email" maxlength="200" placeholder="you@company.com"></label>
+        <label for="f-type">Project type<select id="f-type" name="type"><option>Office fit-out</option><option>Home furniture</option><option>Commercial / institutional</option><option>Single items</option></select></label>
+      </div>
+      <label for="f-msg">Tell us about your space<textarea id="f-msg" name="message" maxlength="5000" placeholder="e.g. 12-seat workstation for a 60 sqm office, gray laminate"></textarea></label>
+      <label for="f-photo">Reference photo <span class="hint">Optional. A layout, sketch or photo of furniture you like.</span><input id="f-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/heic"></label>
+      <label class="hp" aria-hidden="true">Website<input id="f-web" name="website" tabindex="-1" autocomplete="off"></label>
+      <div class="qsum" id="qsum"></div>
+      <p class="err" id="ferr" role="alert" hidden></p>
+      <button class="btn btn-primary" type="submit" id="qsend"><i data-lucide="send"></i><span>Send request</span></button>
+      <p class="reply-note"><i data-lucide="clock"></i>We usually reply within one business day.</p>
+      <p class="sent" id="fsent" role="status" tabindex="-1" hidden></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div><div class="flogo"><img src="/img/logo.png" alt="Arkline Home and Office Furniture Shop"></div><p style="margin-top:16px;max-width:36ch">Creating functional spaces, delivering quality furniture solutions.</p></div>
+      <div><h4>Quick links</h4><ul><li><a href="#projects">Completed projects</a></li><li><a href="#shop">Shop now</a></li><li><a href="#about">About us</a></li><li><a href="#contact">Contact us</a></li></ul></div>
+      <div><h4>FAQs</h4><ul><li><a href="#faq">Request updated pricelist</a></li><li><a href="#faq">How to make an order</a></li><li><a href="#faq">How to make payment</a></li><li><a href="#faq">Terms &amp; conditions</a></li></ul></div>
+    </div>
+    <div class="fbottom"><span>© 2026 Arkline Home &amp; Office Furniture. All rights reserved.</span><span>101 Lydia St., Novaliches, Quezon City</span></div>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Quote list" aria-hidden="true">
+  <div class="dh"><h3 style="font-size:1.4rem">Your quote list</h3><button class="iconbtn" id="closeQ" aria-label="Close quote list"><i data-lucide="x"></i></button></div>
+  <div class="items" id="qitems"></div>
+  <div>
+    <div class="tot"><span>Estimated total</span><span class="price" id="qtotal">₱0</span></div>
+    <div style="display:grid;gap:10px">
+      <button class="btn btn-primary" id="toForm"><i data-lucide="arrow-right"></i>Continue to quotation</button>
+      <button class="btn btn-outline" id="copyList"><i data-lucide="copy"></i>Copy list as text</button>
+    </div>
+  </div>
+</aside>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Project photo viewer">
+  <div class="bar"><span id="lbCap"></span><button class="x" id="lbX"><i data-lucide="x"></i>Close</button></div>
+  <div class="stage"><img id="lbImg" alt=""><button class="nb prev" id="lbPrev" aria-label="Previous photo"><i data-lucide="chevron-left"></i></button><button class="nb next" id="lbNext" aria-label="Next photo"><i data-lucide="chevron-right"></i></button></div>
+  <div class="strip" id="lbStrip"></div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
