@@ -117,9 +117,12 @@
 .qc .lrow img{width:96px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
 /* starting prices editor */
 .gfrom{display:grid;gap:10px}
-.gfrow{display:grid;grid-template-columns:minmax(140px,1.2fr) 1fr 1fr;gap:10px;align-items:center}
+.gfrow{display:grid;grid-template-columns:minmax(140px,1.2fr) 1fr 1fr 34px;gap:10px;align-items:end}
+.gfrow b{align-self:center}
+.gclear:hover{color:var(--err);border-color:var(--err)}
+.gdirty{color:var(--walnut);font-weight:700}
 .gfrow b{font-size:.92rem}
-@media (max-width:600px){.gfrow{grid-template-columns:1fr 1fr}.gfrow b{grid-column:1/-1}}
+@media (max-width:600px){.gfrow{grid-template-columns:1fr 1fr 34px}.gfrow b{grid-column:1/-1}}
 .kind.pref{background:var(--muted-bg);color:var(--ink)}
 .qc .viber{color:hsl(266 45% 45%);border-color:hsl(266 45% 75%)}
 .qc .msgr{color:hsl(214 89% 45%);border-color:hsl(214 70% 78%)}
@@ -145,3 +148,50 @@ div.q.auth{background:var(--card);color:var(--ink);border:1px solid var(--line);
 .qc-trash .btn{padding:8px 14px;font-size:.85rem}
 .chip.trash{display:inline-flex;align-items:center;gap:6px}
 .chip.trash svg{width:14px;height:14px}
+
+/* ---------- phones and small tablets ---------- */
+/* grid tracks may shrink below their content, so nothing pushes the page wider than the screen */
+.admin,#app,.tabpane{grid-template-columns:minmax(0,1fr)}
+.admin>*,#app>*,.tabpane>*{min-width:0}
+/* tab bar scrolls sideways inside itself instead of widening the page */
+#atabs{max-width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#atabs::-webkit-scrollbar{display:none}
+#atabs button{flex:none;white-space:nowrap}
+.qc-id{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.qc-top>div:first-child{min-width:0}
+.qc .meta{overflow-wrap:anywhere}
+@media (max-width:640px){
+  .admin{padding-block:20px 56px;gap:32px}
+  #app{gap:24px}
+  .tabpane{gap:40px}
+  #atabs{position:sticky;top:calc(72px + env(safe-area-inset-top,0px));z-index:40;box-shadow:var(--shadow-card)}
+  #atabs button{padding:9px 14px;font-size:.85rem}
+  .nav #logout{padding:9px 14px;font-size:.85rem}
+  .admin h2{font-size:1.65rem}
+  .admin .head{gap:10px;margin-bottom:16px!important}
+  .admin .head p{font-size:.95rem}
+  .qc{padding:16px}
+  .qc-top{flex-direction:column;align-items:stretch}
+  .qc-side,.qc-trash{justify-content:space-between}
+  .qc-side select{flex:1}
+  .qc .acts2 .btn{flex:1 1 auto;justify-content:center}
+  .qtools{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .qtools>*{min-width:0}
+  .search{max-width:none}
+  #qfilters,#afilters,#bfilters,#pfilters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  #qfilters .chip,#afilters .chip,#bfilters .chip,#pfilters .chip{flex:none}
+  .admin form.q,div.q.auth{padding:18px;border-radius:18px}
+  .pc-img{grid-auto-flow:column;justify-content:start;align-items:center}
+  .pc-img img,.pc-img .noimg{width:84px;height:84px}
+  .pc-foot{flex-direction:column;align-items:stretch}
+  .pc-foot .acts2{display:flex;width:100%}
+  .pc-foot .acts2 .btn{flex:1}
+  .rep-row{grid-template-columns:1fr;}
+  .rep-tools{flex-direction:row;justify-content:flex-end}
+  .gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .tile .acts{inset:auto 8px 8px}
+  .tile .acts button{padding:6px 10px;font-size:.72rem}
+  .tf-foot{flex-wrap:wrap}
+  .tf-foot .btn{flex:1 1 auto}
+  .cdlg-acts .btn{flex:1}
+}

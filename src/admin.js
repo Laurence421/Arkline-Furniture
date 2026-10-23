@@ -64,6 +64,7 @@ $("#atabs").onclick=e=>{
   const b=e.target.closest("[data-tab]"); if(!b) return;
   $("#atabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b));
   for(const t of ["quotes","photos","prices","text","account"]) $("#tab-"+t).hidden=b.dataset.tab!==t;
+  b.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}); // keep the chosen tab visible in the scrolling bar on phones
 };
 
 /* quotes */

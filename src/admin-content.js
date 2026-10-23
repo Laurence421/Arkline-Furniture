@@ -147,12 +147,23 @@ function renderFrom(){
   const g=saved["gallery.from"]||{};
   $("#gfrom").innerHTML=`<div class="gfrom">${ORDER.map(c=>`<div class="gfrow"><b>${c}</b>
       <label class="sr" style="gap:4px;font-size:.78rem">From (₱)<input type="number" inputmode="numeric" min="1" step="1" data-gp="${c}" value="${g[c]?.price??""}" placeholder="e.g. 18000"></label>
-      <label class="sr" style="gap:4px;font-size:.78rem">Unit <span class="hint">optional</span><input data-gu="${c}" maxlength="30" value="${esc(g[c]?.unit??"")}" placeholder="per seat"></label></div>`).join("")}</div>
+      <label class="sr" style="gap:4px;font-size:.78rem">Unit<input data-gu="${c}" maxlength="30" value="${esc(g[c]?.unit??"")}" placeholder="per seat (optional)"></label>
+      <button type="button" class="mini gclear" data-gclear="${c}" title="Clear ${c}" aria-label="Clear the ${c} price"><i data-lucide="x"></i></button></div>`).join("")}</div>
     <p class="err" hidden></p>
-    <div class="tf-foot"><button class="btn btn-primary" type="submit"><i data-lucide="save"></i><span>Save starting prices</span></button></div>`;
+    <div class="tf-foot"><button class="btn btn-primary" type="submit"><i data-lucide="save"></i><span>Save starting prices</span></button>
+      <button type="button" class="btn btn-outline" data-gclearall><i data-lucide="x"></i>Clear all</button>
+      <span class="hint gdirty" hidden>Not saved yet. Click Save to update the website, or reload the page to undo.</span></div>`;
   icons();
 }
 function bindFrom(){
+  const dirty=on=>{ $("#gfrom .gdirty").hidden=!on; };
+  $("#gfrom").addEventListener("input",()=>dirty(true));
+  // ✕ empties one row, Clear all empties every row; nothing changes on the website until Save.
+  $("#gfrom").addEventListener("click",e=>{
+    const one=e.target.closest("[data-gclear]"), all=e.target.closest("[data-gclearall]"); if(!one&&!all) return;
+    for(const c of all?ORDER:[one.dataset.gclear]) for(const a of ["gp","gu"]) $("#gfrom").querySelector(`[data-${a}="${CSS.escape(c)}"]`).value="";
+    dirty(true);
+  });
   $("#gfrom").addEventListener("submit",async e=>{
     e.preventDefault();
     const f=e.target, err=f.querySelector(".err"), g={};
@@ -170,7 +181,7 @@ function bindFrom(){
     busy(btn,false,"Save starting prices");
     if(error) return fail(err,/check constraint|violates/i.test(error.message)?"This needs one database update: run supabase/004_orders_and_liked_photos.sql in the Supabase SQL Editor.":"Couldn't save: "+error.message);
     if(Object.keys(g).length) saved["gallery.from"]=g; else delete saved["gallery.from"];
-    toast("Starting prices saved. They show on the website within 30 seconds.");
+    dirty(false); toast("Starting prices saved. They show on the website within 30 seconds.");
   });
 }
 const TOOLS=`<div class="rep-tools"><button type="button" class="mini" data-mv="-1" title="Move up" aria-label="Move up"><i data-lucide="arrow-up"></i></button><button type="button" class="mini" data-mv="1" title="Move down" aria-label="Move down"><i data-lucide="arrow-down"></i></button><button type="button" class="mini" data-rm-row title="Remove" aria-label="Remove"><i data-lucide="x"></i></button></div>`;
