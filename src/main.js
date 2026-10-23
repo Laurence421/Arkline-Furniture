@@ -83,7 +83,7 @@ async function initGallery(){
 /* lightbox */
 let li=0,lastF=null;
 function openLb(p){ lastF=document.activeElement; li=visible.indexOf(p); $("#lb").hidden=false; document.body.style.overflow="hidden"; renderLb(); $("#lbX").focus(); }
-function closeLb(){ $("#lb").hidden=true; document.body.style.overflow=""; lastF&&lastF.focus(); }
+function closeLb(){ $("#lb").hidden=true; document.body.style.overflow=""; lastF&&lastF.focus(); if(lbPending) refreshGallery(); }
 function renderLb(){
   const p=visible[li]; $("#lbImg").src=p.src; $("#lbImg").alt=alt(p);
   $("#lbCap").textContent=`${p.cat}${fromLabel(p.cat)?" · "+fromLabel(p.cat):""} · ${li+1} of ${visible.length}`;
@@ -270,7 +270,7 @@ $("#qform").addEventListener("submit",async e=>{
 });
 
 /* admin-edited prices and text */
-const fmt=s=>esc(s).replace(/*([^*]+)*/g,'<span class="grad">$1</span>');
+const fmt=s=>esc(s).replace(/\*([^*]+)\*/g,'<span class="grad">$1</span>'); // *word* → gold highlight
 const SVC_ICONS=["briefcase","sofa","building-2","pencil-ruler"];
 function applyText(){
   document.querySelectorAll("[data-c]").forEach(el=>{ const v=TEXT[el.dataset.c]; if(typeof v!=="string") return; if(el.hasAttribute("data-fmt")) el.innerHTML=fmt(v); else el.textContent=v; });
@@ -295,3 +295,40 @@ async function loadSiteData(){
 
 buildSlides(); restart(); renderCatalogue(); renderQuote(); icons();
 initGallery(); loadSiteData().catch(e=>console.warn("Couldn't load prices/text",e));
+
+/* live updates: pick up the admin's changes (photos, categories, prices, text) without a reload.
+   Re-checks every 30 s and when the visitor comes back to the tab; only redraws what changed,
+   and never changes the gallery under an open photo viewer. */
+let lastSig="", lbPending=false;
+siteData.then(d=>{ if(d) lastSig=JSON.stringify(d); });
+function refreshGallery(){
+  if(!$("#lb").hidden){ lbPending=true; return; }
+  lbPending=false;
+  if(filter!=="All"&&!CATEGORIES.includes(filter)) filter="All"; // the category being viewed was removed
+  buildCats(); buildGallery();
+  document.querySelectorAll(".chip").forEach(b=>b.classList.toggle("on",b.dataset.cat===filter));
+  applyFilter();
+}
+function applyLive(d,prev){
+  if(JSON.stringify(d.products)!==JSON.stringify(prev.products)&&d.products?.length){
+    const items=d.products.map(fromRow);
+    CHAIRS=items.filter(i=>i.kind==="chair"); TABLES=items.filter(i=>i.kind==="table");
+    ALL=Object.fromEntries(items.map(i=>[i.id,i]));
+    $("#statItems").textContent=items.length; renderCatalogue(); renderQuote();
+  }
+  if(JSON.stringify(d.content)!==JSON.stringify(prev.content)){
+    TEXT={...CONTENT_DEFAULTS}; // so a section put back to its original wording updates too
+    for(const r of d.content||[]) if(r.key in CONTENT_DEFAULTS) TEXT[r.key]=r.value;
+    applyText();
+  }
+  applyGallery(d); refreshGallery();
+}
+async function checkForChanges(){
+  if(document.hidden) return;
+  const d=await fetch("/api/site-data",{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
+  if(!d) return;
+  const sig=JSON.stringify(d); if(sig===lastSig) return;
+  const prev=lastSig?JSON.parse(lastSig):{}; lastSig=sig; applyLive(d,prev);
+}
+setInterval(checkForChanges,30000);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) checkForChanges(); });

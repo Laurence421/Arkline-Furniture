@@ -81,6 +81,21 @@ async function loadQuotes(){
   if(error){ show($("#qerr"),"Couldn't load requests: "+error.message); return; }
   quotes=data; renderQuotes();
 }
+/* live: new or changed requests appear without reloading (every 20 s, and when the tab comes back).
+   Never redraws while a note, status or search is being edited; it catches up on the next check. */
+const qsig=list=>JSON.stringify(list.map(q=>[q.id,q.status,q.deleted_at,q.notes]));
+async function pollQuotes(){
+  if(document.hidden||$("#app").hidden) return;
+  const f=document.activeElement; if(f&&$("#qlist").contains(f)&&f.matches("textarea,select,input")) return;
+  const {data,error}=await supabase.from("quotation_requests").select("*").order("created_at",{ascending:false}).limit(500);
+  if(error||qsig(data)===qsig(quotes)) return;
+  const known=new Set(quotes.map(q=>q.id)), fresh=data.filter(q=>!known.has(q.id)&&!q.deleted_at);
+  quotes=data; renderQuotes();
+  for(const q of fresh.slice(0,3)) toast(`New ${kindOf(q).toLowerCase()} #${q.id} from ${q.full_name}`);
+  if(fresh.length>3) toast(`${fresh.length} new requests`);
+}
+setInterval(pollQuotes,20000);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) pollQuotes(); });
 // Requests in Trash have deleted_at set; every other view leaves them out.
 const inTrash=q=>!!q.deleted_at;
 const inView=(q,k)=>k==="trash"?inTrash(q):!inTrash(q)&&(k==="all"||(k==="active"?q.status!=="closed":q.status===k));
