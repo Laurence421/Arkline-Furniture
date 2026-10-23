@@ -9,6 +9,7 @@ import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
 import { mountAuth } from "./auth.js";
 import { confirmDialog, notice } from "./confirm.js";
+import { startIdleWatch, idleLabel } from "./idle.js";
 
 const icons = () => { try{ window.lucide && lucide.createIcons(); }catch(e){} };
 const $ = s => document.querySelector(s);
@@ -21,7 +22,7 @@ const plural = (n,w) => `${n} ${w}${n===1?"":"s"}`;
 let rows=[], hidden=new Map(), filter="All", bfilter="All";
 
 /* auth */
-let auth, recovering=false, adminEmail="", signedInId=null;
+let auth, recovering=false, adminEmail="", signedInId=null, idledOut=null;
 
 // Gmail compose in a new tab, from the signed-in admin's Google account, with a drafted reply.
 // Shop items = an order; only liked photos or a description = a price request.
@@ -46,7 +47,11 @@ function gmailDraft(q){
 async function route(session){
   if(recovering) return; // a reset-password link is open: the "Set a new password" form stays until it's saved
   $("#logout").hidden=!session;
-  if(!session){ $("#login").hidden=false; $("#app").hidden=true; auth.show("signin"); return; }
+  if(!session){
+    $("#login").hidden=false; $("#app").hidden=true; auth.show("signin");
+    if(idledOut){ $("#login").insertAdjacentHTML("afterbegin",`<p class="idle-note" role="status">You were signed out after ${idledOut} without activity. Sign in again to continue.</p>`); idledOut=null; }
+    return;
+  }
   const {data:isAdmin,error}=await supabase.rpc("is_admin");
   if(error||!isAdmin){
     $("#login").hidden=false; $("#app").hidden=true;
@@ -364,6 +369,8 @@ $("#up").addEventListener("submit",async e=>{
 if(!supabase){ $("#cfg").hidden=false; }
 else{
   initContentTabs(toast); initAccount(toast);
+  // auto sign-out after the chosen time without activity (Account tab), with a one-minute warning
+  startIdleWatch({ isActive:()=>!$("#app").hidden, onTimeout:m=>{ idledOut=idleLabel(m); supabase.auth.signOut({scope:"local"}); } });
   auth=mountAuth($("#login"),{
     title:"Admin sign in", sub:"Use the Arkline admin account.",
     onPasswordSet:async()=>{ recovering=false; route((await supabase.auth.getSession()).data.session); }

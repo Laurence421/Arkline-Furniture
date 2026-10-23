@@ -242,3 +242,5 @@ div.q.auth{background:var(--card);color:var(--ink);border:1px solid var(--line);
 /* upload form: keep each column's fields at the top when the category panel is open */
 #up .f2{align-items:start}
 #up .f2>label,#up .catpick{align-content:start}
+.idle-note{background:hsl(30 58% 50%/.12);border:1px solid hsl(30 58% 50%/.35);color:var(--walnut);font-weight:700;font-size:.9rem;border-radius:14px;padding:12px 16px;margin:0 0 14px}
+.acct select{width:auto;min-width:220px}

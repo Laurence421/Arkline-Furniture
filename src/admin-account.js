@@ -1,6 +1,7 @@
 // /admin "Account" tab: who is signed in, change or set the password, sign out on every device.
 import { supabase } from "./supabase.js";
 import { confirmDialog } from "./confirm.js";
+import { IDLE_OPTIONS, idleMinutes, setIdleMinutes, idleLabel } from "./idle.js";
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -29,6 +30,11 @@ export function renderAccount(user){
       <p class="err" role="alert" hidden></p>
       <div class="tf-foot"><button class="btn btn-primary" type="submit"><i data-lucide="key-round"></i><span>${pw ? "Change password" : "Set password"}</span></button></div>
     </form>
+    <div class="q auth">
+      <div><h3 style="font-size:1.25rem">Auto sign-out</h3>
+        <p class="sub">Signs this device out of the admin page after a period with no clicks, typing or scrolling. A one-minute warning appears first.</p></div>
+      <label for="idlemin">Sign out after<select id="idlemin">${IDLE_OPTIONS.map(([m,l])=>`<option value="${m}"${m===idleMinutes()?" selected":""}>${l}${m===30?" (recommended)":""}</option>`).join("")}</select></label>
+    </div>
     <div class="q auth">
       <div><h3 style="font-size:1.25rem">Sign out everywhere</h3>
         <p class="sub">Signs this account out on every phone and computer, including this one. Use it after signing in on a shared or lost device.</p></div>
@@ -60,6 +66,7 @@ export function renderAccount(user){
     } catch (x) { fail(x.message); }
     finally { btn.disabled = false; span.textContent = label; }
   };
+  $("#idlemin").onchange = e => { const m = +e.target.value; setIdleMinutes(m); toast(m ? `Auto sign-out set to ${idleLabel(m)}` : "Auto sign-out turned off on this device"); };
   $("#signall").onclick = async () => {
     const ok = await confirmDialog({ title: "Sign out on all devices?", message: "You'll need to sign in again here and on every other phone or computer.", confirmLabel: "Sign out everywhere", danger: true, icon: "log-out" });
     if (ok) await supabase.auth.signOut({ scope: "global" });
