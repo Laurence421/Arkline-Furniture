@@ -17,7 +17,25 @@ const plural = (n,w) => `${n} ${w}${n===1?"":"s"}`;
 let rows=[], hidden=new Map(), filter="All", bfilter="All";
 
 /* auth */
-let auth, recovering=false;
+let auth, recovering=false, adminEmail="";
+
+// Gmail compose in a new tab, from the signed-in admin's Google account, with a drafted reply.
+function gmailDraft(q){
+  const first=q.full_name.split(" ")[0], items=q.quote_items||[];
+  const est=q.estimate_min===q.estimate_max?peso(q.estimate_min):`${peso(q.estimate_min)} – ${peso(q.estimate_max)}`;
+  const body=[
+    `Hi ${first},`, "",
+    `Thank you for your quotation request #${q.id} (${q.project_type}).`, "",
+    ...(items.length?["You asked about:",...items.map(i=>`- ${i.qty} × ${i.id} ${i.name}`),`Estimated total: ${est}`,"(Final price depends on size, laminate finish and customization.)",""]:[]),
+    ...(q.message?["Your notes:",`"${q.message}"`,""]:[]),
+    "[Write the quotation details here]", "",
+    "Feel free to reply to this email or call us at 0962 269 8229.", "",
+    "Best regards,", "Arkline Home & Office Furniture", "101 Lydia St., Brgy. Sta. Monica, Novaliches, Quezon City"
+  ].join("\n");
+  const p=new URLSearchParams({view:"cm",fs:"1",to:q.email,su:`Arkline quotation #${q.id}`,body});
+  if(adminEmail) p.set("authuser",adminEmail);
+  return "https://mail.google.com/mail/?"+p;
+}
 async function route(session){
   $("#logout").hidden=!session;
   if(!session){ $("#login").hidden=false; $("#app").hidden=true; auth.show("signin"); return; }
@@ -30,6 +48,7 @@ async function route(session){
     $("#login").querySelector("[data-signout]").onclick=()=>supabase.auth.signOut();
     icons(); return;
   }
+  adminEmail=session.user.email;
   $("#login").hidden=true; $("#app").hidden=false;
   load(); loadQuotes(); loadProducts(); loadText();
 }
@@ -65,7 +84,6 @@ function renderQuotes(){
 }
 function card(q){
   const items=(q.quote_items||[]);
-  const subj=encodeURIComponent(`Arkline quotation #${q.id}`);
   return `<article class="qc st-${q.status}" data-id="${q.id}">
     <div class="qc-top">
       <div><div class="qc-id">#${q.id} · ${when(q.created_at)}</div><h3>${esc(q.full_name)}</h3><div class="meta">${esc(q.project_type)}${q.mobile?" · "+esc(q.mobile):""}${q.email?" · "+esc(q.email):""}</div></div>
@@ -73,7 +91,7 @@ function card(q){
     </div>
     <div class="acts2">
       ${q.mobile?`<a class="btn btn-dark" href="tel:${esc(q.mobile)}"><i data-lucide="phone"></i>Call</a><a class="btn btn-outline" href="sms:${esc(q.mobile)}"><i data-lucide="message-square"></i>Text</a>`:""}
-      ${q.email?`<a class="btn btn-outline" href="mailto:${esc(q.email)}?subject=${subj}"><i data-lucide="mail"></i>Email</a>`:""}
+      ${q.email?`<a class="btn btn-outline" href="${esc(gmailDraft(q))}" target="_blank" rel="noopener"><i data-lucide="mail"></i>Reply in Gmail</a>`:""}
       ${q.attachment_path?`<button class="btn btn-outline" data-photo="${esc(q.attachment_path)}"><i data-lucide="image"></i>Reference photo</button>`:""}
     </div>
     ${q.message?`<div class="msg">${esc(q.message)}</div>`:""}
