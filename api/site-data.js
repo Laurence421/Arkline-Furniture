@@ -16,7 +16,8 @@ export async function handleSiteData(request, env) {
     try { await pending; } catch (e) { if (!cached) return Response.json({ error: e.message }, { status: 502 }); } // serve stale on error
   }
   return new Response(JSON.stringify(cached), {
-    headers: { "content-type": "application/json", "cache-control": "public, max-age=15, s-maxage=30, stale-while-revalidate=300" }
+    // Browsers re-check every 10 s (no stale copies), so admin changes show within ~30 s; the server-side cache above protects Supabase.
+    headers: { "content-type": "application/json", "cache-control": "public, max-age=10" }
   });
 }
 

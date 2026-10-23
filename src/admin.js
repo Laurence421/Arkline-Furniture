@@ -282,8 +282,8 @@ function toast(m){const t=document.createElement("div");t.className="toast";t.se
 /* categories: pick one for the upload, add a new one, remove one the admin added */
 function renderCats(selected=$("#u-cat").value){
   $("#u-cat").innerHTML=categories().map(c=>`<option${c===selected?" selected":""}>${esc(c)}</option>`).join("");
-  const own=categories().filter(c=>!isBuiltIn(c));
-  $("#catlist").innerHTML=own.length?own.map(c=>`<span class="catchip">${esc(c)}<button type="button" class="mini" data-delcat="${esc(c)}" title="Remove ${esc(c)}" aria-label="Remove ${esc(c)}"><i data-lucide="x"></i></button></span>`).join(""):`<span class="hint">No added categories yet.</span>`;
+  const own=categories();
+  $("#catlist").innerHTML=own.length?own.map(c=>`<span class="catchip${isBuiltIn(c)?" builtin":""}">${esc(c)}<button type="button" class="mini" data-delcat="${esc(c)}" title="Remove ${esc(c)}" aria-label="Remove ${esc(c)}"><i data-lucide="x"></i></button></span>`).join(""):`<span class="hint">No categories. Add one above.</span>`;
   icons();
 }
 renderCats();
@@ -300,7 +300,10 @@ $("#newcat").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefau
 $("#catlist").addEventListener("click",async e=>{
   const b=e.target.closest("[data-delcat]"); if(!b) return;
   const name=b.dataset.delcat;
-  if(!await confirmDialog({title:`Remove the "${name}" category?`,message:"It disappears from the category list. Photos already in it must be deleted forever first.",confirmLabel:"Remove category",danger:true})) return;
+  const msg=isBuiltIn(name)
+    ?"It disappears from the website together with its original photos. They aren't lost: add a category with exactly this name to bring them all back."
+    :"It disappears from the category list and the website. Any photos you uploaded to it must be deleted forever first.";
+  if(!await confirmDialog({title:`Remove the "${name}" category?`,message:msg,confirmLabel:"Remove category",danger:true})) return;
   const err=await deleteCategory(name); show($("#caterr"),err);
   if(!err){ renderCats(); render(); loadText(); toast(`"${name}" removed`); }
 });

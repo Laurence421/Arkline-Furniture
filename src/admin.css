@@ -234,3 +234,4 @@ div.q.auth{background:var(--card);color:var(--ink);border:1px solid var(--line);
 .catchip{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 12px;font-size:.85rem;font-weight:700}
 .catchip .mini{width:26px;height:26px;border-radius:50%}
 .catchip .mini:hover{color:var(--err);border-color:var(--err)}
+.catchip.builtin{background:var(--muted-bg)}

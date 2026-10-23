@@ -66,8 +66,8 @@ const siteData=fetch("/api/site-data").then(r=>r.ok?r.json():null).catch(()=>nul
 function applyGallery(d){
   if(!d?.projects||!d?.hidden) return;
   const hidden=new Set(d.hidden);
-  if(d.categories?.length) CATEGORIES=[...d.categories,...ORDER.filter(c=>!d.categories.includes(c))];
-  PHOTOS=[...d.projects,...BUNDLED.filter(b=>!hidden.has(b.n))];
+  if(d.categories) CATEGORIES=d.categories; // a built-in category the admin removed disappears with its photos
+  PHOTOS=[...d.projects,...BUNDLED.filter(b=>!hidden.has(b.n)&&CATEGORIES.includes(b.cat))];
 }
 // Wait briefly for admin changes so deleted photos don't flash in, then render regardless.
 async function initGallery(){
