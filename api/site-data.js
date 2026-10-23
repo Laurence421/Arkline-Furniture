@@ -1,9 +1,9 @@
 // GET /api/site-data — everything the public page reads from Supabase, in one response.
-// Kept in memory for 30 s, so a crowd of visitors costs the free Supabase plan one set of reads, not one per visitor.
+// Kept in memory for 15 s, so a crowd of visitors costs the free Supabase plan one set of reads, not one per visitor.
 // Uses the public (anon) key: Row Level Security still decides what's visible.
 import { createClient } from "@supabase/supabase-js";
 
-const TTL = 30_000;
+const TTL = 15_000;
 let cached = null, cachedAt = 0, pending = null;
 
 export const GET = request => handleSiteData(request, process.env);
@@ -16,7 +16,7 @@ export async function handleSiteData(request, env) {
     try { await pending; } catch (e) { if (!cached) return Response.json({ error: e.message }, { status: 502 }); } // serve stale on error
   }
   return new Response(JSON.stringify(cached), {
-    // Browsers re-check every 10 s (no stale copies), so admin changes show within ~30 s; the server-side cache above protects Supabase.
+    // Browsers re-check every 10 s (no stale copies), so admin changes show within ~35 s; the server-side cache above protects Supabase.
     headers: { "content-type": "application/json", "cache-control": "public, max-age=10" }
   });
 }

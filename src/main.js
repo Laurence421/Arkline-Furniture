@@ -297,8 +297,9 @@ buildSlides(); restart(); renderCatalogue(); renderQuote(); icons();
 initGallery(); loadSiteData().catch(e=>console.warn("Couldn't load prices/text",e));
 
 /* live updates: pick up the admin's changes (photos, categories, prices, text) without a reload.
-   Re-checks every 30 s and when the visitor comes back to the tab; only redraws what changed,
-   and never changes the gallery under an open photo viewer. */
+   Re-checks every 20 s while someone is using the page (pauses after 15 min with no activity, and
+   resumes on any scroll, click, key or return to the tab); only redraws what changed, and never
+   changes the gallery under an open photo viewer. */
 let lastSig="", lbPending=false;
 siteData.then(d=>{ if(d) lastSig=JSON.stringify(d); });
 function refreshGallery(){
@@ -323,12 +324,16 @@ function applyLive(d,prev){
   }
   applyGallery(d); refreshGallery();
 }
+let lastActive=Date.now();
+const IDLE=15*60*1000;
 async function checkForChanges(){
-  if(document.hidden) return;
+  if(document.hidden||Date.now()-lastActive>IDLE) return;
   const d=await fetch("/api/site-data",{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
   if(!d) return;
   const sig=JSON.stringify(d); if(sig===lastSig) return;
   const prev=lastSig?JSON.parse(lastSig):{}; lastSig=sig; applyLive(d,prev);
 }
-setInterval(checkForChanges,30000);
-document.addEventListener("visibilitychange",()=>{ if(!document.hidden) checkForChanges(); });
+setInterval(checkForChanges,20000);
+const wake=()=>{ const was=Date.now()-lastActive>IDLE; lastActive=Date.now(); if(was) checkForChanges(); }; // catch up after an idle pause
+for(const ev of ["scroll","pointerdown","keydown","touchstart"]) addEventListener(ev,wake,{passive:true});
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ lastActive=Date.now(); checkForChanges(); } });
