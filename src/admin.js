@@ -290,7 +290,7 @@ $("#up").addEventListener("submit",async e=>{
   for(const [i,f] of files.entries()){
     mark(i,"","Converting…");
     try{
-      const w=await toWebp(f,1920,.8);
+      const w=await toWebp(f,1920,.8,{watermark:true});
       const path=`${slug(category)}/${crypto.randomUUID()}.${w.ext}`;
       mark(i,"",`Uploading ${Math.round(w.blob.size/1024)} KB…`);
       const up=await supabase.storage.from(PHOTO_BUCKET).upload(path,w.blob,{contentType:w.blob.type,cacheControl:"31536000"});

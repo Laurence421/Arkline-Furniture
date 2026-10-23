@@ -41,7 +41,7 @@ Also: Messenger and Viber buttons, a fully responsive layout ([phone view](docs/
 | ![Requests inbox](docs/screenshots/admin-requests.jpg) | **Requests inbox**: orders and price requests with status (New → Contacted → Price sent → Closed), search, private notes, liked photos, one-tap **Call, Text, Viber, Messenger** or **Reply in Gmail** with a drafted reply, Trash with restore, and a **Download** backup that opens in Excel. |
 | ![Prices](docs/screenshots/admin-prices.jpg) | **Prices**: edit, add, hide or delete products and photos. Quote estimates always use these prices, recalculated on the server. |
 | ![Website text](docs/screenshots/admin-text.jpg) | **Website text**: edit the hero, services, steps, FAQs and contact details, with "Restore original" for each section. |
-| ![Photos and Trash](docs/screenshots/admin-photos.jpg) | **Photos**: upload from a phone (converted to WebP in the browser), Trash with restore, delete forever. |
+| ![Photos and Trash](docs/screenshots/admin-photos.jpg) | **Photos**: upload from a phone (converted to WebP and **watermarked** in the browser, so competitors can't reuse them), Trash with restore, delete forever. |
 | ![Confirmation](docs/screenshots/admin-confirm.jpg) | **Safe by design**: branded confirmation before anything destructive, with Cancel pre-selected. |
 | ![Sign-in](docs/screenshots/admin-signin.jpg) | **Sign-in**: Google or email and password, forgot password, and an Account tab to change the password or sign out on all devices. |
 

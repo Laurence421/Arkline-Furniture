@@ -91,7 +91,7 @@ function bindPrices(){
     const f=inp.closest(".pc"), p=products.find(x=>x.id===f.dataset.id), lab=inp.previousElementSibling;
     lab.textContent="Uploading…";
     try{
-      const w=await toWebp(inp.files[0],900,.82);
+      const w=await toWebp(inp.files[0],900,.82,{watermark:true});
       const path=`products/${p.id.toLowerCase()}-${crypto.randomUUID().slice(0,8)}.${w.ext}`;
       const up=await supabase.storage.from(PHOTO_BUCKET).upload(path,w.blob,{contentType:w.blob.type,cacheControl:"31536000"});
       if(up.error) throw up.error;
