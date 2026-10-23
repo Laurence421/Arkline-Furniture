@@ -1,6 +1,6 @@
+import "./icons.js";
 import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, ALL as ALL0, fromRow, messengerUrl, viberUrl, pt } from "./data.js";
 import { CONTENT_DEFAULTS } from "./content.js";
-import { supabase, photoUrl } from "./supabase.js";
 import { toWebp } from "./image.js";
 
 // Catalogue and text start from the built-in copies and are replaced by the admin's saved versions (loadSiteData).
@@ -19,12 +19,14 @@ const alt = p => p.alt || p.cat+" completed by Arkline";
 const SLIDES=[[186,"Workstation"],[164,"Conference Table"],[32,"Reception Counter"],[34,"Executive Table"],[72,"Workstation"]];
 let si=0, timer;
 function buildSlides(){
-  $("#slides").innerHTML = SLIDES.map((s,i)=>`<img src="${img(s[0])}" alt="${s[1]} project by Arkline" class="${i?"":"on"}" ${i?'loading="lazy"':'fetchpriority="high"'}>`).join("");
+  // Only the first slide downloads with the page; each next one loads just before it's shown (go).
+  $("#slides").innerHTML = SLIDES.map((s,i)=>`<img ${i?"data-src":"src"}="${img(s[0])}" alt="${s[1]} project by Arkline" class="${i?"":"on"}" ${i?"":'fetchpriority="high"'}>`).join("");
   $("#dots").innerHTML = SLIDES.map((s,i)=>`<button aria-label="Show slide ${i+1}" class="${i?"":"on"}"></button>`).join("");
   [...$("#dots").children].forEach((b,i)=>b.onclick=()=>{go(i);restart();});
   go(0);
 }
-function go(i){ si=i; [...$("#slides").children].forEach((im,k)=>im.classList.toggle("on",k===i)); [...$("#dots").children].forEach((d,k)=>d.classList.toggle("on",k===i)); $("#slideCap").textContent=SLIDES[i][1]; }
+const warm=k=>{ const im=$("#slides").children[k%SLIDES.length]; if(im?.dataset.src){ im.src=im.dataset.src; im.removeAttribute("data-src"); } };
+function go(i){ si=i; warm(i); if(document.readyState==="complete") warm(i+1); else addEventListener("load",()=>warm(i+1),{once:true}); [...$("#slides").children].forEach((im,k)=>im.classList.toggle("on",k===i)); [...$("#dots").children].forEach((d,k)=>d.classList.toggle("on",k===i)); $("#slideCap").textContent=SLIDES[i][1]; }
 function restart(){ clearInterval(timer); if(!matchMedia("(prefers-reduced-motion: reduce)").matches) timer=setInterval(()=>go((si+1)%SLIDES.length),5500); }
 
 /* categories + gallery */
@@ -40,7 +42,7 @@ function buildCats(){
 $("#cats").onclick=e=>{const b=e.target.closest("[data-go]"); if(!b) return; setFilter(b.dataset.go); $("#projects").scrollIntoView();};
 $("#filters").onclick=e=>{const b=e.target.closest("[data-cat]"); if(b) setFilter(b.dataset.cat);};
 function buildGallery(){
-  $("#gallery").innerHTML = PHOTOS.map((p,i)=>`<button class="tile${isLiked(p)?" liked":""}" data-i="${i}" aria-label="View ${p.cat} photo"><img src="${p.src}" alt="${esc(alt(p))}" loading="${i<6?"eager":"lazy"}"><span class="tag">${p.cat}</span><span class="heart" aria-hidden="true"><i data-lucide="heart"></i></span><span class="zoom"><i data-lucide="maximize-2"></i></span></button>`).join("");
+  $("#gallery").innerHTML = PHOTOS.map((p,i)=>`<button class="tile${isLiked(p)?" liked":""}" data-i="${i}" aria-label="View ${p.cat} photo"><img src="${p.src}" alt="${esc(alt(p))}" loading="lazy"><span class="tag">${p.cat}</span><span class="heart" aria-hidden="true"><i data-lucide="heart"></i></span><span class="zoom"><i data-lucide="maximize-2"></i></span></button>`).join("");
   icons();
 }
 $("#gallery").onclick=e=>{const t=e.target.closest(".tile"); if(t) openLb(PHOTOS[+t.dataset.i]);};
@@ -56,23 +58,19 @@ function applyFilter(){
   $("#moreBtn").parentElement.hidden = visible.length<=shown;
 }
 $("#moreBtn").onclick=()=>{ shown+=12; applyFilter(); };
-async function loadRemote(){
-  const [p,h]=await Promise.all([
-    supabase.from("projects").select("category,storage_path,caption").is("deleted_at",null).order("created_at",{ascending:false}),
-    supabase.from("hidden_photos").select("photo")
-  ]);
-  if(p.error||h.error){ console.warn("Couldn't load gallery changes",p.error||h.error); return; }
-  const hidden=new Set(h.data.map(r=>r.photo));
-  const up=p.data.filter(r=>CATS[r.category]).map(r=>({src:photoUrl(r.storage_path),cat:r.category,alt:r.caption}));
-  PHOTOS=[...up,...BUNDLED.filter(b=>!hidden.has(b.n))];
+// The admin's changes (gallery, prices, text) come in one cached request: /api/site-data.
+const siteData=fetch("/api/site-data").then(r=>r.ok?r.json():null).catch(()=>null);
+function applyGallery(d){
+  if(!d?.projects||!d?.hidden) return;
+  const hidden=new Set(d.hidden);
+  PHOTOS=[...d.projects.filter(p=>CATS[p.cat]),...BUNDLED.filter(b=>!hidden.has(b.n))];
 }
 // Wait briefly for admin changes so deleted photos don't flash in, then render regardless.
 async function initGallery(){
   const render=()=>{ buildCats(); buildGallery(); setFilter(filter); };
-  if(!supabase){ render(); return; }
   let drawn=false;
-  const remote=loadRemote().catch(e=>console.warn(e)).then(()=>{ if(drawn) render(); });
-  await Promise.race([remote,new Promise(r=>setTimeout(r,2500))]);
+  const remote=siteData.then(d=>{ applyGallery(d); if(drawn) render(); });
+  await Promise.race([remote,new Promise(r=>setTimeout(r,1500))]);
   drawn=true; render();
 }
 
@@ -279,18 +277,14 @@ function applyText(){
   icons();
 }
 async function loadSiteData(){
-  if(!supabase) return;
-  const [p,c]=await Promise.all([
-    supabase.from("products").select("*").eq("visible",true).order("sort").order("id"),
-    supabase.from("site_content").select("key,value")
-  ]);
-  if(!p.error&&p.data.length){
-    const items=p.data.map(fromRow);
+  const d=await siteData; if(!d) return;
+  if(d.products?.length){
+    const items=d.products.map(fromRow);
     CHAIRS=items.filter(i=>i.kind==="chair"); TABLES=items.filter(i=>i.kind==="table");
     ALL=Object.fromEntries(items.map(i=>[i.id,i]));
     $("#statItems").textContent=items.length; renderCatalogue(); renderQuote();
   }
-  if(!c.error&&c.data.length){ for(const r of c.data) if(r.key in CONTENT_DEFAULTS) TEXT[r.key]=r.value; applyText(); buildCats(); setFilter(filter); }
+  if(d.content?.length){ for(const r of d.content) if(r.key in CONTENT_DEFAULTS) TEXT[r.key]=r.value; applyText(); buildCats(); setFilter(filter); }
 }
 
 buildSlides(); restart(); renderCatalogue(); renderQuote(); icons();

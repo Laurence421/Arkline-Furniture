@@ -1,3 +1,4 @@
+import "./icons.js";
 // /admin — Feature A. Signed-in admins upload, trash, restore and permanently delete gallery photos.
 // Uploaded photos: projects.deleted_at set = in Trash. Bundled photos: a hidden_photos row = in Trash.
 import { ORDER, BUNDLED, messengerUrl, viberUrl } from "./data.js";

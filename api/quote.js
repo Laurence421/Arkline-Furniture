@@ -12,6 +12,16 @@ const field = (fd, k, max) => String(fd.get(k) ?? "").trim().slice(0, max);
 
 export const POST = request => handleQuote(request, process.env);
 
+// Visible products, kept in memory for 60 s so a rush of orders reads the price list once, not per order.
+let prices = null, pricesAt = 0;
+async function priceList(db) {
+  if (prices && Date.now() - pricesAt < 60_000) return prices;
+  const { data, error } = await db.from("products").select("*").eq("visible", true);
+  if (error) return prices || ALL; // table unavailable: last good copy, else the built-in list
+  prices = Object.fromEntries(data.map(r => [r.id, fromRow(r)])); pricesAt = Date.now();
+  return prices;
+}
+
 export async function handleQuote(request, env) {
   let fd;
   try { fd = await request.formData(); } catch { return json({ error: "Invalid form submission." }, 400); }
@@ -64,11 +74,7 @@ export async function handleQuote(request, env) {
 
   // Prices are recomputed here from the admin-edited products table (built-in list if it's unavailable);
   // the browser only sends ids and quantities.
-  let catalog = ALL;
-  if (raw.length) {
-    const { data, error } = await db.from("products").select("*").in("id", raw.map(i => i.id)).eq("visible", true);
-    if (!error) catalog = Object.fromEntries(data.map(r => [r.id, fromRow(r)]));
-  }
+  const catalog = raw.length ? await priceList(db) : ALL;
   const items = raw.filter(i => catalog[i.id])
     .map(i => ({ id: i.id, name: catalog[i.id].name, qty: Math.max(1, Math.min(99, parseInt(i.qty) || 1)) }));
   const min = items.reduce((s, i) => s + catalog[i.id].min * i.qty, 0);

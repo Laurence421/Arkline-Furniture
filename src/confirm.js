@@ -9,7 +9,7 @@ export function confirmDialog({ title, message = "", confirmLabel = "Confirm", c
     document.body.appendChild(dlg);
     dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close("cancel"); }); // backdrop click
   }
-  const ic = icon || (danger ? "alert-triangle" : "circle-help");
+  const ic = icon || (danger ? "alert-triangle" : "help-circle");
   dlg.innerHTML = `<form method="dialog" class="cdlg-box">
       <div class="cdlg-ico${danger ? " danger" : ""}"><i data-lucide="${ic}"></i></div>
       <h3>${esc(title)}</h3>${message ? `<p>${esc(message)}</p>` : ""}

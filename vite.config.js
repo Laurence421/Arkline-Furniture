@@ -28,6 +28,13 @@ const devApi = () => ({
       response.headers.forEach((v, k) => res.setHeader(k, v));
       res.end(Buffer.from(await response.arrayBuffer()));
     });
+    server.middlewares.use("/api/site-data", async (req, res) => {
+      const { GET } = await server.ssrLoadModule("/api/site-data.js");
+      const response = await GET(new Request("http://localhost/api/site-data"));
+      res.statusCode = response.status;
+      response.headers.forEach((v, k) => res.setHeader(k, v));
+      res.end(Buffer.from(await response.arrayBuffer()));
+    });
   }
 });
 

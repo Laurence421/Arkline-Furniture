@@ -10,7 +10,8 @@
     "webp": "node scripts/to-webp.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.118.0"
+    "@supabase/supabase-js": "^2.118.0",
+    "lucide": "^0.344.0"
   },
   "devDependencies": {
     "sharp": "^0.34.5",

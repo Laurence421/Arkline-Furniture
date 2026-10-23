@@ -167,7 +167,7 @@ function bindFrom(){
     busy(btn,false,"Save starting prices");
     if(error) return fail(err,/check constraint|violates/i.test(error.message)?"This needs one database update: run supabase/004_orders_and_liked_photos.sql in the Supabase SQL Editor.":"Couldn't save: "+error.message);
     if(Object.keys(g).length) saved["gallery.from"]=g; else delete saved["gallery.from"];
-    toast("Starting prices saved. They're live on the website.");
+    toast("Starting prices saved. They show on the website within 30 seconds.");
   });
 }
 const TOOLS=`<div class="rep-tools"><button type="button" class="mini" data-mv="-1" title="Move up" aria-label="Move up"><i data-lucide="arrow-up"></i></button><button type="button" class="mini" data-mv="1" title="Move down" aria-label="Move down"><i data-lucide="arrow-down"></i></button><button type="button" class="mini" data-rm-row title="Remove" aria-label="Remove"><i data-lucide="x"></i></button></div>`;
@@ -205,7 +205,7 @@ function bindText(){
       icons(); f.querySelector(".rep-row:last-child [data-t]").focus();
     }
     if(e.target.closest("[data-restore-sec]")){
-      if(!await confirmDialog({title:`Restore the original "${s.title}" text?`,message:"Your edits to this section are replaced with the text the website launched with. This goes live right away.",confirmLabel:"Restore original",danger:true,icon:"rotate-ccw"})) return;
+      if(!await confirmDialog({title:`Restore the original "${s.title}" text?`,message:"Your edits to this section are replaced with the text the website launched with. It shows on the website within 30 seconds.",confirmLabel:"Restore original",danger:true,icon:"rotate-ccw"})) return;
       const {error}=await supabase.from("site_content").delete().in("key",keysOf(s));
       if(error) return show($("#terr"),"Couldn't restore: "+error.message);
       keysOf(s).forEach(k=>delete saved[k]); renderText(); toast(`${s.title}: original text restored`);
@@ -236,7 +236,7 @@ function bindText(){
     const error=r1.error||r2.error;
     if(error) return fail(err,missingTable(error)?MIGRATE:"Couldn't save: "+error.message);
     up.forEach(k=>saved[k]=vals[k]); back.forEach(k=>delete saved[k]);
-    renderText(); toast(`${s.title} saved. It's live on the website.`);
+    renderText(); toast(`${s.title} saved. It shows on the website within 30 seconds.`);
   });
 }
 
