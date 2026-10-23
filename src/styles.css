@@ -50,6 +50,7 @@ section{padding-block:80px} @media (min-width:768px){section{padding-block:112px
 .nav .wrap{display:flex;align-items:center;gap:18px;height:72px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:auto}
 .brand img{height:46px;width:auto}
+.brand .brand-logo{height:54px;width:auto;max-width:100%} /* horizontal logo built from the Arkline logo */
 .brand b{font-family:var(--f-head);font-size:1.45rem;letter-spacing:.14em;font-weight:600;line-height:1}
 .brand b span{color:var(--walnut)}
 .brand small{display:block;font-size:.6rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:4px}
@@ -64,6 +65,8 @@ section{padding-block:80px} @media (min-width:768px){section{padding-block:112px
   .links.open{display:flex} .menu{display:grid} .qbtn .lbl{display:none} .brand small{display:none}
 }
 @media (max-width:400px){.brand b{font-size:1.2rem}.brand img{height:40px}}
+@media (max-width:640px){.brand .brand-logo{height:40px}}
+@media (max-width:360px){.brand .brand-logo{height:34px}}
 
 /* hero */
 .hero{position:relative;min-height:min(86vh,780px);display:grid;align-items:end;color:var(--on-dark);background:var(--dark);overflow:hidden;padding-block:0}
