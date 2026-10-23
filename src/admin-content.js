@@ -97,6 +97,9 @@ function bindPrices(){
       if(up.error) throw up.error;
       const url=photoUrl(path);
       if(!p._new){ const {error}=await supabase.from("products").update({image:url,updated_at:new Date().toISOString()}).eq("id",p.id); if(error) throw error; toast("Photo updated"); }
+      // erase the photo this one replaces, if it was uploaded for this product (built-in photos stay)
+      const old=p.image?.split(`/object/public/${PHOTO_BUCKET}/`)[1];
+      if(old?.startsWith("products/")) await supabase.storage.from(PHOTO_BUCKET).remove([old]);
       p.image=url; redraw(p);
     }catch(err){ show($("#perr"),"Couldn't upload the photo: "+(err.message||err)); lab.textContent=p.image?"Change photo":"Add photo"; }
   });
