@@ -1,6 +1,10 @@
-import { CATS, ORDER, img, BUNDLED, CHAIRS, TABLES, ALL, CONTACT, pt } from "./data.js";
+import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, ALL as ALL0, CONTACT, fromRow, pt } from "./data.js";
+import { CONTENT_DEFAULTS } from "./content.js";
 import { supabase, photoUrl } from "./supabase.js";
 import { toWebp } from "./image.js";
+
+// Catalogue and text start from the built-in copies and are replaced by the admin's saved versions (loadSiteData).
+let CHAIRS=CHAIRS0, TABLES=TABLES0, ALL=ALL0, TEXT={...CONTENT_DEFAULTS};
 
 const icons = () => { try{ window.lucide && lucide.createIcons(); }catch(e){} };
 const $ = s => document.querySelector(s);
@@ -92,7 +96,7 @@ document.addEventListener("keydown",e=>{
 let quote={}; try{quote=JSON.parse(localStorage.getItem("ark-quote")||"{}")||{};}catch(e){}
 const save=()=>{try{localStorage.setItem("ark-quote",JSON.stringify(quote));}catch(e){}};
 const addBtn=it=>quote[it.id]?`<button class="btn btn-outline add in" data-add="${it.id}"><i data-lucide="check"></i>In quote list</button>`:`<button class="btn btn-outline add" data-add="${it.id}"><i data-lucide="plus"></i>Add to quote</button>`;
-const li_=f=>f.map(x=>`<li><i data-lucide="check"></i><span>${x}</span></li>`).join("");
+const li_=f=>f.map(x=>`<li><i data-lucide="check"></i><span>${esc(x)}</span></li>`).join("");
 function plan(t){
   const W=2600,H=1800,ox=110,oy=170; let g="";
   for(let x=0;x<=W;x+=300) g+=`<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="hsl(32 18% 82%)" stroke-width="4"/>`;
@@ -105,11 +109,11 @@ function plan(t){
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Top view ${t.L} by ${t.W} mm">${g}${s}${d}</svg>`;
 }
 function renderCatalogue(){
-  $("#pane-chairs").innerHTML=CHAIRS.map(c=>`<article class="card"><div class="ph"><span class="code">${c.id}</span><img src="${img(c.im)}" alt="${c.id} ergonomic office chair" loading="lazy"></div>
-    <div class="body"><h3>${c.name}</h3><span class="price">${pt(c)}</span>
+  $("#pane-chairs").innerHTML=CHAIRS.map(c=>`<article class="card"><div class="ph"><span class="code">${c.id}</span>${c.image?`<img src="${esc(c.image)}" alt="${c.id} ${esc(c.name)}" loading="lazy">`:`<i data-lucide="armchair"></i>`}</div>
+    <div class="body"><h3>${esc(c.name)}</h3><span class="price">${pt(c)}</span>
     <details><summary>Product features<i data-lucide="chevron-down"></i></summary><ul>${li_(c.f)}</ul></details>${addBtn(c)}</div></article>`).join("");
-  $("#tgrid").innerHTML=TABLES.map(t=>`<article class="card"><div class="plan"><span class="code" style="position:absolute;left:12px;top:12px;font-size:.72rem;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--card);color:var(--walnut)">${t.id}</span>${plan(t)}</div>
-    <div class="body"><span class="dims">${t.L} × ${t.W} × 750 mm</span><h3>${t.name}</h3><span class="price">${pt(t)}</span><ul>${li_(t.f)}</ul>${addBtn(t)}</div></article>`).join("");
+  $("#tgrid").innerHTML=TABLES.map(t=>`<article class="card"><div class="${t.image?"ph":"plan"}"><span class="code" style="position:absolute;left:12px;top:12px;font-size:.72rem;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--card);color:var(--walnut)">${t.id}</span>${t.image?`<img src="${esc(t.image)}" alt="${t.id} ${esc(t.name)}" loading="lazy">`:t.L&&t.W?plan(t):""}</div>
+    <div class="body">${t.L&&t.W?`<span class="dims">${t.L} × ${t.W} × 750 mm</span>`:""}<h3>${esc(t.name)}</h3><span class="price">${pt(t)}</span><ul>${li_(t.f)}</ul>${addBtn(t)}</div></article>`).join("");
   icons();
 }
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
@@ -127,8 +131,8 @@ function totals(){let a=0,z=0,n=0;for(const[id,q] of Object.entries(quote)){cons
 function renderQuote(){
   const ids=Object.keys(quote).filter(id=>ALL[id]); const{a,z,n}=totals();
   $("#qc").textContent=n;
-  $("#qitems").innerHTML=ids.length?ids.map(id=>{const it=ALL[id];return `<div class="qi"><div class="th">${it.im?`<img src="${img(it.im)}" alt="">`:`<i data-lucide="table-2"></i>`}</div>
-    <div style="min-width:0"><div class="nm">${it.name}</div><div class="sub">${id} · ${pt({min:it.min*quote[id],max:it.max*quote[id]})}</div><button class="rm" data-rm="${id}">Remove</button></div>
+  $("#qitems").innerHTML=ids.length?ids.map(id=>{const it=ALL[id];return `<div class="qi"><div class="th">${it.image?`<img src="${esc(it.image)}" alt="">`:`<i data-lucide="table-2"></i>`}</div>
+    <div style="min-width:0"><div class="nm">${esc(it.name)}</div><div class="sub">${id} · ${pt({min:it.min*quote[id],max:it.max*quote[id]})}</div><button class="rm" data-rm="${id}">Remove</button></div>
     <div class="qty"><button data-q="${id}" data-d="-1" aria-label="Fewer">−</button><b>${quote[id]}</b><button data-q="${id}" data-d="1" aria-label="More">+</button></div></div>`}).join("")
     :`<div class="empty"><i data-lucide="clipboard-list"></i><p>No items yet. Tap "Add to quote" on any chair or table.</p></div>`;
   $("#qtotal").textContent=n?pt({min:a,max:z}):"₱0";
@@ -152,7 +156,7 @@ $("#copyList").onclick=()=>{const ids=Object.keys(quote);if(!ids.length){toast("
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function toast(m){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.innerHTML=`<i data-lucide="check-circle-2"></i>`;t.append(m);document.body.appendChild(t);icons();setTimeout(()=>t.remove(),2300);}
 function copy(txt,m){try{navigator.clipboard.writeText(txt).then(()=>toast(m||"Copied"),()=>toast("Copy is blocked here. Select the text instead."));}catch(e){toast("Copy is blocked here. Select the text instead.");}}
-document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copy(b.dataset.copy,"Copied "+b.dataset.copy));
+document.addEventListener("click",e=>{const b=e.target.closest("[data-copy]"); if(b) copy(b.dataset.copy,"Copied "+b.dataset.copy);});
 $("#menu").onclick=()=>{const o=$("#links").classList.toggle("open");$("#menu").setAttribute("aria-expanded",o);};
 $("#links").onclick=e=>{if(e.target.tagName==="A"){$("#links").classList.remove("open");$("#menu").setAttribute("aria-expanded","false");}};
 const navs=[...document.querySelectorAll(".links a")];
@@ -182,7 +186,7 @@ if(TS_KEY){
 }
 
 /* quotation form → /api/quote */
-const FALLBACK="Please call 0962 269 8229 or email arklinehomeandofficefurnitures@gmail.com instead.";
+const FALLBACK=()=>`Please call ${TEXT["contact.mobiles"][0]||""} or email ${TEXT["contact.email"]} instead.`;
 function formError(m){ $("#ferr").hidden=!m; $("#ferr").textContent=m; }
 $("#qform").addEventListener("submit",async e=>{
   e.preventDefault();
@@ -212,12 +216,39 @@ $("#qform").addEventListener("submit",async e=>{
     $("#fsent").textContent=`Thanks, ${name.split(" ")[0]}! Your request${j.id?" #"+j.id:""} is in. We usually reply within one business day.${j.id?" Mention #"+j.id+" when you message us.":""}`;
     $("#fsent").hidden=false; $("#fsent").focus();
   }catch(err){
-    formError(err instanceof TypeError?"We couldn't reach our server. "+FALLBACK:err.message);
+    formError(err instanceof TypeError?"We couldn't reach our server. "+FALLBACK():err.message);
   }finally{
     btn.disabled=false; label.textContent="Send request";
     if(tsWidget!=null) try{ turnstile.reset(tsWidget); }catch(e){}
   }
 });
 
+/* admin-edited prices and text */
+const fmt=s=>esc(s).replace(/*([^*]+)*/g,'<span class="grad">$1</span>');
+const SVC_ICONS=["briefcase","sofa","building-2","pencil-ruler"];
+function applyText(){
+  document.querySelectorAll("[data-c]").forEach(el=>{ const v=TEXT[el.dataset.c]; if(typeof v!=="string") return; if(el.hasAttribute("data-fmt")) el.innerHTML=fmt(v); else el.textContent=v; });
+  $("#svc").innerHTML=TEXT.services.map((s,i)=>`<div class="card"><div class="ico"><i data-lucide="${SVC_ICONS[i%SVC_ICONS.length]}"></i></div><h3>${esc(s.t)}</h3><ul>${li_(s.items)}</ul></div>`).join("");
+  $("#steps").innerHTML=TEXT.steps.map(s=>`<div class="step"><h3>${esc(s.t)}</h3><p>${esc(s.d)}</p></div>`).join("");
+  $("#faqs").innerHTML=TEXT.faq.map((f,i)=>`<details${i?"":" open"}><summary>${esc(f.t)}<i data-lucide="plus"></i></summary><p>${esc(f.d)}</p></details>`).join("");
+  $("#mobiles").innerHTML=TEXT["contact.mobiles"].map(m=>`<div class="v">${esc(m)} <button class="copy" data-copy="${esc(m)}">Copy</button></div>`).join("");
+  const em=TEXT["contact.email"]; $("#emailv").innerHTML=`${esc(em)} <button class="copy" data-copy="${esc(em)}">Copy</button>`;
+  icons();
+}
+async function loadSiteData(){
+  if(!supabase) return;
+  const [p,c]=await Promise.all([
+    supabase.from("products").select("*").eq("visible",true).order("sort").order("id"),
+    supabase.from("site_content").select("key,value")
+  ]);
+  if(!p.error&&p.data.length){
+    const items=p.data.map(fromRow);
+    CHAIRS=items.filter(i=>i.kind==="chair"); TABLES=items.filter(i=>i.kind==="table");
+    ALL=Object.fromEntries(items.map(i=>[i.id,i]));
+    $("#statItems").textContent=items.length; renderCatalogue(); renderQuote();
+  }
+  if(!c.error&&c.data.length){ for(const r of c.data) if(r.key in CONTENT_DEFAULTS) TEXT[r.key]=r.value; applyText(); }
+}
+
 buildSlides(); restart(); renderCatalogue(); renderQuote(); icons();
-initGallery();
+initGallery(); loadSiteData().catch(e=>console.warn("Couldn't load prices/text",e));

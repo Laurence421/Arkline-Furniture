@@ -42,9 +42,9 @@
 <section class="hero">
   <div class="slides" id="slides"></div>
   <div class="wrap">
-    <span class="pill fade-up"><i data-lucide="map-pin"></i>Novaliches, Quezon City</span>
-    <h1 class="fade-up d1">Building spaces that inspire <span class="grad">productivity.</span></h1>
-    <p class="lede fade-up d2">Custom and ready-made furniture for offices, homes, commercial and institutional projects. We design, fabricate, deliver and install.</p>
+    <span class="pill fade-up"><i data-lucide="map-pin"></i><span data-c="hero.location">Novaliches, Quezon City</span></span>
+    <h1 class="fade-up d1" data-c="hero.title" data-fmt>Building spaces that inspire <span class="grad">productivity.</span></h1>
+    <p class="lede fade-up d2" data-c="hero.lede">Custom and ready-made furniture for offices, homes, commercial and institutional projects. We design, fabricate, deliver and install.</p>
     <div class="ctas fade-up d3">
       <a class="btn btn-primary" href="#projects"><i data-lucide="images"></i>View our projects</a>
       <a class="btn btn-glass" href="#contact"><i data-lucide="message-circle"></i>Free consultation</a>
@@ -52,7 +52,7 @@
     <div class="hero-foot fade-up d4">
       <div class="stats">
         <div><b>9</b><span>project types</span></div>
-        <div><b>27</b><span>catalogue items</span></div>
+        <div><b id="statItems">27</b><span>catalogue items</span></div>
         <div><b>24h</b><span>delivery inspection window</span></div>
       </div>
       <div class="dots"><span class="slide-cap" id="slideCap"></span><span id="dots" class="dots"></span></div>
@@ -89,7 +89,7 @@
     <div class="head">
       <span class="pill"><i data-lucide="shopping-bag"></i>Shop now</span>
       <h2>Chairs and office tables, <span class="grad">priced</span>.</h2>
-      <p>Add items to your quote list and send it to us. Final prices depend on size, laminate finish and customization.</p>
+      <p data-c="shop.lede">Add items to your quote list and send it to us. Final prices depend on size, laminate finish and customization.</p>
     </div>
     <div class="tabs" role="tablist">
       <button role="tab" aria-selected="true" data-tab="chairs">Ergonomic chairs</button>
@@ -109,7 +109,7 @@
       <span class="pill"><i data-lucide="hammer"></i>Services</span>
       <h2>From one desk to a full <span class="grad">fit-out</span>.</h2>
     </div>
-    <div class="svc">
+    <div class="svc" id="svc">
       <div class="card"><div class="ico"><i data-lucide="briefcase"></i></div><h3>Office furniture</h3><ul><li><i data-lucide="check"></i>Executive tables &amp; workstations</li><li><i data-lucide="check"></i>Cubicle and glass partitions</li><li><i data-lucide="check"></i>Conference tables</li><li><i data-lucide="check"></i>Reception counters</li><li><i data-lucide="check"></i>Cabinets &amp; mobile pedestals</li></ul></div>
       <div class="card"><div class="ico"><i data-lucide="sofa"></i></div><h3>Home furniture</h3><ul><li><i data-lucide="check"></i>Kitchen cabinets</li><li><i data-lucide="check"></i>Wardrobes and closets</li><li><i data-lucide="check"></i>TV cabinets</li><li><i data-lucide="check"></i>Bedroom, living &amp; dining</li><li><i data-lucide="check"></i>Custom home storage</li></ul></div>
       <div class="card"><div class="ico"><i data-lucide="building-2"></i></div><h3>Commercial &amp; institutional</h3><ul><li><i data-lucide="check"></i>Toilet partitions</li><li><i data-lucide="check"></i>School &amp; library furniture</li><li><i data-lucide="check"></i>Training tables</li><li><i data-lucide="check"></i>Retail display fixtures</li><li><i data-lucide="check"></i>Custom commercial interiors</li></ul></div>
@@ -126,8 +126,8 @@
     </div>
     <div>
       <span class="pill"><i data-lucide="sparkles"></i>About us</span>
-      <h2 style="margin-top:16px">Furniture that works as hard as <span class="grad">you do</span>.</h2>
-      <p class="lead">Arkline Home and Office Furniture Shop is a trusted provider of high-quality, customized and ready-made furniture for homes, offices, commercial establishments and institutional projects. We design, manufacture and supply functional, durable and modern furniture that improves productivity, comfort and aesthetics.</p>
+      <h2 style="margin-top:16px" data-c="about.title" data-fmt>Furniture that works as hard as <span class="grad">you do</span>.</h2>
+      <p class="lead" data-c="about.lead">Arkline Home and Office Furniture Shop is a trusted provider of high-quality, customized and ready-made furniture for homes, offices, commercial establishments and institutional projects. We design, manufacture and supply functional, durable and modern furniture that improves productivity, comfort and aesthetics.</p>
       <div class="feats" style="margin-top:32px">
         <div class="feat"><div class="ico"><i data-lucide="ruler"></i></div><h3>Customized solutions</h3><p>Every project is tailored to your space, requirements and budget.</p></div>
         <div class="feat"><div class="ico"><i data-lucide="wallet"></i></div><h3>Competitive pricing</h3><p>Cost-effective furniture without compromising quality.</p></div>
@@ -144,7 +144,7 @@
       <span class="pill"><i data-lucide="list-checks"></i>How to order</span>
       <h2>Five steps from quote to <span class="grad">installed</span>.</h2>
     </div>
-    <div class="steps">
+    <div class="steps" id="steps">
       <div class="step"><h3>Request a quotation</h3><p>Send your layout, sizes or your quote list. We reply with a formal quotation.</p></div>
       <div class="step"><h3>Confirm with 70% down</h3><p>The balance is paid before delivery unless otherwise agreed.</p></div>
       <div class="step"><h3>Production</h3><p>Lead time starts once the down payment and final specs are approved.</p></div>
@@ -162,7 +162,7 @@
       <p>Still unsure? Message us and we'll walk you through it.</p>
       <a class="btn btn-dark" href="#contact" style="justify-self:start;margin-top:8px"><i data-lucide="send"></i>Ask a question</a>
     </div>
-    <div class="acc">
+    <div class="acc" id="faqs">
       <details open><summary>How do I request the updated furniture pricelist?<i data-lucide="plus"></i></summary><p>Message us by email or on our Facebook page, or use the quotation form below. Tell us what furniture you need and we'll send the current pricelist.</p></details>
       <details><summary>How do I make an order?<i data-lucide="plus"></i></summary><p>Request a quotation, approve the specifications, then pay the 70% down payment to confirm. Production starts after that.</p></details>
       <details><summary>How do I make a payment?<i data-lucide="plus"></i></summary><p>A 70% down payment confirms all orders. The remaining balance is paid before delivery unless otherwise agreed. Payment details come with your quotation.</p></details>
@@ -180,12 +180,12 @@
       <h2 style="margin-top:16px">Let's build your <span class="grad">ideal</span> workspace.</h2>
       <p style="color:var(--on-dark-muted);margin-top:16px;max-width:46ch">Reach out for inquiries, quotations or any help you need. From planning to installation, we've got you covered.</p>
       <div class="info">
-        <div class="irow"><div class="i"><i data-lucide="map-pin"></i></div><div><div class="k">Office address</div><div class="v">101 Lydia St., Brgy. Sta. Monica, Novaliches, Quezon City</div></div></div>
-        <div class="irow"><div class="i"><i data-lucide="smartphone"></i></div><div><div class="k">Mobile</div>
+        <div class="irow"><div class="i"><i data-lucide="map-pin"></i></div><div><div class="k">Office address</div><div class="v" data-c="contact.address">101 Lydia St., Brgy. Sta. Monica, Novaliches, Quezon City</div></div></div>
+        <div class="irow"><div class="i"><i data-lucide="smartphone"></i></div><div><div class="k">Mobile</div><div id="mobiles">
           <div class="v">0962 269 8229 <button class="copy" data-copy="0962 269 8229">Copy</button></div>
           <div class="v">0927 343 6747 <button class="copy" data-copy="0927 343 6747">Copy</button></div>
-          <div class="v">0964 823 2183 <button class="copy" data-copy="0964 823 2183">Copy</button></div></div></div>
-        <div class="irow"><div class="i"><i data-lucide="mail"></i></div><div style="min-width:0"><div class="k">Email</div><div class="v">arklinehomeandofficefurnitures@gmail.com <button class="copy" data-copy="arklinehomeandofficefurnitures@gmail.com">Copy</button></div></div></div>
+          <div class="v">0964 823 2183 <button class="copy" data-copy="0964 823 2183">Copy</button></div></div></div></div>
+        <div class="irow"><div class="i"><i data-lucide="mail"></i></div><div style="min-width:0"><div class="k">Email</div><div class="v" id="emailv">arklinehomeandofficefurnitures@gmail.com <button class="copy" data-copy="arklinehomeandofficefurnitures@gmail.com">Copy</button></div></div></div>
         <div class="irow" id="msgrow" hidden><div class="i"><i data-lucide="messages-square"></i></div><div><div class="k">Chat with us</div><div class="v chats" id="chats"></div></div></div>
       </div>
     </div>
@@ -206,7 +206,7 @@
       <div id="ts" class="ts" hidden></div>
       <p class="err" id="ferr" role="alert" hidden></p>
       <button class="btn btn-primary" type="submit" id="qsend"><i data-lucide="send"></i><span>Send request</span></button>
-      <p class="reply-note"><i data-lucide="clock"></i>We usually reply within one business day.</p>
+      <p class="reply-note"><i data-lucide="clock"></i><span data-c="contact.reply">We usually reply within one business day.</span></p>
       <p class="sent" id="fsent" role="status" tabindex="-1" hidden></p>
     </form>
   </div>
@@ -218,11 +218,11 @@
 <footer>
   <div class="wrap">
     <div class="fgrid">
-      <div><div class="flogo"><img src="/img/logo.png" alt="Arkline Home and Office Furniture Shop"></div><p style="margin-top:16px;max-width:36ch">Creating functional spaces, delivering quality furniture solutions.</p></div>
+      <div><div class="flogo"><img src="/img/logo.png" alt="Arkline Home and Office Furniture Shop"></div><p style="margin-top:16px;max-width:36ch" data-c="footer.tagline">Creating functional spaces, delivering quality furniture solutions.</p></div>
       <div><h4>Quick links</h4><ul><li><a href="#projects">Completed projects</a></li><li><a href="#shop">Shop now</a></li><li><a href="#about">About us</a></li><li><a href="#contact">Contact us</a></li></ul></div>
       <div><h4>FAQs</h4><ul><li><a href="#faq">Request updated pricelist</a></li><li><a href="#faq">How to make an order</a></li><li><a href="#faq">How to make payment</a></li><li><a href="#faq">Terms &amp; conditions</a></li></ul></div>
     </div>
-    <div class="fbottom"><span>© 2026 Arkline Home &amp; Office Furniture. All rights reserved.</span><span>101 Lydia St., Novaliches, Quezon City</span></div>
+    <div class="fbottom"><span>© 2026 Arkline Home &amp; Office Furniture. All rights reserved.</span><span data-c="contact.address">101 Lydia St., Novaliches, Quezon City</span></div>
   </div>
 </footer>
 

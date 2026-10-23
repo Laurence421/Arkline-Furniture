@@ -34,6 +34,8 @@
     <div class="tabs" role="tablist" id="atabs">
       <button role="tab" aria-selected="true" data-tab="quotes"><i data-lucide="inbox"></i>Quotes <span class="badge" id="newc" hidden></span></button>
       <button role="tab" aria-selected="false" data-tab="photos"><i data-lucide="images"></i>Photos</button>
+      <button role="tab" aria-selected="false" data-tab="prices"><i data-lucide="tag"></i>Prices</button>
+      <button role="tab" aria-selected="false" data-tab="text"><i data-lucide="type"></i>Website text</button>
     </div>
 
     <div id="tab-quotes" class="tabpane">
@@ -49,6 +51,34 @@
         </div>
         <p class="err" id="qerr" role="alert" hidden></p>
         <div class="qlist" id="qlist"></div>
+      </section>
+    </div>
+
+    <div id="tab-prices" class="tabpane" hidden>
+      <section class="panel-wrap">
+        <div class="head" style="margin-bottom:20px">
+          <span class="pill"><i data-lucide="tag"></i>Products &amp; prices</span>
+          <h2>What's in the <span class="grad">shop</span> <small class="count" id="pcount"></small></h2>
+          <p>Changes show on the website as soon as you save, and quote estimates use these prices. Hidden products stay here but disappear from the shop.</p>
+        </div>
+        <div class="qtools">
+          <div class="filters" id="pfilters" style="margin:0"></div>
+          <div class="acts2"><button class="btn btn-outline" data-add-kind="chair"><i data-lucide="plus"></i>Add chair</button><button class="btn btn-outline" data-add-kind="table"><i data-lucide="plus"></i>Add table</button></div>
+        </div>
+        <p class="err" id="perr" role="alert" hidden></p>
+        <div class="plist" id="plist"></div>
+      </section>
+    </div>
+
+    <div id="tab-text" class="tabpane" hidden>
+      <section class="panel-wrap">
+        <div class="head" style="margin-bottom:20px">
+          <span class="pill"><i data-lucide="type"></i>Website text</span>
+          <h2>Edit the <span class="grad">words</span> on the site</h2>
+          <p>Each section saves on its own. "Restore original" puts back the text the website launched with. <a href="/" target="_blank" rel="noopener">Open the website</a> to check your changes.</p>
+        </div>
+        <p class="err" id="terr" role="alert" hidden></p>
+        <div class="tforms" id="tforms"></div>
       </section>
     </div>
 

@@ -11,8 +11,8 @@ How it works, for the client: [docs/arkline-website-flow.pdf](docs/arkline-websi
 | `admin.html`, `src/admin.js`, `src/auth.js` | `/admin`: Quotes inbox, photo upload, Trash; Google / email sign-in with password reset |
 | `api/quote.js` | Quote handler: validates, spam check, saves to Supabase, emails Arkline |
 | `functions/api/quote.js` | Cloudflare Pages wrapper for the handler (`POST /api/quote`) |
-| `src/data.js` | Catalogue, prices, bundled photo list, Messenger/Viber links |
-| `supabase/schema.sql`, `supabase/002_quotes_admin.sql` | Tables, access rules, storage buckets; notes column |
+| `src/data.js`, `src/content.js` | Built-in catalogue and website text (used until the admin saves changes), photo list, chat links |
+| `supabase/schema.sql`, `002_quotes_admin.sql`, `003_prices_and_text.sql` | Tables, access rules, storage buckets; notes; editable products and text |
 | `.github/workflows/keep-supabase-awake.yml` | Daily ping so the free Supabase project never pauses |
 | `public/img/` | Bundled photos (WebP; JPG kept for social previews). `npm run webp` regenerates |
 
@@ -46,4 +46,5 @@ Without Supabase keys the quote form runs in demo mode (logs to the terminal, sa
 - **New request**: alert email (if Resend is set) and the **Quotes** tab in `/admin`. Set the status as you go; notes are private.
 - **New photo**: `/admin` → Photos → pick a category, choose photos, Upload. They show first in the gallery.
 - **Remove a photo**: trash icon → **Trash** at the bottom of the Photos tab. Restore puts it back; uploaded photos can be deleted forever.
-- **Prices / catalogue**: edit `src/data.js` and push; Cloudflare redeploys automatically.
+- **Prices and products**: `/admin` → Prices. Edit, add or hide items; quote estimates use these prices.
+- **Website text**: `/admin` → Website text. Hero, shop intro, services, about, how to order, FAQs, contact details, footer. "Restore original" undoes a section.

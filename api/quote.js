@@ -2,7 +2,7 @@
 // Host-neutral: handleQuote(request, env). Cloudflare Pages calls it from functions/api/quote.js;
 // POST below serves Vercel and the Vite dev server.
 import { createClient } from "@supabase/supabase-js";
-import { ALL, PROJECT_TYPES, pt } from "../src/data.js";
+import { ALL, PROJECT_TYPES, fromRow, pt } from "../src/data.js";
 
 const MAX_PHOTO = 5 * 1024 * 1024;
 const PHOTO_TYPES = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
@@ -30,14 +30,9 @@ export async function handleQuote(request, env) {
   if (!okPhone && !okEmail) return json({ error: "Add a mobile number (09XX XXX XXXX) or an email so we can send your quotation." }, 400);
   if (!PROJECT_TYPES.includes(type)) return json({ error: "Choose a project type." }, 400);
 
-  // Prices are recomputed here from the catalogue; the browser only sends ids and quantities.
-  let items = [];
-  try { items = JSON.parse(field(fd, "items", 4000) || "[]"); } catch {}
-  items = (Array.isArray(items) ? items : [])
-    .filter(i => ALL[i?.id]).slice(0, 50)
-    .map(i => ({ id: i.id, name: ALL[i.id].name, qty: Math.max(1, Math.min(99, parseInt(i.qty) || 1)) }));
-  const min = items.reduce((s, i) => s + ALL[i.id].min * i.qty, 0);
-  const max = items.reduce((s, i) => s + ALL[i.id].max * i.qty, 0);
+  let raw = [];
+  try { raw = JSON.parse(field(fd, "items", 4000) || "[]"); } catch {}
+  raw = (Array.isArray(raw) ? raw : []).filter(i => typeof i?.id === "string").slice(0, 50);
 
   // Cloudflare Turnstile: enforced only when the secret is configured.
   if (env.TURNSTILE_SECRET_KEY) {
@@ -53,6 +48,18 @@ export async function handleQuote(request, env) {
     return json({ error: "Our quotation form is temporarily unavailable. Please call or email us instead." }, 503);
   }
   const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+
+  // Prices are recomputed here from the admin-edited products table (built-in list if it's unavailable);
+  // the browser only sends ids and quantities.
+  let catalog = ALL;
+  if (raw.length) {
+    const { data, error } = await db.from("products").select("*").in("id", raw.map(i => i.id)).eq("visible", true);
+    if (!error) catalog = Object.fromEntries(data.map(r => [r.id, fromRow(r)]));
+  }
+  const items = raw.filter(i => catalog[i.id])
+    .map(i => ({ id: i.id, name: catalog[i.id].name, qty: Math.max(1, Math.min(99, parseInt(i.qty) || 1)) }));
+  const min = items.reduce((s, i) => s + catalog[i.id].min * i.qty, 0);
+  const max = items.reduce((s, i) => s + catalog[i.id].max * i.qty, 0);
 
   let attachment_path = null;
   const photo = fd.get("photo");

@@ -31,7 +31,7 @@ export const CHAIRS=[["001",6730,145,["Mesh back, fabric seat","Black plastic + 
  ["011",2900,197,["Clerical mesh chair","Spacious seat","Heavy-duty mesh, full back support"]],
  ["012",3450,13,["Mid-back chair","Black frame backrest with lumbar support","Chrome gas lift","Nylon black starbase"]],
  ["013",5250,148,["Clerical fabric chair","Spacious seat","Heavy-duty fabric","Wide chrome starbase"]]
-].map(([c,p,im,f])=>({id:"AOC-"+c,name:"Ergonomic Office Chair",min:p,max:p,im,f}));
+].map(([c,p,im,f])=>({id:"AOC-"+c,kind:"chair",name:"Ergonomic Office Chair",min:p,max:p,image:img(im),f}));
 
 export const TABLES=[["001",42000,48000,"Executive desk with side pedestal",2400,1200,null,["Laminated woodgrain, scratch-resistant","Built-in 2-drawer side pedestal","Black accent base"]],
  ["002",11500,11500,"Steel-frame office table",1200,600,null,["Scratch- and moisture-resistant top","Powder-coated steel frame","Custom sizes on request"]],
@@ -47,12 +47,16 @@ export const TABLES=[["001",42000,48000,"Executive desk with side pedestal",2400
  ["012",11500,11500,"Wood-grain desk, white frame",1400,700,null,["Full front modesty panel","Dual cable grommets","Natural wood-grain MDF"]],
  ["013",6000,7500,"Wood-grain desk, white frame",1400,700,null,["Price depends on size and finish","Full front modesty panel","Dual cable grommets"]],
  ["014",10275,10275,"Table with locking pedestal",1200,600,null,["Fixed 3-drawer pedestal, central lock","A4 and legal filing drawer","Rust-resistant steel frame"]]
-].map(([c,min,max,name,L,W,x,f])=>({id:"OFT-"+c,name,min,max,L,W,x,f}));
+].map(([c,min,max,name,L,W,x,f])=>({id:"OFT-"+c,kind:"table",name,min,max,image:null,L,W,x,f}));
 
 // Chat links. Leave "" to hide the button. messenger: "https://m.me/<PageName>", viber: "09XXXXXXXXX".
 export const CONTACT = { messenger: "", viber: "" };
 
 export const ALL=Object.fromEntries([...CHAIRS,...TABLES].map(i=>[i.id,i]));
+
+// products table row → catalogue item (and back), shared by the site, admin and /api/quote.
+export const fromRow=r=>({id:r.id,kind:r.kind,name:r.name,min:r.price_min,max:r.price_max,image:r.image,L:r.length_mm,W:r.width_mm,x:r.plan_extra,f:r.features||[]});
+export const toRow=(p,sort)=>({id:p.id,kind:p.kind,name:p.name,price_min:p.min,price_max:p.max,image:p.image,length_mm:p.L??null,width_mm:p.W??null,plan_extra:p.x??null,features:p.f,sort});
 export const PROJECT_TYPES=["Office fit-out","Home furniture","Commercial / institutional","Single items"];
 export const peso=n=>"₱"+n.toLocaleString("en-PH");
 export const pt=it=>it.min===it.max?peso(it.min):peso(it.min)+" – "+peso(it.max);

@@ -1,6 +1,7 @@
 // /admin — Feature A. Signed-in admins upload, trash, restore and permanently delete gallery photos.
 // Uploaded photos: projects.deleted_at set = in Trash. Bundled photos: a hidden_photos row = in Trash.
 import { ORDER, BUNDLED } from "./data.js";
+import { loadProducts, loadText, initContentTabs } from "./admin-content.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
 import { mountAuth } from "./auth.js";
@@ -30,14 +31,14 @@ async function route(session){
     icons(); return;
   }
   $("#login").hidden=true; $("#app").hidden=false;
-  load(); loadQuotes();
+  load(); loadQuotes(); loadProducts(); loadText();
 }
 
 /* tabs */
 $("#atabs").onclick=e=>{
   const b=e.target.closest("[data-tab]"); if(!b) return;
   $("#atabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b));
-  $("#tab-quotes").hidden=b.dataset.tab!=="quotes"; $("#tab-photos").hidden=b.dataset.tab!=="photos";
+  for(const t of ["quotes","photos","prices","text"]) $("#tab-"+t).hidden=b.dataset.tab!==t;
 };
 
 /* quotes */
@@ -216,6 +217,7 @@ $("#up").addEventListener("submit",async e=>{
 
 if(!supabase){ $("#cfg").hidden=false; }
 else{
+  initContentTabs(toast);
   auth=mountAuth($("#login"),{
     title:"Admin sign in", sub:"Use the Arkline admin account.",
     onPasswordSet:async()=>{ recovering=false; route((await supabase.auth.getSession()).data.session); }
