@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Why Arkline Needs This Website</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: the Arkline guides' look (cream, walnut, admin green), arranged as a short business case:
+   a one-line purpose, six jobs the website does, the customer journey, a with/without comparison, cost, next steps. */
+:root{
+  --bg:hsl(36 33% 96%); --card:hsl(0 0% 100%); --tint:hsl(34 28% 91%);
+  --ink:hsl(40 6% 13%); --muted:hsl(30 6% 38%); --line:hsl(32 18% 82%);
+  --walnut:hsl(27 52% 36%); --gold:hsl(36 62% 55%); --admin:hsl(158 38% 30%); --admin-tint:hsl(150 30% 92%);
+  --dark:hsl(40 8% 10%); --on-dark:hsl(36 33% 96%); --on-dark-muted:hsl(36 12% 72%);
+  --f-head:"Playfair Display",Georgia,"Times New Roman",serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:44px 64px;display:grid;gap:44px}
+h1,h2{font-family:var(--f-head);margin:0;line-height:1.12;letter-spacing:-.015em;text-wrap:balance}
+h1{font-size:clamp(2.1rem,4.8vw,3.1rem)} h2{font-size:clamp(1.4rem,2.8vw,1.85rem)}
+h3{margin:0;font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-size:.74rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--walnut)}
+header{display:grid;gap:12px}
+.lead{font-size:1.1rem;color:var(--muted);max-width:62ch}
+section{display:grid;gap:16px}
+section>p{color:var(--muted);max-width:66ch}
+.purpose{background:var(--dark);color:var(--on-dark);border-radius:22px;padding:30px 30px 28px;display:grid;gap:10px}
+.purpose .eyebrow{color:var(--gold)}
+.purpose p.big{font-family:var(--f-head);font-size:clamp(1.45rem,3.2vw,2rem);line-height:1.25}
+.purpose p.big em{color:var(--gold);font-style:italic}
+.purpose p.small{color:var(--on-dark-muted);font-size:.98rem;max-width:64ch}
+.jobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.job{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:8px;align-content:start;min-width:0}
+.job .n{width:30px;height:30px;border-radius:50%;background:var(--walnut);color:#fff;display:grid;place-items:center;font-weight:800;font-size:.85rem}
+.job p{color:var(--muted);font-size:.93rem}
+.job p b{color:var(--ink)}
+.journey{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;counter-reset:j}
+.step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:6px;align-content:start;position:relative;min-width:0}
+.step b{font-size:.92rem}
+.step span{color:var(--muted);font-size:.84rem;line-height:1.45}
+.step::before{counter-increment:j;content:counter(j);font-weight:800;font-size:.75rem;color:var(--admin);background:var(--admin-tint);border-radius:999px;padding:1px 9px;justify-self:start}
+@media (max-width:760px){.journey{grid-template-columns:1fr 1fr}}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:.93rem;min-width:560px}
+th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800;background:var(--tint)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:700}
+td.no{color:var(--muted)} td.yes{color:var(--admin);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:2px}
+.stat b{font-family:var(--f-head);font-size:1.7rem;color:var(--walnut);line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.86rem}
+.check{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.check li{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;color:var(--muted);font-size:.95rem}
+.check li::before{content:"";flex:none;width:18px;height:18px;border:2px solid var(--admin);border-radius:5px;margin-top:2px}
+.check b{color:var(--ink)}
+footer{color:var(--muted);font-size:.85rem}
+@media print{
+  .wrap{padding-block:0;gap:28px}
+  section,.job,.step,.tw,tr,.stat,.check li,.purpose{break-inside:avoid}
+  h2{break-after:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Arkline Home &amp; Office Furniture · your website</span>
+  <h1>What your website does for Arkline</h1>
+  <p class="lead">A short guide to why the website exists, what it does for the business every day, and how to get the most from it.</p>
+</header>
+
+<div class="purpose">
+  <span class="eyebrow">The purpose in one sentence</span>
+  <p class="big">Turn people who are looking for furniture into <em>orders and price requests</em>, day and night, without extra staff.</p>
+  <p class="small">Your Facebook page and phone bring people to you. The website is where they see your work, check prices, and send you a clear, complete request that the team can answer in one tap.</p>
+</div>
+
+<section>
+  <h2>Six jobs the website does for you</h2>
+  <div class="jobs">
+    <div class="job"><div class="n">1</div><h3>Shows your work</h3><p>Your finished offices, workstations, kitchens and partitions in one organised gallery. <b>Customers trust what they can see</b>, and it's one link to send instead of dozens of photos.</p></div>
+    <div class="job"><div class="n">2</div><h3>Sells ready-made items</h3><p>Chairs and office tables with clear prices. Customers add them to an order and send it, so <b>simple sales happen without back-and-forth</b> about price.</p></div>
+    <div class="job"><div class="n">3</div><h3>Brings in custom projects</h3><p>A customer taps <b>"I want one like this"</b> on a photo, adds their size or number of seats, and asks for a price. You see exactly what they mean.</p></div>
+    <div class="job"><div class="n">4</div><h3>Saves the team time</h3><p>Every request arrives complete: name, contact, items, photos and how they want to be contacted. <b>An email alert</b> tells you, and you reply by call, Viber, Messenger or a ready-written Gmail.</p></div>
+    <div class="job"><div class="n">5</div><h3>Keeps a record of every lead</h3><p>Requests don't get lost in chats. Each has a number, a status (New, Contacted, Price sent, Closed) and private notes, and you can <b>download them all to Excel</b>.</p></div>
+    <div class="job"><div class="n">6</div><h3>You control it, no developer needed</h3><p>Change prices, add new projects from your phone, hide items, edit the text and FAQs yourself. <b>Changes show within 30 seconds.</b></p></div>
+  </div>
+</section>
+
+<section>
+  <h2>How a customer becomes an order</h2>
+  <div class="journey">
+    <div class="step"><b>Finds you</b><span>From your Facebook page, Google, a shared link or a business card.</span></div>
+    <div class="step"><b>Looks around</b><span>Sees your projects, the shop and prices, on their phone, any time.</span></div>
+    <div class="step"><b>Sends a request</b><span>An order for shop items, or "ask for a price" for custom work. No account needed.</span></div>
+    <div class="step"><b>You're alerted</b><span>An email arrives and the request waits in your admin page, numbered.</span></div>
+    <div class="step"><b>You reply</b><span>Within one business day, the way the customer chose.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>With a website, compared with chat and calls only</h2>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Chat and calls only</th><th>With the website</th></tr></thead>
+    <tbody>
+      <tr><td>Showing your work</td><td class="no">Sending photos one by one in chat</td><td class="yes">One link to a full, organised gallery</td></tr>
+      <tr><td>Prices</td><td class="no">The same price questions, again and again</td><td class="yes">Shop prices and "starts at" prices shown up front</td></tr>
+      <tr><td>Customer details</td><td class="no">Spread across chats, missing sizes or numbers</td><td class="yes">Complete, numbered requests in one place</td></tr>
+      <tr><td>Open hours</td><td class="no">When someone is free to answer</td><td class="yes">Takes requests 24/7, even at night and on Sundays</td></tr>
+      <tr><td>Follow-up</td><td class="no">Easy to forget who was waiting</td><td class="yes">Status and notes show who still needs a reply</td></tr>
+      <tr><td>Image</td><td class="no">Hard to judge size and reliability</td><td class="yes">Looks established, like a company you can trust with a big order</td></tr>
+    </tbody>
+  </table></div>
+  <p>The website works with your Facebook page, not instead of it: Messenger and Viber buttons on the site keep chat one tap away.</p>
+</section>
+
+<section>
+  <h2>Built to be fast, safe and free to run</h2>
+  <div class="stats">
+    <div class="stat"><b>₱0</b><span>a month to run, on free plans</span></div>
+    <div class="stat"><b>24/7</b><span>takes orders and price requests</span></div>
+    <div class="stat"><b>3.4 s</b><span>to load on slow mobile data</span></div>
+    <div class="stat"><b>100</b><span>visitors at once, tested with no errors</span></div>
+    <div class="stat"><b>32/32</b><span>break-in attempts blocked in testing</span></div>
+  </div>
+  <p>Optional: your own address like arklinefurniture.com costs about ₱700 a year. Without it, the website uses a free address.</p>
+</section>
+
+<section>
+  <h2>How to get the most from it</h2>
+  <ul class="check">
+    <li><span><b>Share the link everywhere:</b> Facebook page "Website" field and pinned post, Messenger welcome message, Viber, business cards, quotations and delivery receipts.</span></li>
+    <li><span><b>Add new projects every month.</b> Fresh photos show you're busy and give customers more to say "I want one like this" to.</span></li>
+    <li><span><b>Set "starts at" prices</b> for common work like workstations and cubicles, so customers know if it fits their budget.</span></li>
+    <li><span><b>Reply within one business day.</b> The website promises it, and fast replies win orders.</span></li>
+    <li><span><b>Keep prices up to date</b> in the admin page, and download the requests backup every Friday.</span></li>
+    <li><span><b>Create a free Google Business Profile</b> with the website link, so people searching "office furniture Novaliches" find you.</span></li>
+  </ul>
+</section>
+
+<footer>Prepared for Arkline Home &amp; Office Furniture · 101 Lydia St., Novaliches, Quezon City · See also: the Website guide and the Admin guide.</footer>
+</div>
+</body>
+</html>
