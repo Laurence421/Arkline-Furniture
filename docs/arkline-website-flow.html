@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
-/* Layout: one reading column on Arkline's cream and walnut; the flow diagram is the centrepiece, steps and tables follow. Uses the website's own brand tokens. */
+/* Layout: one reading column on Arkline's cream and walnut; the flow diagram is the centrepiece, step cards and tables follow. Uses the website's own brand tokens. */
 :root{
   --bg:hsl(36 33% 96%); --card:hsl(0 0% 100%); --tint:hsl(34 28% 91%);
   --ink:hsl(40 6% 13%); --muted:hsl(30 6% 38%); --line:hsl(32 18% 82%);
@@ -71,7 +71,7 @@ svg.flow{display:block;width:100%;min-width:760px;height:auto}
 .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:20px}
 .steps{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;display:grid;gap:16px;align-content:start;min-width:0}
 .steps h3{display:flex;align-items:center;gap:10px;font-size:1.15rem}
-.steps h3 b{width:12px;height:12px;border-radius:50%;background:var(--walnut)}
+.steps h3 b{width:12px;height:12px;border-radius:50%;background:var(--walnut);flex:none}
 .steps.ad h3 b{background:var(--admin)}
 ol{margin:0;padding:0;list-style:none;display:grid;gap:14px}
 ol li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start}
@@ -79,6 +79,13 @@ ol li>span{width:28px;height:28px;border-radius:50%;background:var(--walnut);col
 .ad ol li>span{background:var(--admin)}
 ol li p{color:var(--muted);font-size:.95rem}
 ol li p b{color:var(--ink)}
+
+/* admin tabs */
+.tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px}
+.tab{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:8px;align-content:start;min-width:0}
+.tab h3{display:flex;gap:8px;align-items:center}
+.tab h3 i{font-style:normal;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--admin);background:var(--admin-tint);padding:2px 8px;border-radius:999px}
+.tab p{color:var(--muted);font-size:.92rem}
 
 /* tables */
 .tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
@@ -89,7 +96,6 @@ tr:last-child td{border-bottom:0}
 td:first-child{font-weight:700}
 .yes{color:var(--admin);font-weight:700} .no{color:var(--muted)}
 .num{font-variant-numeric:tabular-nums}
-code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.86em;background:var(--tint);padding:1px 6px;border-radius:5px}
 
 .todo{display:grid;gap:10px;margin:0;padding:0;list-style:none}
 .todo li{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
@@ -98,15 +104,15 @@ code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.86em
 .pill.next{background:var(--tint);color:var(--walnut)}
 footer{color:var(--muted);font-size:.85rem}
 </style>
-<style>body{margin:0}@media print{.scroll{overflow:visible}svg.flow{min-width:0}.wrap{padding-block:24px}section,figure,.steps{break-inside:avoid}}</style>
+<style>body{margin:0}@media print{.scroll{overflow:visible;padding:10px}svg.flow{min-width:0}.wrap{padding-block:0;gap:30px}section,figure,.steps,.tab,.tw,tr{break-inside:avoid}h2{break-after:avoid}}</style>
 </head>
 <body>
 
 <div class="wrap">
 <header>
-  <span class="eyebrow">Arkline Home &amp; Office Furniture · website</span>
-  <h1>How a quotation gets from the customer to Arkline</h1>
-  <p class="lead">Customers send a quote request from the website without creating an account. It is saved to Arkline's database and emailed to Arkline. The admin manages the project photos from a private admin page.</p>
+  <span class="eyebrow">Arkline Home &amp; Office Furniture · website guide</span>
+  <h1>How an order gets from the customer to Arkline</h1>
+  <p class="lead">Customers order from the shop or ask for a price on custom work, with no account needed. Every request is saved, emailed to Arkline and shows up in the admin page, where the team replies and keeps the website up to date themselves.</p>
 </header>
 
 <figure>
@@ -119,7 +125,7 @@ footer{color:var(--muted);font-size:.85rem}
     </defs>
 
     <text class="col" x="40" y="26">PEOPLE</text>
-    <text class="col" x="250" y="26">WEBSITE · VERCEL</text>
+    <text class="col" x="250" y="26">WEBSITE · CLOUDFLARE</text>
     <text class="col" x="560" y="26">DATA · SUPABASE</text>
 
     <!-- people -->
@@ -132,23 +138,23 @@ footer{color:var(--muted);font-size:.85rem}
     <text class="t" x="58" y="332">Arkline team</text>
     <rect class="chip" x="54" y="346" width="132" height="44" rx="10"/>
     <text class="s" x="66" y="366" style="fill:var(--ink);font-weight:700">Gmail inbox</text>
-    <text class="s" x="66" y="382">new-quote alerts</text>
+    <text class="s" x="66" y="382">new-request alerts</text>
     <rect class="chip" x="54" y="452" width="132" height="58" rx="10"/>
     <text class="s" x="66" y="474" style="fill:var(--ink);font-weight:700">Admin</text>
-    <text class="s" x="66" y="491">arklinefurniture3</text>
-    <text class="s" x="66" y="505">@gmail.com</text>
+    <text class="s" x="66" y="491">Google or email</text>
+    <text class="s" x="66" y="505">sign-in</text>
 
     <!-- website -->
     <rect class="box web" x="250" y="50" width="230" height="100" rx="14"/>
     <text class="t" x="268" y="82">Public website</text>
-    <text class="s" x="268" y="104">gallery, shop, quote list,</text>
-    <text class="s" x="268" y="121">"Request a free quotation"</text>
-    <text class="mono" x="268" y="139">arkline…/</text>
+    <text class="s" x="268" y="104">gallery, shop, My order,</text>
+    <text class="s" x="268" y="121">"Send my order" / "Ask for a price"</text>
+    <text class="mono" x="268" y="139">arkline.pages.dev</text>
 
     <rect class="box web" x="250" y="190" width="230" height="84" rx="14"/>
-    <text class="t" x="268" y="220">Quote checker</text>
+    <text class="t" x="268" y="220">Request checker</text>
     <text class="s" x="268" y="240">checks the form, works out</text>
-    <text class="s" x="268" y="257">the estimate from the price list</text>
+    <text class="s" x="268" y="257">the total from the price list</text>
 
     <rect class="box web" x="250" y="314" width="230" height="56" rx="14"/>
     <text class="t" x="268" y="339">Email sender</text>
@@ -156,27 +162,27 @@ footer{color:var(--muted);font-size:.85rem}
 
     <rect class="box web" x="250" y="430" width="230" height="100" rx="14"/>
     <text class="t" x="268" y="462">Admin page</text>
-    <text class="s" x="268" y="484">sign in with Google or email,</text>
-    <text class="s" x="268" y="501">upload, trash, restore photos</text>
-    <text class="mono" x="268" y="519">arkline…/admin</text>
+    <text class="s" x="268" y="484">requests, photos, prices,</text>
+    <text class="s" x="268" y="501">website text, account</text>
+    <text class="mono" x="268" y="519">arkline.pages.dev/admin</text>
 
     <!-- supabase -->
     <rect class="sbg" x="540" y="44" width="310" height="500" rx="18"/>
     <rect class="box sb" x="560" y="64" width="270" height="176" rx="14"/>
     <text class="t" x="578" y="94">Database</text>
     <rect class="chip" x="574" y="106" width="242" height="38" rx="9"/>
-    <text class="mono" x="588" y="130">quotation_requests</text>
+    <text class="mono" x="588" y="130">requests</text><text class="s" x="668" y="130">orders, price requests</text>
     <rect class="chip" x="574" y="150" width="242" height="38" rx="9"/>
-    <text class="mono" x="588" y="174">projects</text><text class="s" x="680" y="174">uploaded photos</text>
+    <text class="mono" x="588" y="174">products</text><text class="s" x="668" y="174">prices, items</text>
     <rect class="chip" x="574" y="194" width="242" height="38" rx="9"/>
-    <text class="mono" x="588" y="218">hidden_photos</text><text class="s" x="702" y="218">trashed originals</text>
+    <text class="mono" x="588" y="218">site text</text><text class="s" x="668" y="218">words on the site</text>
 
     <rect class="box sb" x="560" y="262" width="270" height="124" rx="14"/>
     <text class="t" x="578" y="292">Photo storage</text>
     <rect class="chip" x="574" y="304" width="242" height="34" rx="9"/>
-    <text class="mono" x="588" y="326">project-photos</text><text class="s" x="712" y="326">public</text>
+    <text class="mono" x="588" y="326">gallery photos</text><text class="s" x="740" y="326">public</text>
     <rect class="chip" x="574" y="342" width="242" height="34" rx="9"/>
-    <text class="mono" x="588" y="364">quote-attachments</text><text class="s" x="740" y="364">private</text>
+    <text class="mono" x="588" y="364">customer photos</text><text class="s" x="740" y="364">private</text>
 
     <rect class="box sb" x="560" y="408" width="270" height="116" rx="14"/>
     <text class="t" x="578" y="438">Sign-in</text>
@@ -189,16 +195,15 @@ footer{color:var(--muted);font-size:.85rem}
     <circle class="n" cx="223" cy="100" r="11"/><text class="nt" x="223" y="100">1</text>
 
     <path class="c" d="M365 150V186" marker-end="url(#mc)"/>
-    <circle class="n" cx="365" cy="168" r="11"/><text class="nt" x="365" y="168">2</text>
+    <circle class="n" cx="365" cy="168" r="11"/><text class="nt" x="365" y="168">3</text>
 
     <path class="c" d="M480 214C512 214 520 140 556 130" marker-end="url(#mc)"/>
-    <circle class="n" cx="512" cy="180" r="11"/><text class="nt" x="512" y="180">3</text>
+    <circle class="n" cx="512" cy="180" r="11"/><text class="nt" x="512" y="180">4</text>
 
     <path class="c" d="M480 252C516 252 524 356 556 360" marker-end="url(#mc)"/>
-    <circle class="n" cx="516" cy="300" r="11"/><text class="nt" x="516" y="300">4</text>
+    <circle class="n" cx="516" cy="300" r="11"/><text class="nt" x="516" y="300">5</text>
 
     <path class="c" d="M365 274V310" marker-end="url(#mc)"/>
-    <circle class="n" cx="365" cy="292" r="11"/><text class="nt" x="365" y="292">5</text>
 
     <path class="c" d="M250 342H204" marker-end="url(#mc)"/>
     <circle class="n" cx="227" cy="342" r="11"/><text class="nt" x="227" y="342">6</text>
@@ -207,7 +212,7 @@ footer{color:var(--muted);font-size:.85rem}
     <circle class="n" cx="18" cy="256" r="11"/><text class="nt" x="18" y="256">7</text>
 
     <path class="c dash" d="M560 112C530 112 510 100 484 100" marker-end="url(#mc)"/>
-    <text class="al" x="494" y="84">gallery</text>
+    <text class="al" x="487" y="86">site data</text>
 
     <!-- admin flow -->
     <path class="a" d="M200 480H246" marker-end="url(#ma)"/>
@@ -217,77 +222,91 @@ footer{color:var(--muted);font-size:.85rem}
     <circle class="n ad" cx="518" cy="470" r="11"/><text class="nt" x="518" y="470">B</text>
 
     <path class="a" d="M480 446C516 446 522 330 556 322" marker-end="url(#ma)"/>
-    <circle class="n ad" cx="516" cy="396" r="11"/><text class="nt" x="516" y="396">C</text>
+    <circle class="n ad" cx="516" cy="396" r="11"/><text class="nt" x="516" y="396">D</text>
   </svg>
   </div>
   <div class="legend">
-    <span><i style="background:var(--walnut)"></i>Customer asks for a quote, steps 1–7</span>
-    <span><i style="background:var(--admin)"></i>Admin updates the gallery, steps A–D</span>
+    <span><i style="background:var(--walnut)"></i>Customer orders or asks for a price, steps 1–7</span>
+    <span><i style="background:var(--admin)"></i>Admin replies and updates the site, steps A–E</span>
     <span><i style="background:var(--muted);height:0;border-top:2px dashed var(--muted)"></i>Happens outside the website</span>
   </div>
 </figure>
 
 <div class="two">
   <section class="steps">
-    <h3><b></b>When a customer asks for a quote</h3>
+    <h3><b></b>When a customer orders or asks for a price</h3>
     <ol>
-      <li><span>1</span><p><b>Browses the website.</b> Sees the project gallery, adds chairs or tables to the quote list. No sign-up.</p></li>
-      <li><span>2</span><p><b>Sends the quotation form.</b> Name, mobile or email, project type, a description and an optional reference photo.</p></li>
-      <li><span>3</span><p><b>The request is saved.</b> The website checks the details, works out the price estimate from Arkline's own price list, and stores the request.</p></li>
-      <li><span>4</span><p><b>The reference photo is stored privately.</b> Only Arkline can open it; the public can't.</p></li>
-      <li><span>5</span><p><b>An alert email is prepared</b> with the customer's details, items and estimate.</p></li>
-      <li><span>6</span><p><b>It lands in Arkline's Gmail.</b> Replying to it goes straight to the customer's email.</p></li>
-      <li><span>7</span><p><b>Arkline replies within one business day</b> by phone or email with the formal quotation, as the form promises.</p></li>
+      <li><span>1</span><p><b>Browses the website.</b> Sees the project gallery with "starts at" prices and the shop with current prices. No sign-up.</p></li>
+      <li><span>2</span><p><b>Picks what they want.</b> <b>Add to order</b> for shop items, <b>I want one like this</b> on a project photo, or simply describes custom work.</p></li>
+      <li><span>3</span><p><b>Sends the form.</b> It reads <b>"Send my order"</b> or <b>"Ask for a price"</b> to match. Name, mobile or email, how to contact them (call or text, Viber, Messenger, email) and an optional photo.</p></li>
+      <li><span>4</span><p><b>The request is checked and saved.</b> The total is worked out from Arkline's own price list, so it can't be faked. The customer sees their number, e.g. "Your order #12 is in."</p></li>
+      <li><span>5</span><p><b>Their photo is stored privately.</b> Only Arkline can open it; the public can't.</p></li>
+      <li><span>6</span><p><b>An alert email lands in Arkline's Gmail</b> with the items, total, liked photos and how the customer wants to be contacted.</p></li>
+      <li><span>7</span><p><b>Arkline replies within one business day</b>, the way the customer asked: call, text, Viber, Messenger or email.</p></li>
     </ol>
   </section>
   <section class="steps ad">
-    <h3><b></b>When the admin updates the gallery</h3>
+    <h3><b></b>When the admin works on requests and the site</h3>
     <ol>
       <li><span>A</span><p><b>Opens the admin page</b> and signs in with Google (one click) or email and password. "Forgot password?" sends a reset link.</p></li>
       <li><span>B</span><p><b>Sign-in is checked</b> against the admin list. Any other account sees "Not an admin account".</p></li>
-      <li><span>C</span><p><b>Uploads, trashes or restores photos.</b> New photos are shrunk to about 200 KB each before upload, so they load fast.</p></li>
-      <li><span>D</span><p><b>The public gallery updates right away.</b> Deleted photos sit in Trash and can be restored.</p></li>
+      <li><span>C</span><p><b>Answers requests.</b> Each one is labelled <b>Order</b> or <b>Price request</b>, with one-tap Call, Text, Viber, Messenger and <b>Reply in Gmail</b> (a drafted reply). Status and private notes keep track.</p></li>
+      <li><span>D</span><p><b>Updates the website.</b> Uploads or removes project photos, changes prices and products, edits the words on the site.</p></li>
+      <li><span>E</span><p><b>Changes show on the website within 30 seconds.</b> Anything deleted can be restored, and every delete asks first.</p></li>
     </ol>
   </section>
 </div>
 
 <section>
+  <h2>What's in the admin page</h2>
+  <p>Five tabs. Everything the team needs to run the website without a developer.</p>
+  <div class="tabs">
+    <div class="tab"><h3>Requests <i>daily</i></h3><p>Orders and price requests, newest first. Filter by status, search by name, phone or number, reply in one tap, keep private notes.</p></div>
+    <div class="tab"><h3>Photos</h3><p>Upload project photos from a phone; they're shrunk automatically. Delete moves a photo to Trash, where it can be restored.</p></div>
+    <div class="tab"><h3>Prices</h3><p>Edit names, prices and features, add a photo, hide or delete items, add new chairs and tables. Set "starts at" prices for each project type.</p></div>
+    <div class="tab"><h3>Website text</h3><p>Headline, services, how to order, FAQs, contact numbers, Facebook page and Viber number. "Restore original" undoes a section.</p></div>
+    <div class="tab"><h3>Account</h3><p>Change the password, add one if you only use Google, or sign out on every device after using a shared computer.</p></div>
+  </div>
+</section>
+
+<section>
   <h2>Who can see what</h2>
-  <p>Access rules live in the database itself, so they hold no matter which page asks.</p>
+  <p>Access rules live in the database itself, so they hold no matter which page asks. A security test tried 32 ways to get in or change things without the admin account; all 32 were blocked.</p>
   <div class="tw"><table>
     <thead><tr><th>Information</th><th>Website visitors</th><th>Admin</th></tr></thead>
     <tbody>
       <tr><td>Gallery photos</td><td class="yes">View</td><td class="yes">Upload, trash, restore, delete forever</td></tr>
-      <tr><td>Quotation requests</td><td class="no">No access</td><td class="yes">Read in email and in the Supabase dashboard</td></tr>
-      <tr><td>Customer reference photos</td><td class="no">No access</td><td class="yes">7-day link in each alert email</td></tr>
-      <tr><td>Prices and catalogue</td><td class="yes">View</td><td>Changed by the developer in the code</td></tr>
+      <tr><td>Products and prices</td><td class="yes">View</td><td class="yes">Edit, add, hide, delete</td></tr>
+      <tr><td>Website text</td><td class="yes">View</td><td class="yes">Edit, restore original</td></tr>
+      <tr><td>Orders and price requests</td><td class="no">No access</td><td class="yes">Read, reply, set status, notes</td></tr>
+      <tr><td>Customers' photos and contact details</td><td class="no">No access</td><td class="yes">In the Requests tab and alert email</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section>
-  <h2>Running cost: free plans to start</h2>
-  <p>Every part runs on a free plan sized well above a local furniture shop's traffic.</p>
+  <h2>Running cost: ₱0 a month</h2>
+  <p>Every part runs on a free plan sized well above a local furniture shop's traffic, and all of them allow business use.</p>
   <div class="tw"><table>
     <thead><tr><th>Service</th><th>Job</th><th>Free limit</th><th>What that means for Arkline</th></tr></thead>
     <tbody>
-      <tr><td>Vercel</td><td>Hosts the website</td><td class="num">100 GB transfer / month</td><td>Tens of thousands of visits a month</td></tr>
-      <tr><td>Supabase database</td><td>Stores quote requests</td><td class="num">500 MB</td><td>Over 400,000 requests at under 1 KB each</td></tr>
-      <tr><td>Supabase storage</td><td>Stores photos</td><td class="num">1 GB</td><td>About 5,000 photos at ~200 KB</td></tr>
-      <tr><td>Resend</td><td>Sends alert emails</td><td class="num">3,000 / month, 100 / day</td><td>100 quote requests a day</td></tr>
+      <tr><td>Cloudflare Pages</td><td>Hosts the website</td><td class="num">Unlimited visits</td><td>Fast anywhere in the Philippines; 100 visitors at once tested</td></tr>
+      <tr><td>Supabase database</td><td>Requests, prices, text</td><td class="num">500 MB</td><td>Over 400,000 requests at under 1 KB each</td></tr>
+      <tr><td>Supabase storage</td><td>Photos</td><td class="num">1 GB</td><td>About 5,000 photos at ~200 KB</td></tr>
+      <tr><td>Resend</td><td>Alert emails</td><td class="num">3,000 / month, 100 / day</td><td>100 requests a day</td></tr>
+      <tr><td>GitHub Actions</td><td>Keeps the database awake</td><td class="num">Free</td><td>A daily check stops the free plan from pausing</td></tr>
     </tbody>
   </table></div>
-  <p>The free Supabase project pauses after 7 days with no visits. Regular website traffic keeps it awake.</p>
-  <p>Vercel's free Hobby plan is for non-commercial sites. For a business site, budget for Vercel Pro (US$20 a month), or host the same site free on Netlify or Cloudflare Pages.</p>
+  <p>Optional: a custom web address like arklinefurniture.com costs about ₱700 a year. The free address is arkline.pages.dev.</p>
 </section>
 
 <section>
   <h2>Status</h2>
   <ul class="todo">
-    <li><span class="pill done">Done</span><span>Website, quotation form saving to the database, admin page with upload and Trash, Google and email sign-in with password reset.</span></li>
-    <li><span class="pill next">Next</span><span>Connect Resend so alert emails start arriving. Until then, requests are saved and visible in Supabase.</span></li>
-    <li><span class="pill next">Next</span><span>Publish on Vercel with the real web address, and add that address to the Google and Supabase sign-in settings.</span></li>
-    <li><span class="pill next">Later</span><span>A "Quotes" tab in the admin page, so the team can track each request without opening Supabase.</span></li>
+    <li><span class="pill done">Done</span><span>Website with gallery, shop, orders and price requests; admin page with Requests, Photos, Prices, Website text and Account; Google and email sign-in with password reset; tested for speed, security and 100 visitors at once.</span></li>
+    <li><span class="pill next">Next</span><span>Publish on Cloudflare Pages and add the address to the sign-in settings.</span></li>
+    <li><span class="pill next">Next</span><span>Connect alert emails (Resend), and add Arkline's Facebook page and Viber number in Website text.</span></li>
+    <li><span class="pill next">Later</span><span>Photos of the office tables, a custom web address, and a showroom map.</span></li>
   </ul>
 </section>
 

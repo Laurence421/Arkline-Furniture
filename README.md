@@ -6,7 +6,7 @@ A production website for **Arkline Home & Office Furniture**, a custom furniture
 
 ![Arkline home page](docs/screenshots/home.jpg)
 
-> 📄 [Download this README as a PDF](docs/README.pdf) · [How it works, for the client (PDF)](docs/arkline-website-flow.pdf)
+> 📄 **[Download the website guide (PDF)](docs/arkline-website-flow.pdf)**: how orders reach Arkline and how the admin runs the site · [This README as a PDF](docs/README.pdf)
 
 ---
 
