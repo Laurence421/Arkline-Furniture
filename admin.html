@@ -116,7 +116,11 @@
       <form class="q" id="up" novalidate>
         <div class="f2">
           <div class="catpick">
-            <label for="u-cat">Category<select id="u-cat" required></select></label>
+            <label for="u-cat">Category</label>
+            <div class="catsel">
+              <select id="u-cat" required></select>
+              <button type="button" class="btn btn-outline pc-del" id="delcat" title="Delete the selected category"><i data-lucide="trash-2"></i><span>Delete category</span></button>
+            </div>
             <details class="catman" id="catman">
               <summary><i data-lucide="plus"></i>Add or remove a category</summary>
               <div class="catrow"><input id="newcat" maxlength="40" placeholder="New category, e.g. Operable Wall" aria-label="New category name"><button type="button" class="btn btn-outline" id="addcat"><i data-lucide="plus"></i><span>Add category</span></button></div>

@@ -297,16 +297,18 @@ async function addCat(){
 }
 $("#addcat").onclick=addCat;
 $("#newcat").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); addCat(); } }); // don't submit the upload form
-$("#catlist").addEventListener("click",async e=>{
-  const b=e.target.closest("[data-delcat]"); if(!b) return;
-  const name=b.dataset.delcat;
+// Both the "Delete category" button (selected category) and the ✕ on each chip ask first in a confirmation window.
+$("#catlist").addEventListener("click",e=>{ const b=e.target.closest("[data-delcat]"); if(b) removeCat(b.dataset.delcat); });
+$("#delcat").onclick=()=>{ const name=$("#u-cat").value; if(name) removeCat(name); else show($("#caterr"),"There's no category to delete."); };
+async function removeCat(name){
   const msg=isBuiltIn(name)
     ?"It disappears from the website together with its original photos. They aren't lost: add a category with exactly this name to bring them all back."
     :"It disappears from the category list and the website. Any photos you uploaded to it must be deleted forever first.";
   if(!await confirmDialog({title:`Remove the "${name}" category?`,message:msg,confirmLabel:"Remove category",danger:true})) return;
-  const err=await deleteCategory(name); show($("#caterr"),err);
-  if(!err){ renderCats(); render(); loadText(); toast(`"${name}" removed`); }
-});
+  const err=await deleteCategory(name);
+  if(err){ $("#catman").open=true; show($("#caterr"),err); return; } // show why, e.g. it still has photos
+  show($("#caterr")); renderCats(); render(); loadText(); toast(`"${name}" removed`);
+}
 $("#u-files").onchange=()=>{
   $("#queue").innerHTML=[...$("#u-files").files].map((f,i)=>`<div class="qitem" id="qi${i}"><img src="${URL.createObjectURL(f)}" alt=""><span>Ready</span></div>`).join("");
 };
