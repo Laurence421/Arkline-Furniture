@@ -2,7 +2,7 @@
 // Host-neutral: handleQuote(request, env). Cloudflare Pages calls it from functions/api/quote.js;
 // POST below serves Vercel and the Vite dev server.
 import { createClient } from "@supabase/supabase-js";
-import { ALL, BUNDLED, CATS, PROJECT_TYPES, fromRow, pt } from "../src/data.js";
+import { ALL, BUNDLED, CATS, CONTACT_PREFS, PROJECT_TYPES, fromRow, pt } from "../src/data.js";
 
 const MAX_PHOTO = 5 * 1024 * 1024;
 const PHOTO_TYPES = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
@@ -29,6 +29,11 @@ export async function handleQuote(request, env) {
   if (!name) return json({ error: "Add your name so we know who to send the price to." }, 400);
   if (!okPhone && !okEmail) return json({ error: "Add a mobile number (09XX XXX XXXX) or an email so we can send you the price." }, 400);
   if (!PROJECT_TYPES.includes(type)) return json({ error: "Choose a project type." }, 400);
+  const pref = CONTACT_PREFS.includes(field(fd, "pref", 30)) ? field(fd, "pref", 30) : "Call or text";
+  const facebook = field(fd, "facebook", 200);
+  if ((pref === "Call or text" || pref === "Viber") && !okPhone) return json({ error: "Add your mobile number so we can reach you." }, 400);
+  if (pref === "Email" && !okEmail) return json({ error: "Add your email so we can reply by email." }, 400);
+  if (pref === "Messenger" && !facebook) return json({ error: "Add your Facebook name or link so we can message you." }, 400);
 
   let raw = [];
   try { raw = JSON.parse(field(fd, "items", 4000) || "[]"); } catch {}
@@ -84,13 +89,15 @@ export async function handleQuote(request, env) {
   const record = {
     full_name: name, mobile: okPhone ? phone : null, email: okEmail ? email : null,
     project_type: type, message: message || null, quote_items: items,
-    estimate_min: items.length ? min : null, estimate_max: items.length ? max : null, attachment_path, liked_photos: liked
+    estimate_min: items.length ? min : null, estimate_max: items.length ? max : null, attachment_path, liked_photos: liked,
+    contact_pref: pref, facebook: facebook || null
   };
   let { data: row, error } = await db.from("quotation_requests").insert(record).select("id, created_at").single();
-  if (error && /liked_photos/.test(error.message)) {
-    // Database not updated yet (004): keep the liked photos in the message instead of losing the request.
-    const { liked_photos, ...rest } = record;
-    if (liked.length) rest.message = [message, "Liked photos: " + liked.map(l => `${l.cat} (${l.src})`).join(", ")].filter(Boolean).join("\n\n");
+  if (error && /liked_photos|contact_pref|facebook/.test(error.message)) {
+    // Database not fully updated yet (004/005): keep these details in the message instead of losing the request.
+    const { liked_photos, contact_pref, facebook: fb, ...rest } = record;
+    rest.message = [message, `Contact by: ${pref}${facebook ? " (Facebook: " + facebook + ")" : ""}`,
+      liked.length && "Liked photos: " + liked.map(l => `${l.cat} (${l.src})`).join(", ")].filter(Boolean).join("\n\n");
     ({ data: row, error } = await db.from("quotation_requests").insert(rest).select("id, created_at").single());
   }
   if (error) {
@@ -101,7 +108,7 @@ export async function handleQuote(request, env) {
 
   // The lead is saved; a failed alert is logged but never fails the request.
   const origin = new URL(request.url).origin;
-  try { await notify(env, db, row, { name, phone: okPhone ? phone : "", email: okEmail ? email : "", type, message, items, min, max, attachment_path, liked: liked.map(l => ({ ...l, url: new URL(l.src, origin).href })) }); }
+  try { await notify(env, db, row, { name, phone: okPhone ? phone : "", email: okEmail ? email : "", type, message, items, min, max, attachment_path, liked: liked.map(l => ({ ...l, url: new URL(l.src, origin).href })), pref, facebook }); }
   catch (e) { console.error("notify", e); }
 
   return json({ ok: true, id: row.id });
@@ -124,7 +131,7 @@ async function notify(env, db, row, q) {
     : "";
   const html = `<h2>New ${what} #${row.id}</h2>
     <p><b>${esc(q.name)}</b> · ${esc(q.type)}</p>
-    <p>Mobile: ${esc(q.phone || "—")}<br>Email: ${esc(q.email || "—")}</p>
+    <p><b>Contact by: ${esc(q.pref)}</b><br>Mobile: ${esc(q.phone || "—")}<br>Email: ${esc(q.email || "—")}${q.facebook ? "<br>Facebook: " + esc(q.facebook) : ""}</p>
     <p style="white-space:pre-wrap">${esc(q.message || "(no message)")}</p>${list}${likes}${photoLink}`;
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",

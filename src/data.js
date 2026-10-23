@@ -49,8 +49,17 @@ export const TABLES=[["001",42000,48000,"Executive desk with side pedestal",2400
  ["014",10275,10275,"Table with locking pedestal",1200,600,null,["Fixed 3-drawer pedestal, central lock","A4 and legal filing drawer","Rust-resistant steel frame"]]
 ].map(([c,min,max,name,L,W,x,f])=>({id:"OFT-"+c,kind:"table",name,min,max,image:null,L,W,x,f}));
 
-// Chat links. Leave "" to hide the button. messenger: "https://m.me/<PageName>", viber: "09XXXXXXXXX".
-export const CONTACT = { messenger: "", viber: "" };
+// Contact links shared by the site, admin and /api/quote.
+export const CONTACT_PREFS = ["Call or text", "Viber", "Messenger", "Email"];
+// 09XX / +639XX number → viber:// chat link ("" if it isn't a PH mobile number).
+export const viberUrl = n => { const d = String(n || "").replace(/\D/g, "").replace(/^0/, "63"); return /^639\d{9}$/.test(d) ? `viber://chat?number=%2B${d}` : ""; };
+// Facebook page/profile link or username → m.me link ("" if it can't be turned into one).
+export const messengerUrl = v => {
+  v = String(v || "").trim(); if (!v) return "";
+  const m = v.match(/(?:facebook\.com|fb\.com|m\.me)\/(?:profile\.php\?id=(\d+)|([A-Za-z0-9.\-]+))/i);
+  if (m) return `https://m.me/${m[1] || m[2]}`;
+  return /^[A-Za-z0-9.\-]{5,}$/.test(v) ? `https://m.me/${v}` : "";
+};
 
 export const ALL=Object.fromEntries([...CHAIRS,...TABLES].map(i=>[i.id,i]));
 

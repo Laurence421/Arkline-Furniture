@@ -1,4 +1,4 @@
-import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, ALL as ALL0, CONTACT, fromRow, pt } from "./data.js";
+import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, ALL as ALL0, fromRow, messengerUrl, viberUrl, pt } from "./data.js";
 import { CONTENT_DEFAULTS } from "./content.js";
 import { supabase, photoUrl } from "./supabase.js";
 import { toWebp } from "./image.js";
@@ -196,17 +196,21 @@ const navs=[...document.querySelectorAll(".links a")];
 const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting)navs.forEach(l=>l.classList.toggle("on",l.getAttribute("href")==="#"+en.target.id));}),{rootMargin:"-45% 0px -50% 0px"});
 document.querySelectorAll("main section[id]").forEach(s=>io.observe(s));
 
-/* chat buttons (shown only when CONTACT has values) */
-(function chats(){
-  const viber=CONTACT.viber.replace(/\D/g,"").replace(/^0/,"63");
-  const links=[
-    CONTACT.messenger&&`<a class="btn btn-glass" href="${CONTACT.messenger}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>Messenger</a>`,
-    viber&&`<a class="btn btn-glass" href="viber://chat?number=%2B${viber}"><i data-lucide="phone"></i>Viber ${CONTACT.viber}</a>`
-  ].filter(Boolean);
-  if(!links.length) return;
-  $("#chats").innerHTML=links.join(""); $("#msgrow").hidden=false;
-  if(CONTACT.messenger){ $("#fab").href=CONTACT.messenger; $("#fab").hidden=false; }
-})();
+/* Arkline's Messenger / Viber buttons: set by the admin in Website text → Contact details */
+function renderChats(){
+  const fb=messengerUrl(TEXT["contact.messenger"]), vb=viberUrl(TEXT["contact.viber"]);
+  $("#chats").innerHTML=[
+    fb&&`<a class="btn btn-glass" href="${esc(fb)}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>Messenger</a>`,
+    vb&&`<a class="btn btn-glass" href="${esc(vb)}"><i data-lucide="phone"></i>Viber ${esc(TEXT["contact.viber"])}</a>`
+  ].filter(Boolean).join("");
+  $("#msgrow").hidden=!(fb||vb);
+  $("#fab").hidden=!fb; if(fb) $("#fab").href=fb;
+  icons();
+}
+renderChats();
+
+/* customer's preferred contact: Messenger needs their Facebook */
+$("#f-pref").onchange=()=>{ const m=$("#f-pref").value==="Messenger"; $("#fbwrap").hidden=!m; if(m) $("#f-fb").focus(); };
 
 /* Cloudflare Turnstile spam check (only when a site key is configured) */
 const TS_KEY=import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -227,6 +231,9 @@ $("#qform").addEventListener("submit",async e=>{
   let m="";
   if(!name) m="Add your name so we know who to send the price to.";
   else if(!/^(09|\+639)\d{9}$/.test(phone)&&!/^\S+@\S+\.\S+$/.test(email)) m="Add a mobile number (09XX XXX XXXX) or an email so we can send you the price.";
+  else if(["Call or text","Viber"].includes($("#f-pref").value)&&!/^(09|\+639)\d{9}$/.test(phone)) m=`Add your mobile number so we can reach you by ${$("#f-pref").value==="Viber"?"Viber":"call or text"}.`;
+  else if($("#f-pref").value==="Email"&&!/^\S+@\S+\.\S+$/.test(email)) m="Add your email so we can reply by email.";
+  else if($("#f-pref").value==="Messenger"&&!$("#f-fb").value.trim()) m="Add your Facebook name or link so we can message you.";
   else if(file&&!file.type.startsWith("image/")) m="The reference photo must be an image.";
   else if(file&&file.size>25*1024*1024) m="The reference photo is over 25 MB. Try a smaller one.";
   formError(m); $("#fsent").hidden=true;
@@ -247,7 +254,7 @@ $("#qform").addEventListener("submit",async e=>{
     const r=await fetch("/api/quote",{method:"POST",body:fd});
     const j=await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(j.error||"Something went wrong sending your request.");
-    $("#qform").reset(); quote={}; save(); likes=[]; saveLikes(); renderQuote(); renderCatalogue(); buildGallery(); applyFilter();
+    $("#qform").reset(); $("#fbwrap").hidden=true; quote={}; save(); likes=[]; saveLikes(); renderQuote(); renderCatalogue(); buildGallery(); applyFilter();
     $("#fsent").textContent=`Thanks, ${name.split(" ")[0]}! Your ${wasOrder?"order":"request"}${j.id?" #"+j.id:""} is in. ${wasOrder?"We'll confirm delivery and payment":"We'll send you the full price and details"} within one business day.${j.id?" Mention #"+j.id+" when you message us.":""}`;
     $("#fsent").hidden=false; $("#fsent").focus();
   }catch(err){
@@ -266,6 +273,7 @@ function applyText(){
   $("#svc").innerHTML=TEXT.services.map((s,i)=>`<div class="card"><div class="ico"><i data-lucide="${SVC_ICONS[i%SVC_ICONS.length]}"></i></div><h3>${esc(s.t)}</h3><ul>${li_(s.items)}</ul></div>`).join("");
   $("#steps").innerHTML=TEXT.steps.map(s=>`<div class="step"><h3>${esc(s.t)}</h3><p>${esc(s.d)}</p></div>`).join("");
   $("#faqs").innerHTML=TEXT.faq.map((f,i)=>`<details${i?"":" open"}><summary>${esc(f.t)}<i data-lucide="plus"></i></summary><p>${esc(f.d)}</p></details>`).join("");
+  renderChats();
   $("#mobiles").innerHTML=TEXT["contact.mobiles"].map(m=>`<div class="v">${esc(m)} <button class="copy" data-copy="${esc(m)}">Copy</button></div>`).join("");
   const em=TEXT["contact.email"]; $("#emailv").innerHTML=`${esc(em)} <button class="copy" data-copy="${esc(em)}">Copy</button>`;
   icons();

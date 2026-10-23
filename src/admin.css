@@ -120,3 +120,6 @@
 .gfrow{display:grid;grid-template-columns:minmax(140px,1.2fr) 1fr 1fr;gap:10px;align-items:center}
 .gfrow b{font-size:.92rem}
 @media (max-width:600px){.gfrow{grid-template-columns:1fr 1fr}.gfrow b{grid-column:1/-1}}
+.kind.pref{background:var(--muted-bg);color:var(--ink)}
+.qc .viber{color:hsl(266 45% 45%);border-color:hsl(266 45% 75%)}
+.qc .msgr{color:hsl(214 89% 45%);border-color:hsl(214 70% 78%)}

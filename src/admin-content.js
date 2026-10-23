@@ -1,5 +1,5 @@
 // /admin "Prices" and "Website text" tabs: edit the products table and the site_content table.
-import { fromRow, ORDER } from "./data.js";
+import { fromRow, ORDER, messengerUrl, viberUrl } from "./data.js";
 import { CONTENT_DEFAULTS, CONTENT_SECTIONS } from "./content.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
@@ -219,9 +219,11 @@ function bindText(){
         ?{t:r.querySelector("[data-t]").value.trim(),items:r.querySelector("[data-items]").value.split("\n").map(x=>x.trim()).filter(Boolean)}
         :{t:r.querySelector("[data-t]").value.trim(),d:r.querySelector("[data-d]").value.trim()}).filter(r=>r.t);
       if(!vals[s.list].length) return fail(err,"Keep at least one entry.");
-    } else for(const [k,,type] of s.fields){
+    } else for(const [k,label,type,,optional] of s.fields){
       const el=f.elements[k], v=type==="lines"?el.value.split("\n").map(x=>x.trim()).filter(Boolean):el.value.trim();
-      if(!v.length) return fail(err,"Fill in every box, or use Restore original.");
+      if(!v.length&&!optional) return fail(err,"Fill in every box, or use Restore original.");
+      if(k==="contact.messenger"&&v&&!messengerUrl(v)) return fail(err,`${label}: paste the page link, e.g. facebook.com/ArklineFurniture`);
+      if(k==="contact.viber"&&v&&!viberUrl(v)) return fail(err,`${label}: use a mobile number like 0962 269 8229.`);
       vals[k]=v;
     }
     err.hidden=true;

@@ -1,6 +1,6 @@
 // /admin — Feature A. Signed-in admins upload, trash, restore and permanently delete gallery photos.
 // Uploaded photos: projects.deleted_at set = in Trash. Bundled photos: a hidden_photos row = in Trash.
-import { ORDER, BUNDLED } from "./data.js";
+import { ORDER, BUNDLED, messengerUrl, viberUrl } from "./data.js";
 import { loadProducts, loadText, initContentTabs } from "./admin-content.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
@@ -90,11 +90,15 @@ function card(q){
   const items=(q.quote_items||[]);
   return `<article class="qc st-${q.status}" data-id="${q.id}">
     <div class="qc-top">
-      <div><div class="qc-id"><span class="kind ${(q.quote_items||[]).length?"order":"price"}">${kindOf(q)}</span> #${q.id} · ${when(q.created_at)}</div><h3>${esc(q.full_name)}</h3><div class="meta">${esc(q.project_type)}${q.mobile?" · "+esc(q.mobile):""}${q.email?" · "+esc(q.email):""}</div></div>
+      <div><div class="qc-id"><span class="kind ${(q.quote_items||[]).length?"order":"price"}">${kindOf(q)}</span>${q.contact_pref?`<span class="kind pref">Prefers ${esc(q.contact_pref)}</span>`:""} #${q.id} · ${when(q.created_at)}</div><h3>${esc(q.full_name)}</h3><div class="meta">${esc(q.project_type)}${q.mobile?" · "+esc(q.mobile):""}${q.email?" · "+esc(q.email):""}</div></div>
       <select data-status aria-label="Status of request #${q.id}">${Object.entries(STATUS).map(([k,l])=>`<option value="${k}"${k===q.status?" selected":""}>${l}</option>`).join("")}</select>
     </div>
     <div class="acts2">
       ${q.mobile?`<a class="btn btn-dark" href="tel:${esc(q.mobile)}"><i data-lucide="phone"></i>Call</a><a class="btn btn-outline" href="sms:${esc(q.mobile)}"><i data-lucide="message-square"></i>Text</a>`:""}
+      ${viberUrl(q.mobile)?`<a class="btn btn-outline viber" href="${esc(viberUrl(q.mobile))}"><i data-lucide="phone-call"></i>Viber</a>`:""}
+      ${q.facebook?(messengerUrl(q.facebook)
+        ?`<a class="btn btn-outline msgr" href="${esc(messengerUrl(q.facebook))}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>Messenger</a>`
+        :`<a class="btn btn-outline msgr" href="https://www.facebook.com/search/people/?q=${encodeURIComponent(q.facebook)}" target="_blank" rel="noopener" title="Search Facebook for ${esc(q.facebook)}"><i data-lucide="search"></i>Find on Facebook</a>`):""}
       ${q.email?`<a class="btn btn-outline" href="${esc(gmailDraft(q))}" target="_blank" rel="noopener"><i data-lucide="mail"></i>Reply in Gmail</a>`:""}
       ${q.attachment_path?`<button class="btn btn-outline" data-photo="${esc(q.attachment_path)}"><i data-lucide="image"></i>Reference photo</button>`:""}
     </div>

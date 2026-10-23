@@ -31,6 +31,8 @@ export const CONTENT_DEFAULTS = {
   "contact.address": "101 Lydia St., Brgy. Sta. Monica, Novaliches, Quezon City",
   "contact.mobiles": ["0962 269 8229", "0927 343 6747", "0964 823 2183"],
   "contact.email": "arklinehomeandofficefurnitures@gmail.com",
+  "contact.messenger": "",
+  "contact.viber": "",
   "contact.reply": "We usually reply within one business day.",
   "footer.tagline": "Creating functional spaces, delivering quality furniture solutions.",
   // "Starts at" price per gallery category, set in /admin → Prices. { "Workstation": { price: 18000, unit: "per seat" } }
@@ -54,6 +56,8 @@ export const CONTENT_SECTIONS = [
     ["contact.address", "Office address", "input"],
     ["contact.mobiles", "Mobile numbers", "lines", "One number per line."],
     ["contact.email", "Email", "input"],
+    ["contact.messenger", "Facebook page (Messenger button)", "input", "e.g. facebook.com/ArklineFurniture. Leave empty to hide the button.", true],
+    ["contact.viber", "Viber number", "input", "e.g. 0962 269 8229. Leave empty to hide the button.", true],
     ["contact.reply", "Reply promise under the Send button", "input"] ] },
   { title: "Footer", fields: [["footer.tagline", "Tagline", "input"]] }
 ];
