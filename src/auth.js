@@ -13,6 +13,13 @@ const FRIENDLY = {
 };
 const nice = e => FRIENDLY[e.message] || (/provider is not enabled/i.test(e.message) ? "Google sign-in isn't switched on yet. Use your email and password for now." : /rate limit/i.test(e.message) ? "Too many emails sent. Wait a few minutes and try again." : e.message);
 
+async function googleEnabled() {
+  try {
+    const r = await fetch(import.meta.env.VITE_SUPABASE_URL + "/auth/v1/settings", { headers: { apikey: import.meta.env.VITE_SUPABASE_ANON_KEY } });
+    return !!(await r.json()).external?.google;
+  } catch { return true; } // can't tell: let Supabase answer
+}
+
 export function mountAuth(root, { title = "Sign in", sub = "", onPasswordSet } = {}) {
   let view = "signin";
   const msg = (kind, m) => { const el = root.querySelector(kind === "err" ? ".err" : ".sent"); el.hidden = !m; el.textContent = m || ""; if (m) root.querySelector(kind === "err" ? ".sent" : ".err").hidden = true; };
@@ -74,6 +81,8 @@ export function mountAuth(root, { title = "Sign in", sub = "", onPasswordSet } =
     f.onclick = async e => {
       const sw = e.target.closest("[data-v]"); if (sw) { const em = f.email?.value; show(sw.dataset.v); if (em && root.querySelector("form").email) root.querySelector("form").email.value = em; return; }
       if (e.target.closest("[data-google]")) {
+        // signInWithOAuth navigates away even when Google is off, landing on a raw JSON error. Check first.
+        if (!(await googleEnabled())) return msg("err", "Google sign-in isn't switched on yet. Use your email and password for now.");
         const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: here() } });
         if (error) msg("err", nice(error));
       }
