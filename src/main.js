@@ -19,11 +19,12 @@ const shownCats = () => CATEGORIES.filter(c => count(c) > 0);
 const alt = p => p.alt || p.cat+" completed by Arkline";
 
 /* hero slideshow */
-const SLIDES=[[186,"Workstation"],[164,"Conference Table"],[32,"Reception Counter"],[34,"Executive Table"],[72,"Workstation"]];
+// Banner slides: clean (no watermark), enhanced 1920x1080 copies of large originals (public/img/hero-N.webp).
+const SLIDES=[["/img/hero-1.webp","Workstation"],["/img/hero-2.webp","Cubicle Partition"],["/img/hero-3.webp","Conference Table"],["/img/hero-4.webp","Kitchen Cabinet"],["/img/hero-5.webp","Executive Table"]];
 let si=0, timer;
 function buildSlides(){
   // Only the first slide downloads with the page; each next one loads just before it's shown (go).
-  $("#slides").innerHTML = SLIDES.map((s,i)=>`<img ${i?"data-src":"src"}="${img(s[0])}" alt="${s[1]} project by Arkline" class="${i?"":"on"}" ${i?"":'fetchpriority="high"'}>`).join("");
+  $("#slides").innerHTML = SLIDES.map((s,i)=>`<img ${i?"data-src":"src"}="${s[0]}" alt="${s[1]} project by Arkline" class="${i?"":"on"}" ${i?"":'fetchpriority="high"'}>`).join("");
   $("#dots").innerHTML = SLIDES.map((s,i)=>`<button aria-label="Show slide ${i+1}" class="${i?"":"on"}"></button>`).join("");
   [...$("#dots").children].forEach((b,i)=>b.onclick=()=>{go(i);restart();});
   go(0);
@@ -39,6 +40,7 @@ const saveLikes=()=>{try{localStorage.setItem("ark-likes",JSON.stringify(likes))
 const isLiked=p=>likes.some(l=>l.src===p.src);
 const fromLabel=c=>{const f=(TEXT["gallery.from"]||{})[c]; return f&&f.price?`from ${pt({min:f.price,max:f.price})}${f.unit?" "+f.unit:""}`:"";};
 function buildCats(){
+  $("#statTypes").textContent = shownCats().length; // project types shown on the site
   $("#cats").innerHTML = shownCats().map(c=>`<button class="cat" data-go="${esc(c)}"><img src="${cover(c)}" alt="${esc(c)} project" loading="lazy"><span class="lbl"><b>${esc(c)}${fromLabel(c)?`<small class="from">${esc(fromLabel(c))}</small>`:""}</b><span>${count(c)} photos</span></span></button>`).join("");
   $("#filters").innerHTML = ["All",...shownCats()].map(c=>`<button class="chip" data-cat="${esc(c)}">${esc(c)}<small>${count(c)}</small></button>`).join("");
 }
