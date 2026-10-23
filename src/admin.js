@@ -299,12 +299,10 @@ document.addEventListener("click",async e=>{
 function toast(m){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.innerHTML=`<i data-lucide="check-circle-2"></i>`;t.append(m);document.body.appendChild(t);icons();setTimeout(()=>t.remove(),2300);}
 
 /* upload */
-/* categories: pick one for the upload, add a new one, remove one the admin added */
+/* categories: pick one for the upload, add a new one, delete the selected one */
 function renderCats(selected=$("#u-cat").value){
   $("#u-cat").innerHTML=categories().map(c=>`<option${c===selected?" selected":""}>${esc(c)}</option>`).join("");
-  const own=categories();
-  $("#catlist").innerHTML=own.length?own.map(c=>`<span class="catchip${isBuiltIn(c)?" builtin":""}">${esc(c)}<button type="button" class="mini" data-delcat="${esc(c)}" title="Remove ${esc(c)}" aria-label="Remove ${esc(c)}"><i data-lucide="x"></i></button></span>`).join(""):`<span class="hint">No categories. Add one above.</span>`;
-  icons();
+  $("#delcat").disabled=!categories().length;
 }
 renderCats();
 async function addCat(){
@@ -317,8 +315,7 @@ async function addCat(){
 }
 $("#addcat").onclick=addCat;
 $("#newcat").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); addCat(); } }); // don't submit the upload form
-// Both the "Delete category" button (selected category) and the ✕ on each chip ask first in a confirmation window.
-$("#catlist").addEventListener("click",e=>{ const b=e.target.closest("[data-delcat]"); if(b) removeCat(b.dataset.delcat); });
+// "Delete category" removes the selected category, after a confirmation window.
 $("#delcat").onclick=()=>{ const name=$("#u-cat").value; if(name) removeCat(name); else show($("#caterr"),"There's no category to delete."); };
 async function removeCat(name){
   // uploaded photos in this category (on the site or in Trash) are deleted forever together with it
@@ -330,12 +327,12 @@ async function removeCat(name){
   if(!await confirmDialog({title:`Remove the "${name}" category?`,message:msg,confirmLabel:mine.length?"Delete photos and category":"Remove category",danger:true})) return;
   for(const r of mine){
     const {error}=await supabase.from("projects").delete().eq("id",r.id);
-    if(error){ $("#catman").open=true; return show($("#caterr"),"Couldn't delete a photo: "+error.message); }
+    if(error){ return show($("#caterr"),"Couldn't delete a photo: "+error.message); }
     await supabase.storage.from(PHOTO_BUCKET).remove([r.storage_path]);
     rows=rows.filter(x=>x!==r);
   }
   const err=await deleteCategory(name);
-  if(err){ $("#catman").open=true; show($("#caterr"),err); return; } // show why, e.g. it still has photos
+  if(err){ show($("#caterr"),err); return; } // show why, e.g. it still has photos
   show($("#caterr")); renderCats(); render(); loadText(); toast(`"${name}" removed`);
 }
 $("#u-files").onchange=()=>{
