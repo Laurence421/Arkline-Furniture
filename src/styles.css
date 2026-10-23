@@ -118,8 +118,8 @@ section{padding-block:80px} @media (min-width:768px){section{padding-block:112px
 /* lightbox */
 .lb{position:fixed;inset:0;z-index:100;background:hsl(40 8% 5%/.96);display:grid;grid-template-rows:auto 1fr auto;gap:10px;padding:calc(14px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));color:var(--on-dark)}
 .lb .bar{display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:600}
-.lb .stage{position:relative;display:grid;place-items:center;min-height:0}
-.lb .stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
+.lb .stage{position:relative;min-height:0;overflow:hidden}
+.lb .stage img{position:absolute;inset:0;margin:auto;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;border-radius:12px} /* fits any photo size inside the viewer */
 .lb .nb{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;border:0;background:hsl(0 0% 100%/.14);color:var(--on-dark);display:grid;place-items:center}
 .lb .nb:hover{background:hsl(0 0% 100%/.28)} .lb .prev{left:6px} .lb .next{right:6px}
 .lb .x{border:0;border-radius:999px;padding:8px 16px;background:hsl(0 0% 100%/.14);color:var(--on-dark);display:inline-flex;gap:6px;align-items:center}
