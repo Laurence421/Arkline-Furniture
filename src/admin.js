@@ -301,10 +301,19 @@ $("#newcat").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefau
 $("#catlist").addEventListener("click",e=>{ const b=e.target.closest("[data-delcat]"); if(b) removeCat(b.dataset.delcat); });
 $("#delcat").onclick=()=>{ const name=$("#u-cat").value; if(name) removeCat(name); else show($("#caterr"),"There's no category to delete."); };
 async function removeCat(name){
-  const msg=isBuiltIn(name)
+  // uploaded photos in this category (on the site or in Trash) are deleted forever together with it
+  const mine=rows.filter(r=>r.category===name), trashed=mine.filter(r=>r.deleted_at).length;
+  const photos=mine.length?` Its ${plural(mine.length,"uploaded photo")}${trashed?` (${trashed} in Trash)`:""} will be deleted forever too.`:"";
+  const msg=(isBuiltIn(name)
     ?"It disappears from the website together with its original photos. They aren't lost: add a category with exactly this name to bring them all back."
-    :"It disappears from the category list and the website. Any photos you uploaded to it must be deleted forever first.";
-  if(!await confirmDialog({title:`Remove the "${name}" category?`,message:msg,confirmLabel:"Remove category",danger:true})) return;
+    :"It disappears from the category list and the website.")+photos;
+  if(!await confirmDialog({title:`Remove the "${name}" category?`,message:msg,confirmLabel:mine.length?"Delete photos and category":"Remove category",danger:true})) return;
+  for(const r of mine){
+    const {error}=await supabase.from("projects").delete().eq("id",r.id);
+    if(error){ $("#catman").open=true; return show($("#caterr"),"Couldn't delete a photo: "+error.message); }
+    await supabase.storage.from(PHOTO_BUCKET).remove([r.storage_path]);
+    rows=rows.filter(x=>x!==r);
+  }
   const err=await deleteCategory(name);
   if(err){ $("#catman").open=true; show($("#caterr"),err); return; } // show why, e.g. it still has photos
   show($("#caterr")); renderCats(); render(); loadText(); toast(`"${name}" removed`);

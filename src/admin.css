@@ -239,3 +239,6 @@ div.q.auth{background:var(--card);color:var(--ink);border:1px solid var(--line);
 .catsel select{flex:1;min-width:0}
 #delcat{flex:none;padding:10px 14px;font-size:.85rem}
 @media (max-width:640px){#delcat span{display:none}}
+/* upload form: keep each column's fields at the top when the category panel is open */
+#up .f2{align-items:start}
+#up .f2>label,#up .catpick{align-content:start}
