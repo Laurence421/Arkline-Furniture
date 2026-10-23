@@ -1,6 +1,6 @@
 # ADR-001: Static Vite site on Vercel, Supabase for photos and quotation requests
 
-**Status:** Accepted
+**Status:** Accepted — hosting later moved from Vercel to Cloudflare Pages (free plan allows commercial use); the rest stands.
 **Date:** 2026-10-23
 **Deciders:** Arkline owner, site developer
 
