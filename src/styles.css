@@ -265,3 +265,16 @@ input[type=file]::file-selector-button{font:inherit;font-weight:700;border:0;bor
 @keyframes spin{to{transform:rotate(360deg)}}
 body{margin:0}
 [hidden]:not([hidden=until-found i]){display:none!important}
+
+/* sign-in panel (src/auth.js) */
+form.q.auth{box-shadow:var(--shadow-card);border:1px solid var(--line)}
+.q.auth .sub{color:var(--muted);font-size:.92rem;margin-top:4px}
+.gbtn{width:100%;background:var(--card)}
+.gbtn svg{width:20px;height:20px}
+.or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.link{background:none;border:0;padding:0;color:var(--walnut);font-weight:700;font-size:.88rem;text-decoration:underline;text-underline-offset:3px;display:inline-flex;gap:6px;align-items:center;justify-self:start}
+.link svg{width:15px;height:15px}
+.link:hover{color:var(--ink)}
+.link.fp{justify-self:end;margin-top:-8px}
+.denied{display:grid;gap:14px}

@@ -28,13 +28,7 @@
 <main class="wrap admin">
   <p class="err" id="cfg" hidden>Supabase isn't configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then rebuild.</p>
 
-  <form class="q panel" id="login" hidden novalidate>
-    <div><h3 style="font-size:1.5rem">Sign in</h3><p class="sub">Use the admin account Arkline was given.</p></div>
-    <label for="l-email">Email<input id="l-email" type="email" autocomplete="username" required></label>
-    <label for="l-pass">Password<input id="l-pass" type="password" autocomplete="current-password" required></label>
-    <p class="err" id="lerr" role="alert" hidden></p>
-    <button class="btn btn-primary" type="submit" id="lbtn"><i data-lucide="log-in"></i><span>Sign in</span></button>
-  </form>
+  <div class="panel" id="login" hidden></div>
 
   <div id="app" hidden>
     <section class="panel-wrap">

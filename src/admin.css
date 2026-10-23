@@ -1,7 +1,6 @@
 /* Admin page: reuses the site tokens and components from styles.css. */
 .admin{padding-block:40px 80px;display:grid;gap:56px}
-.panel{max-width:440px;margin:40px auto 0;box-shadow:var(--shadow-card);border:1px solid var(--line)}
-.panel .sub{color:var(--muted);font-size:.92rem;margin-top:4px}
+.panel{max-width:440px;width:100%;margin:40px auto 0}
 .admin form.q{box-shadow:var(--shadow-card);border:1px solid var(--line)}
 .admin h2{font-size:clamp(1.8rem,3.6vw,2.6rem)}
 .count{font-family:var(--f-body);font-size:1rem;color:var(--muted);font-weight:700;letter-spacing:0}

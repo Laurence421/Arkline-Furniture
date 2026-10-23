@@ -3,6 +3,7 @@
 import { ORDER, BUNDLED } from "./data.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
+import { mountAuth } from "./auth.js";
 
 const icons = () => { try{ window.lucide && lucide.createIcons(); }catch(e){} };
 const $ = s => document.querySelector(s);
@@ -15,25 +16,22 @@ const plural = (n,w) => `${n} ${w}${n===1?"":"s"}`;
 let rows=[], hidden=new Map(), filter="All", bfilter="All";
 
 /* auth */
+let auth, recovering=false;
 async function route(session){
   $("#logout").hidden=!session;
-  if(!session){ $("#login").hidden=false; $("#app").hidden=true; return; }
+  if(!session){ $("#login").hidden=false; $("#app").hidden=true; auth.show("signin"); return; }
   const {data:isAdmin,error}=await supabase.rpc("is_admin");
   if(error||!isAdmin){
-    await supabase.auth.signOut();
-    show($("#lerr"),"This account isn't an Arkline admin.");
-    return;
+    $("#login").hidden=false; $("#app").hidden=true;
+    $("#login").innerHTML=`<div class="q auth denied" style="display:grid"><h3 style="font-size:1.5rem">Not an admin account</h3>
+      <p class="sub">You're signed in as <b>${esc(session.user.email)}</b>, which doesn't have access to Arkline's admin page. Sign out and use the admin account.</p>
+      <button class="btn btn-primary" data-signout><i data-lucide="log-out"></i>Sign out</button></div>`;
+    $("#login").querySelector("[data-signout]").onclick=()=>supabase.auth.signOut();
+    icons(); return;
   }
   $("#login").hidden=true; $("#app").hidden=false;
   load();
 }
-$("#login").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const btn=$("#lbtn"); busy(btn,true,"Signing in…"); show($("#lerr"));
-  const {error}=await supabase.auth.signInWithPassword({email:$("#l-email").value.trim(),password:$("#l-pass").value});
-  busy(btn,false,"Sign in");
-  if(error) show($("#lerr"),error.message==="Invalid login credentials"?"Wrong email or password.":error.message);
-});
 $("#logout").onclick=()=>supabase.auth.signOut();
 
 /* load + render */
@@ -143,6 +141,15 @@ $("#up").addEventListener("submit",async e=>{
 
 if(!supabase){ $("#cfg").hidden=false; }
 else{
-  supabase.auth.onAuthStateChange((ev,session)=>{ if(ev!=="TOKEN_REFRESHED") setTimeout(()=>route(session),0); });
+  auth=mountAuth($("#login"),{
+    title:"Admin sign in", sub:"Use the Arkline admin account.",
+    onPasswordSet:async()=>{ recovering=false; route((await supabase.auth.getSession()).data.session); }
+  });
+  supabase.auth.onAuthStateChange((ev,session)=>{
+    // A reset-password link signs the user in first; ask for the new password before opening the admin.
+    if(ev==="PASSWORD_RECOVERY"){ recovering=true; $("#app").hidden=true; $("#login").hidden=false; $("#logout").hidden=true; setTimeout(()=>auth.show("reset"),0); return; }
+    if(recovering||ev==="TOKEN_REFRESHED"||ev==="USER_UPDATED") return;
+    setTimeout(()=>route(session),0);
+  });
 }
 icons();
