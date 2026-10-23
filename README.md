@@ -39,7 +39,7 @@ Without Supabase keys the quote form runs in demo mode (logs to the terminal, sa
 
 - **Alert emails**: sign up at resend.com with the address in `NOTIFY_EMAIL`, create an API key, set `RESEND_API_KEY`.
 - **Spam check**: Cloudflare → Turnstile → Add widget (your pages.dev domain and `localhost`) → set `VITE_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`.
-- **Messenger / Viber buttons**: fill `CONTACT` in `src/data.js`.
+- **Messenger / Viber buttons**: `/admin` → Website text → Contact details (Facebook page and Viber number).
 
 ## Day to day
 
