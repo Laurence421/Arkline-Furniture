@@ -3,6 +3,7 @@ import "./icons.js";
 // Uploaded photos: projects.deleted_at set = in Trash. Bundled photos: a hidden_photos row = in Trash.
 import { ORDER, BUNDLED, messengerUrl, viberUrl } from "./data.js";
 import { loadProducts, loadText, initContentTabs } from "./admin-content.js";
+import { renderAccount, initAccount } from "./admin-account.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
 import { mountAuth } from "./auth.js";
@@ -19,7 +20,7 @@ const plural = (n,w) => `${n} ${w}${n===1?"":"s"}`;
 let rows=[], hidden=new Map(), filter="All", bfilter="All";
 
 /* auth */
-let auth, recovering=false, adminEmail="";
+let auth, recovering=false, adminEmail="", signedInId=null;
 
 // Gmail compose in a new tab, from the signed-in admin's Google account, with a drafted reply.
 // Shop items = an order; only liked photos or a description = a price request.
@@ -53,7 +54,7 @@ async function route(session){
     $("#login").querySelector("[data-signout]").onclick=()=>supabase.auth.signOut();
     icons(); return;
   }
-  adminEmail=session.user.email;
+  adminEmail=session.user.email; renderAccount(session.user);
   $("#login").hidden=true; $("#app").hidden=false;
   load(); loadQuotes(); loadProducts(); loadText();
 }
@@ -62,7 +63,7 @@ async function route(session){
 $("#atabs").onclick=e=>{
   const b=e.target.closest("[data-tab]"); if(!b) return;
   $("#atabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b));
-  for(const t of ["quotes","photos","prices","text"]) $("#tab-"+t).hidden=b.dataset.tab!==t;
+  for(const t of ["quotes","photos","prices","text","account"]) $("#tab-"+t).hidden=b.dataset.tab!==t;
 };
 
 /* quotes */
@@ -247,7 +248,7 @@ $("#up").addEventListener("submit",async e=>{
 
 if(!supabase){ $("#cfg").hidden=false; }
 else{
-  initContentTabs(toast);
+  initContentTabs(toast); initAccount(toast);
   auth=mountAuth($("#login"),{
     title:"Admin sign in", sub:"Use the Arkline admin account.",
     onPasswordSet:async()=>{ recovering=false; route((await supabase.auth.getSession()).data.session); }
@@ -256,6 +257,8 @@ else{
     // A reset-password link signs the user in first; ask for the new password before opening the admin.
     if(ev==="PASSWORD_RECOVERY"){ recovering=true; $("#app").hidden=true; $("#login").hidden=false; $("#logout").hidden=true; setTimeout(()=>auth.show("reset"),0); return; }
     if(recovering||ev==="TOKEN_REFRESHED"||ev==="USER_UPDATED") return;
+    if(ev==="SIGNED_IN"&&session?.user?.id&&session.user.id===signedInId) return; // password re-check in the Account tab
+    signedInId=session?.user?.id||null;
     setTimeout(()=>route(session),0);
   });
 }
