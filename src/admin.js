@@ -5,6 +5,7 @@ import { loadProducts, loadText, initContentTabs } from "./admin-content.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
 import { mountAuth } from "./auth.js";
+import { confirmDialog, notice } from "./confirm.js";
 
 const icons = () => { try{ window.lucide && lucide.createIcons(); }catch(e){} };
 const $ = s => document.querySelector(s);
@@ -179,13 +180,15 @@ $("#bfilters").onclick=e=>{const b=e.target.closest("[data-cat]"); if(b){bfilter
 async function act(btn,fn){
   btn.disabled=true;
   const {error}=await fn();
-  if(error&&error.code!=="23505"){ alert("Couldn't update: "+error.message); btn.disabled=false; return false; }
+  if(error&&error.code!=="23505"){ notice("Couldn't update",error.message); btn.disabled=false; return false; }
   return true;
 }
 const now=()=>new Date().toISOString();
+const askTrash=()=>confirmDialog({title:"Move this photo to Trash?",message:"It disappears from the website gallery. You can restore it from Trash at any time.",confirmLabel:"Move to Trash",danger:true,icon:"trash-2"});
 document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-trash],[data-hide],[data-restore],[data-unhide],[data-forever]"); if(!b) return;
   const d=b.dataset;
+  if((d.trash||d.hide)&&!await askTrash()) return;
   if(d.trash){ const r=rows.find(x=>x.id===d.trash), at=now();
     if(await act(b,()=>supabase.from("projects").update({deleted_at:at}).eq("id",r.id))){ r.deleted_at=at; toast("Moved to Trash"); } }
   else if(d.hide){ const n=+d.hide, at=now();
@@ -195,7 +198,7 @@ document.addEventListener("click",async e=>{
   else if(d.unhide){ const n=+d.unhide;
     if(await act(b,()=>supabase.from("hidden_photos").delete().eq("photo",n))){ hidden.delete(n); toast("Restored to the gallery"); } }
   else if(d.forever){ const r=rows.find(x=>x.id===d.forever);
-    if(!confirm("Delete this photo forever? This can't be undone.")) return;
+    if(!await confirmDialog({title:"Delete this photo forever?",message:"It's removed from storage and can't be restored.",confirmLabel:"Delete forever",danger:true})) return;
     if(!await act(b,()=>supabase.from("projects").delete().eq("id",r.id))) return;
     await supabase.storage.from(PHOTO_BUCKET).remove([r.storage_path]);
     rows=rows.filter(x=>x!==r); toast("Deleted forever"); }

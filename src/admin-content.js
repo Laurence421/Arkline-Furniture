@@ -3,6 +3,7 @@ import { fromRow } from "./data.js";
 import { CONTENT_DEFAULTS, CONTENT_SECTIONS } from "./content.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
 import { toWebp } from "./image.js";
+import { confirmDialog } from "./confirm.js";
 
 const icons = () => { try{ window.lucide && lucide.createIcons(); }catch(e){} };
 const $ = s => document.querySelector(s);
@@ -48,7 +49,7 @@ function pcard(p){
       <label>Features <span class="hint">one per line</span><textarea name="feat" maxlength="2000">${esc((p.f||[]).join("\n"))}</textarea></label>
       <p class="err" hidden></p>
       <div class="pc-foot"><label class="sw"><input type="checkbox" name="vis" ${p.visible?"checked":""}>Show on website</label>
-        <div class="acts2">${fresh?`<button type="button" class="btn btn-outline" data-cancel>Cancel</button>`:""}<button class="btn btn-primary" type="submit"><i data-lucide="save"></i><span>${fresh?"Add to shop":"Save"}</span></button></div></div>
+        <div class="acts2">${fresh?`<button type="button" class="btn btn-outline" data-cancel>Cancel</button>`:`<button type="button" class="btn btn-outline pc-del" data-pdel><i data-lucide="trash-2"></i>Delete</button>`}<button class="btn btn-primary" type="submit"><i data-lucide="save"></i><span>${fresh?"Add to shop":"Save"}</span></button></div></div>
     </div></form>`;
 }
 const pform = id => $("#plist").querySelector(`form[data-id="${CSS.escape(id)}"]`);
@@ -69,6 +70,17 @@ function bindPrices(){
     const f=e.target.closest(".pc"); if(!f) return;
     const p=products.find(x=>x.id===f.dataset.id);
     if(e.target.closest("[data-cancel]")){ products=products.filter(x=>x!==p); renderProducts(); }
+    const del=e.target.closest("[data-pdel]");
+    if(del){
+      const ok=await confirmDialog({title:`Delete ${p.id} ${p.name}?`,message:"It's removed from the shop and from this list for good. Past price requests keep their copy. To take it off the website for now, untick \"Show on website\" instead.",confirmLabel:"Delete product",danger:true});
+      if(!ok) return;
+      del.disabled=true;
+      const {error}=await supabase.from("products").delete().eq("id",p.id);
+      if(error){ del.disabled=false; return show($("#perr"),"Couldn't delete: "+error.message); }
+      const own=p.image?.split(`/object/public/${PHOTO_BUCKET}/`)[1]; // photo uploaded for this product
+      if(own?.startsWith("products/")) await supabase.storage.from(PHOTO_BUCKET).remove([own]);
+      products=products.filter(x=>x!==p); renderProducts(); toast(`${p.id} deleted`);
+    }
     if(e.target.closest("[data-noimg]")){
       if(!p._new){ const {error}=await supabase.from("products").update({image:null}).eq("id",p.id); if(error) return show($("#perr"),"Couldn't update: "+error.message); }
       p.image=null; redraw(p);
@@ -161,7 +173,7 @@ function bindText(){
       icons(); f.querySelector(".rep-row:last-child [data-t]").focus();
     }
     if(e.target.closest("[data-restore-sec]")){
-      if(!confirm(`Put back the original "${s.title}" text?`)) return;
+      if(!await confirmDialog({title:`Restore the original "${s.title}" text?`,message:"Your edits to this section are replaced with the text the website launched with. This goes live right away.",confirmLabel:"Restore original",danger:true,icon:"rotate-ccw"})) return;
       const {error}=await supabase.from("site_content").delete().in("key",keysOf(s));
       if(error) return show($("#terr"),"Couldn't restore: "+error.message);
       keysOf(s).forEach(k=>delete saved[k]); renderText(); toast(`${s.title}: original text restored`);

@@ -91,3 +91,18 @@
 .mini svg{width:16px;height:16px}
 .tf-foot{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .edited{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--walnut);background:hsl(30 58% 50%/.14);padding:3px 10px;border-radius:999px}
+
+/* confirmation modal (src/confirm.js) */
+.cdlg{border:0;padding:0;border-radius:22px;background:var(--card);color:var(--ink);width:min(420px,calc(100% - 32px));box-shadow:0 30px 70px -20px hsl(0 0% 0%/.45)}
+.cdlg::backdrop{background:hsl(40 8% 5%/.5);backdrop-filter:blur(3px)}
+.cdlg[open]{animation:fu .25s both}
+.cdlg-box{padding:26px;display:grid;gap:12px;justify-items:start}
+.cdlg-ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--muted-bg);color:var(--walnut)}
+.cdlg-ico.danger{background:hsl(4 65% 45%/.12);color:var(--err)}
+.cdlg-ico svg{width:22px;height:22px}
+.cdlg h3{font-size:1.3rem}
+.cdlg p{color:var(--muted);font-size:.95rem}
+.cdlg-acts{display:flex;gap:10px;justify-content:flex-end;width:100%;margin-top:8px;flex-wrap:wrap}
+.btn-danger{background:var(--err);color:var(--on-dark)}
+.btn-danger:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.pc-del{color:var(--err)!important}
