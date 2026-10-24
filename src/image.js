@@ -1,5 +1,5 @@
 // Resize in the browser and re-encode as WebP (JPEG where WebP encoding is unsupported).
-// With { watermark: true } the see-through Arkline logo is drawn across the centre (/img/watermark-center.png),
+// With { watermark: true } the see-through Arkline logo is drawn across the centre (/img/watermark-center.webp),
 // matching the bundled photos, so an unmarked copy never leaves the admin's device.
 const cache = {};
 const load = src => cache[src] ??= new Promise((res, rej) => {
@@ -16,7 +16,7 @@ export async function toWebp(file, max = 1920, quality = .8, { watermark = false
   const ctx = c.getContext("2d");
   ctx.drawImage(bmp, 0, 0, width, height); bmp.close?.();
   if(watermark){
-    const center = await load("/img/watermark-center.png");
+    const center = await load("/img/watermark-center.webp");
     const cw = Math.round(Math.min(width * .5, height * .6 * center.width / center.height)), ch = Math.round(cw * center.height / center.width);
     ctx.drawImage(center, Math.round((width - cw) / 2), Math.round((height - ch) / 2), cw, ch);
   }

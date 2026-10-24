@@ -8,6 +8,8 @@ const MAX_PHOTO = 5 * 1024 * 1024;
 const PHOTO_TYPES = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
 const json = (body, status = 200) => Response.json(body, { status });
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+// The file's first bytes must match its claimed image type (the browser-sent type alone can be faked).
+const MAGIC = { webp: b => b[0] === 0x52 && b[1] === 0x49 && b[8] === 0x57 && b[9] === 0x45, jpg: b => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff, png: b => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 };
 const field = (fd, k, max) => String(fd.get(k) ?? "").trim().slice(0, max);
 
 export const POST = request => handleQuote(request, process.env);
@@ -67,7 +69,7 @@ export async function handleQuote(request, env) {
   const bundled = new Set(BUNDLED.map(b => b.src)), uploads = `${env.SUPABASE_URL}/storage/v1/object/public/project-photos/`;
   liked = (Array.isArray(liked) ? liked : [])
     // the photo must be one of Arkline's own; its category can be any name the admin created
-    .filter(l => typeof l?.cat === "string" && l.cat.length >= 2 && l.cat.length <= 40 && typeof l.src === "string" && (bundled.has(l.src) || (env.SUPABASE_URL && l.src.startsWith(uploads))))
+    .filter(l => typeof l?.cat === "string" && l.cat.length >= 2 && l.cat.length <= 40 && typeof l.src === "string" && (bundled.has(l.src) || (env.SUPABASE_URL && l.src.startsWith(uploads) && !/\.\.|[?#\s\\]/.test(l.src.slice(uploads.length)))))
     .slice(0, 12).map(l => ({ cat: l.cat, src: l.src }));
 
   // Cloudflare Turnstile: enforced only when the secret is configured.
@@ -99,9 +101,11 @@ export async function handleQuote(request, env) {
     const ext = PHOTO_TYPES[photo.type];
     if (!ext) return json({ error: "The reference photo must be a JPG, PNG or WebP image." }, 400);
     if (photo.size > MAX_PHOTO) return json({ error: "The reference photo is over 5 MB. Try a smaller one." }, 400);
+    const bytes = await photo.arrayBuffer();
+    if (!MAGIC[ext](new Uint8Array(bytes, 0, Math.min(12, bytes.byteLength)))) return json({ error: "The reference photo must be a JPG, PNG or WebP image." }, 400);
     attachment_path = `${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
     const { error } = await db.storage.from("quote-attachments")
-      .upload(attachment_path, await photo.arrayBuffer(), { contentType: photo.type });
+      .upload(attachment_path, bytes, { contentType: photo.type });
     if (error) { console.error("attachment upload", error); return json({ error: "We couldn't upload your photo. Try again, or send without it." }, 502); }
   }
 
