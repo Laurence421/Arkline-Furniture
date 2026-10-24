@@ -190,6 +190,8 @@ function updateMode(n=totals().n){
 }
 
 /* misc */
+// "0962 269 8229" → tel:+639622698229 (other formats: digits as typed), so a tap on a phone starts the call
+function telHref(n){const d=String(n).replace(/[^\d+]/g,"");return "tel:"+(/^09\d{9}$/.test(d)?"+63"+d.slice(1):d);}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function toast(m){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.innerHTML=`<i data-lucide="check-circle-2"></i>`;t.append(m);document.body.appendChild(t);icons();setTimeout(()=>t.remove(),2300);}
 function copy(txt,m){try{navigator.clipboard.writeText(txt).then(()=>toast(m||"Copied"),()=>toast("Copy is blocked here. Select the text instead."));}catch(e){toast("Copy is blocked here. Select the text instead.");}}
@@ -278,8 +280,8 @@ function applyText(){
   $("#steps").innerHTML=TEXT.steps.map(s=>`<div class="step"><h3>${esc(s.t)}</h3><p>${esc(s.d)}</p></div>`).join("");
   $("#faqs").innerHTML=TEXT.faq.map((f,i)=>`<details${i?"":" open"}><summary>${esc(f.t)}<i data-lucide="plus"></i></summary><p>${esc(f.d)}</p></details>`).join("");
   renderChats();
-  $("#mobiles").innerHTML=TEXT["contact.mobiles"].map(m=>`<div class="v">${esc(m)} <button class="copy" data-copy="${esc(m)}">Copy</button></div>`).join("");
-  const em=TEXT["contact.email"]; $("#emailv").innerHTML=`${esc(em)} <button class="copy" data-copy="${esc(em)}">Copy</button>`;
+  $("#mobiles").innerHTML=TEXT["contact.mobiles"].map(m=>`<div class="v"><a class="tap" href="${telHref(m)}">${esc(m)}</a> <button class="copy" data-copy="${esc(m)}">Copy</button></div>`).join("");
+  const em=TEXT["contact.email"]; $("#emailv").innerHTML=`<a class="tap" href="mailto:${esc(em)}">${esc(em)}</a> <button class="copy" data-copy="${esc(em)}">Copy</button>`;
   icons();
 }
 async function loadSiteData(){
