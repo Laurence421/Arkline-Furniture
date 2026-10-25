@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arkline Deployment Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Same look as the admin guide: numbered step cards, checklists and tables. */
+:root{
+  --bg:hsl(36 33% 96%); --card:hsl(0 0% 100%); --tint:hsl(34 28% 91%);
+  --ink:hsl(40 6% 13%); --muted:hsl(30 6% 38%); --line:hsl(32 18% 82%);
+  --walnut:hsl(27 52% 36%); --admin:hsl(158 38% 30%); --admin-tint:hsl(150 30% 92%);
+  --err:hsl(4 65% 45%);
+  --f-head:"Playfair Display",Georgia,"Times New Roman",serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:44px 64px;display:grid;gap:44px}
+h1,h2{font-family:var(--f-head);margin:0;line-height:1.12;letter-spacing:-.015em;text-wrap:balance}
+h1{font-size:clamp(2rem,4.6vw,2.9rem)} h2{font-size:clamp(1.4rem,2.8vw,1.8rem)}
+h3{margin:0;font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-size:.74rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--walnut)}
+header{display:grid;gap:12px}
+.lead{font-size:1.08rem;color:var(--muted);max-width:62ch}
+section{display:grid;gap:16px}
+section>p{color:var(--muted);max-width:66ch}
+.where{display:inline-flex;gap:8px;align-items:center;font-size:.8rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--admin);background:var(--admin-tint);padding:4px 12px;border-radius:999px;justify-self:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;display:grid;gap:14px;align-content:start;min-width:0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+ol{margin:0;padding:0;list-style:none;display:grid;gap:12px;counter-reset:s}
+ol li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;counter-increment:s}
+ol li::before{content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--admin);color:#fff;display:grid;place-items:center;font-weight:800;font-size:.8rem}
+li p{color:var(--muted);font-size:.95rem} li p b{color:var(--ink)}
+ul.tips{margin:0;padding-left:18px;display:grid;gap:6px;color:var(--muted);font-size:.95rem} ul.tips b{color:var(--ink)}
+.shot{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}
+.shot img{display:block;width:100%;max-width:100%;height:auto}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:.93rem;min-width:520px}
+th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800;background:var(--tint)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:700;white-space:nowrap}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.p-new{background:hsl(30 58% 50%/.16);color:var(--walnut)} .p-con{background:var(--tint);color:var(--ink)}
+.p-sent{background:hsl(145 45% 32%/.12);color:hsl(145 45% 28%)} .p-cl{background:var(--tint);color:var(--muted)}
+.note{border-left:4px solid var(--walnut);background:var(--card);border-radius:0 12px 12px 0;padding:14px 18px;color:var(--muted);font-size:.95rem}
+.note b{color:var(--ink)}
+.check{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.check li{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;color:var(--muted);font-size:.95rem}
+.check li::before{content:"";flex:none;width:18px;height:18px;border:2px solid var(--admin);border-radius:5px;margin-top:2px}
+.check b{color:var(--ink)}
+footer{color:var(--muted);font-size:.85rem}
+@media print{
+  .wrap{padding-block:0;gap:26px}
+  section,.card,.tw,.shot,.note,tr,.check li{break-inside:avoid}
+  h2{break-after:avoid}
+}
+</style>
+<style>
+code{font-family:Consolas,"Cascadia Mono",monospace;font-size:.86em;background:var(--tint);padding:1px 6px;border-radius:5px;color:var(--ink);overflow-wrap:anywhere}
+.mins{font-size:.8rem;font-weight:700;color:var(--muted)}
+.who{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 10px;border-radius:999px;background:var(--tint);color:var(--walnut);margin-left:6px;vertical-align:middle}
+td code{white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Arkline Home &amp; Office Furniture · deployment guide</span>
+  <h1>Putting the website live</h1>
+  <p class="lead">Follow these steps once the client has paid and is ready to buy the domain. The website is finished and tested; this is only about putting it on the internet. Total time: about one hour. Total cost: about ₱600 a year for the domain. Everything else is free.</p>
+</header>
+
+<section>
+  <span class="where">Before you start</span>
+  <h2>Have these ready</h2>
+  <ul class="check">
+    <li><span><b>Payment settled</b> with the client. Hand over logins only after this.</span></li>
+    <li><span><b>The company Gmail</b> (arklinefurniture3@gmail.com) and its password. Every account is made with this email, so the client owns everything.</span></li>
+    <li><span><b>The client's card</b> (or PayPal) to pay for the domain.</span></li>
+    <li><span><b>The owner's phone</b> nearby, for Google's sign-in codes.</span></li>
+    <li><span><b>Your project folder</b> with the <code>.env.local</code> file. It holds the keys you will copy in Step 3.</span></li>
+    <li><span><b>The latest code on GitHub:</b> run <code>git push client main</code> in the project folder. The repo is <b>arklinefurniture3-boop/arklinefurniture-main</b>.</span></li>
+  </ul>
+</section>
+
+<section>
+  <span class="where">Step 1 · about 10 min</span>
+  <h2>Create the Cloudflare account <span class="who">company Gmail</span></h2>
+  <div class="card"><ol>
+    <li><p>Go to <b>dash.cloudflare.com</b> and sign up with the <b>company Gmail</b>.</p></li>
+    <li><p>Open the company Gmail and click the <b>verify your email</b> link from Cloudflare. <b>Domains can't be bought until the email is verified.</b></p></li>
+    <li><p>Turn on <b>2-step verification</b>: profile icon (top right) → <b>Profile → Authentication</b>.</p></li>
+    <li><p>Add the client's card: <b>Manage Account → Billing → Payment info</b>.</p></li>
+  </ol></div>
+</section>
+
+<section>
+  <span class="where">Step 2 · about 10 min</span>
+  <h2>Buy the domain <span class="who">client's card</span></h2>
+  <div class="card"><ol>
+    <li><p>In Cloudflare, go to <b>Domain Registration → Register Domains</b>.</p></li>
+    <li><p>Search <b>arklinefurniture.com</b>. If it's taken, use <b>arklineofficefurniture.com</b> or <b>arklinefurnitureph.com</b>.</p></li>
+    <li><p>Buy it for <b>1 year</b> and leave <b>auto-renew ON</b>, so the website never goes down because the domain expired. Privacy is free and on by default.</p></li>
+  </ol></div>
+  <p class="note"><b>Says "unavailable" but the name is free?</b> The email isn't verified yet, no card is saved, or the account is too new. Fix the first two and wait an hour. If it still fails, buy at <b>porkbun.com</b> (same price) and then point it at Cloudflare.</p>
+</section>
+
+<section>
+  <span class="where">Step 3 · about 15 min</span>
+  <h2>Put the site on Cloudflare Pages</h2>
+  <div class="card"><ol>
+    <li><p>Cloudflare → <b>Workers &amp; Pages → Create → Pages → Connect to Git</b>.</p></li>
+    <li><p>Sign in to GitHub as <b>arklinefurniture3-boop</b>, allow access to <b>arklinefurniture-main</b>, and select it.</p></li>
+    <li><p>Project name: <b>arkline</b>. Framework preset: <b>None</b>. Build command: <code>npm run build</code>. Build output directory: <code>dist</code>.</p></li>
+    <li><p>Open <b>Environment variables</b> and add each line from the table below. Copy the values from your <code>.env.local</code>.</p></li>
+    <li><p>Click <b>Save and Deploy</b>. After about 1 minute the site is live at <b>arkline.pages.dev</b>. The address may differ slightly if "arkline" is taken; note the one Cloudflare shows.</p></li>
+  </ol></div>
+  <div class="tw"><table>
+    <thead><tr><th>Variable name</th><th>Value</th><th>Secret?</th></tr></thead>
+    <tbody>
+      <tr><td><code>VITE_SUPABASE_URL</code></td><td>from .env.local</td><td>No</td></tr>
+      <tr><td><code>VITE_SUPABASE_ANON_KEY</code></td><td>from .env.local (starts with sb_publishable_)</td><td>No</td></tr>
+      <tr><td><code>SUPABASE_URL</code></td><td>from .env.local</td><td>No</td></tr>
+      <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>from .env.local (starts with sb_secret_)</td><td><b>Yes: click Encrypt</b></td></tr>
+      <tr><td><code>NOTIFY_EMAIL</code></td><td>arklinefurniture3@gmail.com</td><td>No</td></tr>
+      <tr><td><code>NODE_VERSION</code></td><td>22</td><td>No</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><b>Never</b> paste <code>SUPABASE_SERVICE_ROLE_KEY</code> into chat, email or the code. It only goes into Cloudflare, marked as a secret.</p>
+</section>
+
+<section>
+  <span class="where">Step 4 · about 5 min</span>
+  <h2>Connect the domain</h2>
+  <div class="card"><ol>
+    <li><p>In the Pages project, open <b>Custom domains → Set up a custom domain</b>.</p></li>
+    <li><p>Enter <b>arklinefurniture.com</b> and confirm. Do the same for <b>www.arklinefurniture.com</b>.</p></li>
+    <li><p>Wait a few minutes until both show <b>Active</b>. The padlock (HTTPS) is set up automatically and is free.</p></li>
+  </ol></div>
+</section>
+
+<section>
+  <span class="where">Step 5 · about 5 min · don't skip</span>
+  <h2>Tell Supabase the new address</h2>
+  <p>Without this, Google sign-in and "Forgot password" send the admin back to localhost instead of the live site.</p>
+  <div class="card"><ol>
+    <li><p>Open <b>supabase.com</b> → the Arkline project → <b>Authentication → URL Configuration</b>.</p></li>
+    <li><p><b>Site URL:</b> <code>https://arklinefurniture.com</code></p></li>
+    <li><p><b>Redirect URLs:</b> add <code>https://arklinefurniture.com/**</code> and <code>https://arkline.pages.dev/**</code>. Keep the localhost one for testing.</p></li>
+    <li><p>Click <b>Save</b>.</p></li>
+  </ol></div>
+</section>
+
+<section>
+  <span class="where">Step 6 · about 10 min</span>
+  <h2>Turn on email alerts (Resend) <span class="who">company Gmail</span></h2>
+  <div class="card"><ol>
+    <li><p>Sign up at <b>resend.com</b> with the company Gmail. Free: 3,000 emails a month.</p></li>
+    <li><p><b>Domains → Add domain</b> → <b>arklinefurniture.com</b>. Resend shows a few records to add. Choose the option to add them to Cloudflare automatically, or copy each one into Cloudflare → the domain → <b>DNS → Records</b>. Wait until Resend says <b>Verified</b>.</p></li>
+    <li><p><b>API Keys → Create API Key</b> and copy it (starts with <code>re_</code>).</p></li>
+    <li><p>In Cloudflare Pages → <b>Settings → Variables and Secrets</b>, add:<br>
+      <code>RESEND_API_KEY</code> = the key (<b>Encrypt</b> it)<br>
+      <code>NOTIFY_FROM</code> = <code>Arkline Website &lt;orders@arklinefurniture.com&gt;</code></p></li>
+  </ol></div>
+</section>
+
+<section>
+  <span class="where">Step 7 · about 5 min</span>
+  <h2>Turn on the spam check (Turnstile)</h2>
+  <div class="card"><ol>
+    <li><p>Cloudflare → <b>Turnstile → Add widget</b>. Name: Arkline. Hostnames: <b>arklinefurniture.com</b> and <b>arkline.pages.dev</b>. Mode: <b>Managed</b>.</p></li>
+    <li><p>Copy the two keys into Pages → <b>Settings → Variables and Secrets</b>:<br>
+      <code>VITE_TURNSTILE_SITE_KEY</code> = the Site Key<br>
+      <code>TURNSTILE_SECRET_KEY</code> = the Secret Key (<b>Encrypt</b> it)</p></li>
+    <li><p>Go to <b>Deployments</b>, then open the latest one and click <b>Retry deployment</b>, so the new settings are used.</p></li>
+  </ol></div>
+</section>
+
+<section>
+  <span class="where">Step 8 · about 10 min</span>
+  <h2>Test the live site</h2>
+  <ul class="check">
+    <li><span>Open <b>https://arklinefurniture.com</b> on a phone. The padlock shows, and photos, shop and prices load.</span></li>
+    <li><span>Send a <b>price request</b> with your own number. The success message shows a request number.</span></li>
+    <li><span>The company Gmail receives the alert email within a minute (check Spam the first time).</span></li>
+    <li><span>Open <b>https://arklinefurniture.com/admin</b> and sign in with <b>Google</b>. The request is there.</span></li>
+    <li><span>Sign out, then sign in with <b>email and password</b>. Try <b>Forgot password</b>; the link must open the live site, not localhost.</span></li>
+    <li><span>Upload one photo. It shows in the website gallery within about 30 seconds. Then move your test request and test photo to Trash.</span></li>
+  </ul>
+</section>
+
+<section>
+  <span class="where">Step 9 · about 10 min</span>
+  <h2>Hand over to the client</h2>
+  <ul class="check">
+    <li><span>Supabase → Organization → <b>Team → Invite</b> the company Gmail as <b>Owner</b>, so the client controls the database too.</span></li>
+    <li><span>Give the owner the <b>Admin guide (PDF)</b> and the admin address: <b>arklinefurniture.com/admin</b>.</span></li>
+    <li><span>Write down for the owner which accounts use the company Gmail: <b>Cloudflare, Resend, Supabase, GitHub</b>. Add the <b>domain renewal date</b> (one year from today) to their calendar.</span></li>
+    <li><span>Ask the owner to <b>change the Gmail password</b> after you finish, so only they can get in.</span></li>
+  </ul>
+</section>
+
+<section>
+  <span class="where">After launch</span>
+  <h2>Updating the website later</h2>
+  <div class="card"><ol>
+    <li><p>Make the change in the project folder and check it on <b>localhost:5173</b>.</p></li>
+    <li><p>Commit, then run <code>git push client main</code>.</p></li>
+    <li><p>Cloudflare rebuilds and updates the live site by itself in about a minute.</p></li>
+  </ol></div>
+  <div class="tw"><table>
+    <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Build fails</td><td>Check <code>NODE_VERSION</code> is <code>22</code> and the build command is <code>npm run build</code>, output <code>dist</code>.</td></tr>
+      <tr><td>Site loads, no photos or prices</td><td><code>VITE_SUPABASE_URL</code> / <code>VITE_SUPABASE_ANON_KEY</code> missing or misspelled. Fix, then Retry deployment.</td></tr>
+      <tr><td>Form says "temporarily unavailable"</td><td><code>SUPABASE_URL</code> or <code>SUPABASE_SERVICE_ROLE_KEY</code> missing in Pages.</td></tr>
+      <tr><td>Google sign-in goes to localhost</td><td>Step 5 not done, or the Redirect URLs are missing <code>/**</code>.</td></tr>
+      <tr><td>No alert emails</td><td>Resend domain not <b>Verified</b> yet, or <code>RESEND_API_KEY</code> / <code>NOTIFY_FROM</code> missing.</td></tr>
+      <tr><td>"Complete the security check" every time</td><td>The Turnstile hostname list doesn't include the address you're on.</td></tr>
+      <tr><td>Admin shows "project paused"</td><td>Supabase pauses after 7 days with no visits. Open supabase.com → the project → <b>Restore</b>. The daily GitHub job normally prevents this.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <span class="where">Cost</span>
+  <h2>What the client pays</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Service</th><th>Does</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td>Domain (Cloudflare)</td><td>arklinefurniture.com</td><td>about ₱600 a year</td></tr>
+      <tr><td>Cloudflare Pages</td><td>Hosting, HTTPS, spam check</td><td>Free</td></tr>
+      <tr><td>Supabase</td><td>Database, photos, admin sign-in</td><td>Free</td></tr>
+      <tr><td>Resend</td><td>Email alerts, 3,000 a month</td><td>Free</td></tr>
+      <tr><td>GitHub</td><td>Stores the code</td><td>Free</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>Prepared for Arkline Home &amp; Office Furniture · 101 Lydia St., Novaliches, Quezon City</footer>
+</div>
+</body>
+</html>

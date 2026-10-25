@@ -6,7 +6,7 @@ A production website for **Arkline Home & Office Furniture**, a custom furniture
 
 ![Arkline home page](docs/screenshots/home.jpg)
 
-> 📄 **[Website guide (PDF)](docs/arkline-website-flow.pdf)**: how orders reach Arkline · **[Admin guide (PDF)](docs/admin-guide.pdf)**: how the team runs the site · [This README as a PDF](docs/README.pdf)
+> 📄 **[Website guide (PDF)](docs/arkline-website-flow.pdf)**: how orders reach Arkline · **[Admin guide (PDF)](docs/admin-guide.pdf)**: how the team runs the site · **[Deployment guide (PDF)](docs/deployment-guide.pdf)**: putting it live · [This README as a PDF](docs/README.pdf)
 
 ---
 
@@ -122,7 +122,7 @@ functions/api/                 Cloudflare Pages Function wrappers
 supabase/                      schema.sql, then migrations 002–007
 public/                        Images, _headers (security and cache headers)
 .github/workflows/             Daily ping that keeps the free Supabase project awake
-docs/                          ADR, client flow PDF, screenshots, this README as a PDF
+docs/                          ADR, website/admin/deployment guide PDFs, screenshots, this README as a PDF
 ```
 
 ## Run it locally
@@ -141,7 +141,7 @@ Without Supabase keys the site still runs on its built-in data, and the form wor
 1. **Supabase**: create a free project. In the SQL Editor, run `supabase/schema.sql`, then `002` to `007` in order.
 2. **Admin**: under Authentication → Users, add the admin user. Run the `insert into public.admins …` line at the end of `schema.sql` with that email. Then turn off public sign-ups.
 3. **Google sign-in (optional)**: create an OAuth client in Google Cloud with redirect URI `https://<project>.supabase.co/auth/v1/callback`, enable Google in Supabase, and add your site URLs under Authentication → URL Configuration.
-4. **Deploy**: in Cloudflare Pages → Connect to Git, set the build command to `npm run build` and the output to `dist`, and add the environment variables below.
+4. **Deploy**: in Cloudflare Pages → Connect to Git, set the build command to `npm run build` and the output to `dist`, and add the environment variables below. (step by step: [deployment guide](docs/deployment-guide.pdf))
 
 | Variable | Where it's used | Notes |
 |---|---|---|
