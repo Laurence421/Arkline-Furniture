@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<script src="/signin-forward.js"></script>
+<!-- A sign-in link (Google, password reset) that lands here instead of the admin page goes straight on, before this page draws. Allowed by its hash in public/_headers. -->
+<script>if(/(^|&)(access_token|refresh_token|error_description|type=recovery)/.test(location.hash.slice(1))||/[?&]code=/.test(location.search))location.replace((location.hostname==="localhost"?"/admin.html":"/admin")+location.search+location.hash)</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Arkline Home &amp; Office Furniture | Novaliches, Quezon City</title>
 <meta name="description" content="Custom and ready-made office, home, commercial and institutional furniture. Arkline designs, fabricates, delivers and installs. Ask for a price.">
@@ -15,6 +16,7 @@
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png?v=2">
 <link rel="preload" href="/fonts/playfair-display-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/img/hero-1.webp" as="image" fetchpriority="high">
 <link rel="stylesheet" href="/src/styles.css">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FurnitureStore","name":"Arkline Home and Office Furniture Shop",

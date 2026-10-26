@@ -1,6 +1,6 @@
 # Cloudflare Pages response headers.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://wtexrwkkijviptexvwmr.supabase.co; connect-src 'self' https://wtexrwkkijviptexvwmr.supabase.co wss://wtexrwkkijviptexvwmr.supabase.co https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; form-action 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-mzL3moxfu0hZ3CtKahl4H4GZB+J/QarSE/Aswlpjl/I=' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://wtexrwkkijviptexvwmr.supabase.co; connect-src 'self' https://wtexrwkkijviptexvwmr.supabase.co wss://wtexrwkkijviptexvwmr.supabase.co https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; form-action 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
