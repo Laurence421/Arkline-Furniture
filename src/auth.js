@@ -78,8 +78,10 @@ export function mountAuth(root, { title = "Sign in", sub = "", onPasswordSet } =
     view = v;
     root.innerHTML = `<form class="q auth" novalidate>${VIEWS[v]()}</form>`;
     const f = root.querySelector("form");
+    addEyes(f);
     f.onsubmit = e => { e.preventDefault(); submit(f); };
     f.onclick = async e => {
+      const eye = e.target.closest(".pweye"); if (eye) { toggleEye(eye); return; }
       const sw = e.target.closest("[data-v]"); if (sw) { const em = f.email?.value; show(sw.dataset.v); if (em && root.querySelector("form").email) root.querySelector("form").email.value = em; return; }
       if (e.target.closest("[data-google]")) {
         // signInWithOAuth navigates away even when Google is off, landing on a raw JSON error. Check first.
@@ -94,4 +96,19 @@ export function mountAuth(root, { title = "Sign in", sub = "", onPasswordSet } =
 
   show(view);
   return { show };
+}
+
+// Eye button inside each password box: shows or hides what was typed.
+function addEyes(f) {
+  f.querySelectorAll('input[type="password"]').forEach(inp => {
+    const box = document.createElement("span"); box.className = "pwbox"; inp.replaceWith(box); box.append(inp);
+    box.insertAdjacentHTML("beforeend", `<button type="button" class="pweye" aria-label="Show password" aria-pressed="false"><i data-lucide="eye"></i></button>`);
+  });
+}
+function toggleEye(btn) {
+  const inp = btn.previousElementSibling, on = inp.type === "password";
+  inp.type = on ? "text" : "password";
+  btn.setAttribute("aria-pressed", String(on)); btn.setAttribute("aria-label", on ? "Hide password" : "Show password");
+  btn.innerHTML = `<i data-lucide="${on ? "eye-off" : "eye"}"></i>`; icons();
+  inp.focus({ preventScroll: true });
 }

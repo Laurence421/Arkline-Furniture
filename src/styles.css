@@ -281,6 +281,14 @@ body{margin:0}
 
 /* sign-in panel (src/auth.js) */
 form.q.auth{box-shadow:var(--shadow-card);border:1px solid var(--line)}
+/* password box with a show/hide eye button */
+.pwbox{position:relative;display:block}
+.pwbox input{padding-right:50px}
+.pwbox input::-ms-reveal{display:none}
+.pweye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;border-radius:10px;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer}
+.pweye:hover{color:var(--ink)}
+.pweye:focus-visible{outline:2px solid var(--walnut-2);outline-offset:-2px}
+.pweye svg{width:20px;height:20px}
 .q.auth .sub{color:var(--muted);font-size:.92rem;margin-top:4px}
 .gbtn{width:100%;background:var(--card)}
 .gbtn svg{width:20px;height:20px}
