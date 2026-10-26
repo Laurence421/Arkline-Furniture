@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arkline Customer Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Same look as the admin guide: numbered step cards, checklists and tables. */
+:root{
+  --bg:hsl(36 33% 96%); --card:hsl(0 0% 100%); --tint:hsl(34 28% 91%);
+  --ink:hsl(40 6% 13%); --muted:hsl(30 6% 38%); --line:hsl(32 18% 82%);
+  --walnut:hsl(27 52% 36%); --admin:hsl(158 38% 30%); --admin-tint:hsl(150 30% 92%);
+  --err:hsl(4 65% 45%);
+  --f-head:"Playfair Display",Georgia,"Times New Roman",serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:44px 64px;display:grid;gap:44px}
+h1,h2{font-family:var(--f-head);margin:0;line-height:1.12;letter-spacing:-.015em;text-wrap:balance}
+h1{font-size:clamp(2rem,4.6vw,2.9rem)} h2{font-size:clamp(1.4rem,2.8vw,1.8rem)}
+h3{margin:0;font-size:1.05rem}
+p{margin:0}
+.eyebrow{font-size:.74rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--walnut)}
+header{display:grid;gap:12px}
+.lead{font-size:1.08rem;color:var(--muted);max-width:62ch}
+section{display:grid;gap:16px}
+section>p{color:var(--muted);max-width:66ch}
+.where{display:inline-flex;gap:8px;align-items:center;font-size:.8rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--admin);background:var(--admin-tint);padding:4px 12px;border-radius:999px;justify-self:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;display:grid;gap:14px;align-content:start;min-width:0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+ol{margin:0;padding:0;list-style:none;display:grid;gap:12px;counter-reset:s}
+ol li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;counter-increment:s}
+ol li::before{content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--admin);color:#fff;display:grid;place-items:center;font-weight:800;font-size:.8rem}
+li p{color:var(--muted);font-size:.95rem} li p b{color:var(--ink)}
+ul.tips{margin:0;padding-left:18px;display:grid;gap:6px;color:var(--muted);font-size:.95rem} ul.tips b{color:var(--ink)}
+.shot{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}
+.shot img{display:block;width:100%;max-width:100%;height:auto}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:.93rem;min-width:520px}
+th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800;background:var(--tint)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:700;white-space:nowrap}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.p-new{background:hsl(30 58% 50%/.16);color:var(--walnut)} .p-con{background:var(--tint);color:var(--ink)}
+.p-sent{background:hsl(145 45% 32%/.12);color:hsl(145 45% 28%)} .p-cl{background:var(--tint);color:var(--muted)}
+.note{border-left:4px solid var(--walnut);background:var(--card);border-radius:0 12px 12px 0;padding:14px 18px;color:var(--muted);font-size:.95rem}
+.note b{color:var(--ink)}
+.check{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.check li{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;color:var(--muted);font-size:.95rem}
+.check li::before{content:"";flex:none;width:18px;height:18px;border:2px solid var(--admin);border-radius:5px;margin-top:2px}
+.check b{color:var(--ink)}
+footer{color:var(--muted);font-size:.85rem}
+@media print{
+  .wrap{padding-block:0;gap:26px}
+  section,.card,.tw,.shot,.note,tr,.check li{break-inside:avoid}
+  h2{break-after:avoid}
+}
+</style>
+<style>
+.step{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:22px;align-items:start}
+.step .shot{max-width:220px;justify-self:end}
+@media (max-width:640px){.step{grid-template-columns:1fr}.step .shot{justify-self:start;max-width:260px}}
+.url{font-weight:800;color:var(--walnut);overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Arkline Home &amp; Office Furniture · customer side</span>
+  <h1>What your customers see, and how to try it</h1>
+  <p class="lead">A walk through the website the way a customer uses it, from browsing your projects to sending an order. Try each step on your own phone; anything you send arrives in the admin page as a real request.</p>
+  <p class="note"><b>Test website (dry run):</b> <span class="url">arklineofficefurniture.pages.dev</span><br>Your own address (for example arklinefurniture.com) replaces it when the domain is bought. Everything else stays the same.</p>
+</header>
+
+<section>
+  <span class="where">Step 1</span>
+  <h2>The home page</h2>
+  <div class="step">
+    <div class="card"><ol>
+      <li><p>Customers land on a full-screen banner of your best work, with your location and two buttons: <b>View our projects</b> and <b>Free consultation</b>.</p></li>
+      <li><p>The <b>☰</b> button (top right) opens the menu: Projects, Shop, Services, About, FAQ and Contact.</p></li>
+      <li><p>The <b>clipboard button</b> with a number is the customer's order list. It counts the items and liked photos they've picked.</p></li>
+    </ol></div>
+    <div class="shot"><img src="screenshots/c1-home.jpg" alt="Home page on a phone"></div>
+  </div>
+</section>
+
+<section>
+  <span class="where">Step 2</span>
+  <h2>Browsing your projects</h2>
+  <div class="step">
+    <div class="card"><ol>
+      <li><p>Customers pick a category (Workstation, Conference Table, Operable Wall and so on) to see only those photos. The number shows how many photos each has.</p></li>
+      <li><p>Tapping a photo opens it full screen. They swipe or use the arrows to see more.</p></li>
+      <li><p><b>I want one like this</b> adds that photo to their request, so you see exactly what they mean.</p></li>
+    </ol></div>
+    <div class="shot"><img src="screenshots/c2-projects.jpg" alt="Project categories and gallery"></div>
+  </div>
+  <div class="step">
+    <ul class="tips"><li>Every photo carries the see-through Arkline logo, so competitors can't reuse it unmarked.</li><li>New photos you upload in the admin page appear here within about 30 seconds.</li></ul>
+    <div class="shot"><img src="screenshots/c3-viewer.jpg" alt="Full-screen photo with the I want one like this button"></div>
+  </div>
+</section>
+
+<section>
+  <span class="where">Step 3</span>
+  <h2>Shopping for chairs and tables</h2>
+  <div class="step">
+    <div class="card"><ol>
+      <li><p>In <b>Shop</b>, customers switch between <b>Ergonomic chairs</b> and <b>Office tables</b>, see the price and features, and tap <b>Add to order</b>.</p></li>
+      <li><p>Prices come from the <b>Prices</b> tab in the admin page. Change a price there and it changes here.</p></li>
+    </ol></div>
+    <div class="shot"><img src="screenshots/c4-shop.jpg" alt="Shop with a chair added to the order"></div>
+  </div>
+  <div class="step">
+    <div class="card"><ol>
+      <li><p>The order list shows each item with <b>−</b> / <b>+</b> for quantity, the liked photos, and the <b>estimated total</b>.</p></li>
+      <li><p>It stays on their phone even if they close the page and come back later.</p></li>
+      <li><p><b>Continue to order</b> takes them to the form.</p></li>
+    </ol></div>
+    <div class="shot"><img src="screenshots/c5-list.jpg" alt="Order list with quantity and estimated total"></div>
+  </div>
+</section>
+
+<section>
+  <span class="where">Step 4</span>
+  <h2>Sending an order or asking for a price</h2>
+  <div class="step">
+    <div class="card"><ol>
+      <li><p>The form changes by itself: <b>Send my order</b> when shop items are picked, <b>Ask for a price</b> for custom work or liked photos.</p></li>
+      <li><p>Customers give their name, a mobile number or email, the project type, and <b>how they want to be contacted</b>: call or text, Viber, Messenger or email.</p></li>
+      <li><p>They can attach a photo or sketch of their space.</p></li>
+      <li><p>If something is missing or mistyped (like a short mobile number), the form says exactly what to fix.</p></li>
+    </ol></div>
+    <div class="shot"><img src="screenshots/c6-form.jpg" alt="The order form"></div>
+  </div>
+  <div class="step">
+    <div class="card"><ol>
+      <li><p>After sending, the customer gets a <b>request number</b> (like #754) and the promise of a reply <b>within one business day</b>.</p></li>
+      <li><p>At the same moment the request appears in the admin page under <b>Requests</b>, with buttons to call, text, Viber, Messenger or email them.</p></li>
+    </ol></div>
+    <div class="shot"><img src="screenshots/c7-sent.jpg" alt="Thank-you message with the request number"></div>
+  </div>
+</section>
+
+<section>
+  <span class="where">Step 5</span>
+  <h2>Contacting you directly</h2>
+  <div class="step">
+    <div class="card"><ol>
+      <li><p>The Contact section shows your address, mobile numbers and email. On a phone, <b>tapping a number starts a call</b> and tapping the email opens their email app. <b>Copy</b> copies it.</p></li>
+      <li><p>Messenger and Viber buttons appear once your Facebook page and Viber number are filled in under <b>Website text</b> in the admin page.</p></li>
+    </ol></div>
+    <div class="shot"><img src="screenshots/c8-contact.jpg" alt="Contact details with tap-to-call numbers"></div>
+  </div>
+</section>
+
+<section>
+  <span class="where">Dry run</span>
+  <h2>Try it yourself: checklist</h2>
+  <p>Do these on your own phone, then open the admin page to see what arrived. Tell us anything that looks wrong or confusing.</p>
+  <ul class="check">
+    <li><span>Open the test website. The banner, projects and prices load.</span></li>
+    <li><span>Pick a category, open a photo, tap <b>I want one like this</b>.</span></li>
+    <li><span>In Shop, add one chair and one table. Change a quantity in the order list.</span></li>
+    <li><span>Send the form with your real name and number, marked "TEST" in the message. You get a request number.</span></li>
+    <li><span>Open <b>arklineofficefurniture.pages.dev/admin</b>, sign in, and find your test request under Requests.</span></li>
+    <li><span>Tap a phone number in Contact. Your phone offers to call it.</span></li>
+    <li><span>When done, move your test requests to <b>Trash</b> in the admin page.</span></li>
+  </ul>
+  <p class="note"><b>Prices, photos and text</b> on this test website are the real ones. Change them in the admin page and the test website updates within about 30 seconds.</p>
+</section>
+
+<footer>Prepared for Arkline Home &amp; Office Furniture · 101 Lydia St., Novaliches, Quezon City</footer>
+</div>
+</body>
+</html>

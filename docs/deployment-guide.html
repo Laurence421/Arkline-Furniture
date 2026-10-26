@@ -116,11 +116,11 @@ td code{white-space:nowrap}
   <span class="where">Step 3 · about 15 min</span>
   <h2>Put the site on Cloudflare Pages</h2>
   <div class="card"><ol>
-    <li><p>Cloudflare → <b>Workers &amp; Pages → Create → Pages → Connect to Git</b>.</p></li>
+    <li><p>Cloudflare → <b>Compute → Workers &amp; Pages → Create</b>. Don't use "Connect GitHub" on that screen (it makes a Worker); click <b>Continue to Pages</b> at the very bottom, then <b>Import an existing Git repository</b>.</p></li>
     <li><p>Sign in to GitHub as <b>arklinefurniture3-boop</b>, allow access to <b>arklinefurniture-main</b>, and select it.</p></li>
-    <li><p>Project name: <b>arkline</b>. Framework preset: <b>None</b>. Build command: <code>npm run build</code>. Build output directory: <code>dist</code>.</p></li>
-    <li><p>Open <b>Environment variables</b> and add each line from the table below. Copy the values from your <code>.env.local</code>.</p></li>
-    <li><p>Click <b>Save and Deploy</b>. After about 1 minute the site is live at <b>arkline.pages.dev</b>. The address may differ slightly if "arkline" is taken; note the one Cloudflare shows.</p></li>
+    <li><p>Project name: <b>arklineofficefurniture</b>. Framework preset: <b>None</b>. Build command: <code>npm run build</code>. Build output directory: <code>dist</code>.</p></li>
+    <li><p>Open <b>Environment variables (advanced)</b> and add each line from the table below <b>before</b> deploying. Copy the values from your <code>.env.local</code>. Added them later? Go to <b>Settings → Variables and Secrets</b>, add them there, then <b>Deployments → ⋯ → Retry deployment</b>: keys only take effect in a new build.</p></li>
+    <li><p>Click <b>Save and Deploy</b>. After about 1 minute the site is live at <b>arklineofficefurniture.pages.dev</b>. The address may differ slightly if "arkline" is taken; note the one Cloudflare shows.</p></li>
   </ol></div>
   <div class="tw"><table>
     <thead><tr><th>Variable name</th><th>Value</th><th>Secret?</th></tr></thead>
@@ -153,7 +153,7 @@ td code{white-space:nowrap}
   <div class="card"><ol>
     <li><p>Open <b>supabase.com</b> → the Arkline project → <b>Authentication → URL Configuration</b>.</p></li>
     <li><p><b>Site URL:</b> <code>https://arklinefurniture.com</code></p></li>
-    <li><p><b>Redirect URLs:</b> add <code>https://arklinefurniture.com/**</code> and <code>https://arkline.pages.dev/**</code>. Keep the localhost one for testing.</p></li>
+    <li><p><b>Redirect URLs:</b> add <code>https://arklinefurniture.com/**</code> and <code>https://arklineofficefurniture.pages.dev/**</code>. Keep the localhost one for testing.</p></li>
     <li><p>Click <b>Save</b>.</p></li>
   </ol></div>
 </section>
@@ -175,7 +175,7 @@ td code{white-space:nowrap}
   <span class="where">Step 7 · about 5 min</span>
   <h2>Turn on the spam check (Turnstile)</h2>
   <div class="card"><ol>
-    <li><p>Cloudflare → <b>Turnstile → Add widget</b>. Name: Arkline. Hostnames: <b>arklinefurniture.com</b> and <b>arkline.pages.dev</b>. Mode: <b>Managed</b>.</p></li>
+    <li><p>Cloudflare → <b>Turnstile → Add widget</b>. Name: Arkline. Hostnames: <b>arklinefurniture.com</b> and <b>arklineofficefurniture.pages.dev</b>. Mode: <b>Managed</b>.</p></li>
     <li><p>Copy the two keys into Pages → <b>Settings → Variables and Secrets</b>:<br>
       <code>VITE_TURNSTILE_SITE_KEY</code> = the Site Key<br>
       <code>TURNSTILE_SECRET_KEY</code> = the Secret Key (<b>Encrypt</b> it)</p></li>
