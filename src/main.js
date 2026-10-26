@@ -236,7 +236,9 @@ $("#qform").addEventListener("submit",async e=>{
   const name=$("#f-name").value.trim(),phone=$("#f-phone").value.replace(/[\s-]/g,""),email=$("#f-email").value.trim(),file=$("#f-photo").files[0];
   let m="";
   if(!name) m="Add your name so we know who to send the price to.";
-  else if(!/^(09|\+639)\d{9}$/.test(phone)&&!/^\S+@\S+\.\S+$/.test(email)) m="Add a mobile number (09XX XXX XXXX) or an email so we can send you the price.";
+  else if(!/^(09|\+639)\d{9}$/.test(phone)&&!/^\S+@\S+\.\S+$/.test(email)) m=$("#f-pref").value==="Messenger"
+    ?"Add a mobile number (09XX XXX XXXX) or an email too, in case we can't find you on Messenger."
+    :"Add a mobile number (09XX XXX XXXX) or an email so we can send you the price.";
   else if(["Call or text","Viber"].includes($("#f-pref").value)&&!/^(09|\+639)\d{9}$/.test(phone)) m=`Add your mobile number so we can reach you by ${$("#f-pref").value==="Viber"?"Viber":"call or text"}.`;
   else if($("#f-pref").value==="Email"&&!/^\S+@\S+\.\S+$/.test(email)) m="Add your email so we can reply by email.";
   else if($("#f-pref").value==="Messenger"&&!$("#f-fb").value.trim()) m="Add your Facebook name or link so we can message you.";
