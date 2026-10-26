@@ -391,5 +391,7 @@ else{
     signedInId=session?.user?.id||null;
     setTimeout(()=>route(session),0);
   });
+  // Back/forward can bring back an old snapshot of this page (e.g. the sign-in screen): show who is signed in now.
+  addEventListener("pageshow",e=>{ if(e.persisted) supabase.auth.getSession().then(({data})=>route(data.session)); });
 }
 icons();

@@ -3,11 +3,6 @@ import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, ALL as
 import { CONTENT_DEFAULTS } from "./content.js";
 import { toWebp } from "./image.js";
 
-// A sign-in link (Google, password reset) that lands on the home page instead of the admin page
-// (Supabase falls back to its Site URL) is passed on to the admin page, which finishes the sign-in.
-if(/(^|&)(access_token|refresh_token|error_description|type=recovery)/.test(location.hash.slice(1))||/[?&]code=/.test(location.search))
-  location.replace((location.hostname==="localhost"?"/admin.html":"/admin")+location.search+location.hash);
-
 // Catalogue and text start from the built-in copies and are replaced by the admin's saved versions (loadSiteData).
 let CHAIRS=CHAIRS0, TABLES=TABLES0, ALL=ALL0, TEXT={...CONTENT_DEFAULTS};
 
