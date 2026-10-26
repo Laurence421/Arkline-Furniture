@@ -1,5 +1,12 @@
 # Cloudflare Pages (free, commercial use allowed). Build: npm run build → dist/
-name = "arkline"
+name = "arklineofficefurniture"
 pages_build_output_dir = "dist"
 compatibility_date = "2025-09-01"
 compatibility_flags = ["nodejs_compat"]
+
+# Public settings for the /api functions. Because this file exists, the dashboard only takes Secrets:
+# add SUPABASE_SERVICE_ROLE_KEY (and later RESEND_API_KEY, TURNSTILE_SECRET_KEY) there as Secrets.
+[vars]
+SUPABASE_URL = "https://wtexrwkkijviptexvwmr.supabase.co"
+VITE_SUPABASE_ANON_KEY = "sb_publishable_K7YY0SZsMMpqjUIMASgGWQ_6djpugc6"
+NOTIFY_EMAIL = "arklinefurniture3@gmail.com"
