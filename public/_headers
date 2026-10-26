@@ -6,6 +6,13 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
+# Keep the test address out of Google; the real domain (when connected) is indexed instead.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex
+
 /img/*
   Cache-Control: public, max-age=2592000
 
