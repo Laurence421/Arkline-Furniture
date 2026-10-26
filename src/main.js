@@ -20,7 +20,7 @@ const alt = p => p.alt || p.cat+" completed by Arkline";
 
 /* hero slideshow */
 // Banner slides: clean (no watermark), enhanced 1920x1080 copies of large originals (public/img/hero-N.webp).
-const SLIDES=[["/img/hero-1.webp","Workstation"],["/img/hero-2.webp","Cubicle Partition"],["/img/hero-3.webp","Conference Table"],["/img/hero-4.webp","Kitchen Cabinet"],["/img/hero-5.webp","Executive Table"]];
+const SLIDES=[["/img/hero-1.webp?v=2","Workstation"],["/img/hero-2.webp","Cubicle Partition"],["/img/hero-3.webp","Conference Table"],["/img/hero-4.webp","Kitchen Cabinet"],["/img/hero-5.webp","Executive Table"]];
 let si=0, timer;
 function buildSlides(){
   // Only the first slide downloads with the page; each next one loads just before it's shown (go).
