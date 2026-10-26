@@ -6,7 +6,7 @@ A production website for **Arkline Home & Office Furniture**, a custom furniture
 
 ![Arkline home page](docs/screenshots/home.jpg)
 
-> 📄 **[Website guide (PDF)](docs/arkline-website-flow.pdf)**: how orders reach Arkline · **[Admin guide (PDF)](docs/admin-guide.pdf)**: how the team runs the site · **[Customer guide (PDF)](docs/customer-guide.pdf)**: what customers see, with a dry-run checklist · **[Deployment guide (PDF)](docs/deployment-guide.pdf)**: putting it live · [This README as a PDF](docs/README.pdf)
+> 📄 **[Website guide (PDF)](docs/arkline-website-flow.pdf)**: how orders reach Arkline · **[Admin guide (PDF)](docs/admin-guide.pdf)**: how the team runs the site · **[Customer guide (PDF)](docs/customer-guide.pdf)**: what customers see, with a dry-run checklist · **[Deployment guide (PDF)](docs/deployment-guide.pdf)**: putting it live
 
 ---
 
@@ -122,7 +122,7 @@ functions/api/                 Cloudflare Pages Function wrappers
 supabase/                      schema.sql, then migrations 002–007
 public/                        Images, _headers (security and cache headers)
 .github/workflows/             Daily ping that keeps the free Supabase project awake
-docs/                          ADR, website/admin/deployment guide PDFs, screenshots, this README as a PDF
+docs/                          ADR, website, customer, admin and deployment guide PDFs, screenshots
 ```
 
 ## Run it locally
