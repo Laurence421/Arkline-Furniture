@@ -295,14 +295,16 @@ footer a{text-decoration:none} footer a:hover{color:var(--on-dark)}
 .sheet-head h3{font-size:1.3rem}
 .pickcats{margin:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .pickcats .chip{flex:none}
-.pickgrid{overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;align-content:start;min-height:200px}
-.pk{position:relative;border:0;padding:0;border-radius:12px;overflow:hidden;background:var(--muted-bg)}
-.pk img{width:100%;aspect-ratio:4/3;height:auto;object-fit:cover;display:block}
+/* flex-wrap, not grid: with many photos a grid inside the scrolling box squeezed the rows flat */
+.pickgrid{overflow-y:auto;display:flex;flex-wrap:wrap;align-content:flex-start;gap:8px;min-height:200px}
+.pk{position:relative;flex:0 0 calc((100% - 24px) / 4);aspect-ratio:4/3;border:0;padding:0;border-radius:12px;overflow:hidden;background:var(--muted-bg)}
+.pk img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pk .ck{position:absolute;right:6px;top:6px;width:26px;height:26px;border-radius:50%;background:hsl(36 33% 96%/.9);border:2px solid var(--line);display:grid;place-items:center;color:transparent}
 .pk .ck svg{width:15px;height:15px}
 .pk.on{outline:3px solid var(--walnut-2);outline-offset:-3px}
 .pk.on .ck{background:var(--walnut);border-color:var(--walnut);color:var(--on-dark)}
-@media (max-width:540px){.pickgrid{grid-template-columns:repeat(2,1fr)}.sheet{width:calc(100% - 16px)}}
+@media (max-width:640px){.pk{flex-basis:calc((100% - 16px) / 3)}}
+@media (max-width:540px){.pk{flex-basis:calc((100% - 8px) / 2)}.sheet{width:calc(100% - 16px)}}
 
 /* live-site additions */
 .reply-note{color:var(--muted);font-size:.85rem;text-align:center;display:flex;gap:6px;justify-content:center;align-items:center;margin-top:-6px}
