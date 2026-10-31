@@ -347,7 +347,7 @@ form.q.auth{box-shadow:var(--shadow-card);border:1px solid var(--line)}
 @media (max-width:540px){.fab span{display:none}.fab{padding:14px}}
 .ts{min-height:65px}
 
-/* "I want one like this" + starting prices */
+/* "Ask price" in the photo viewer + starting prices */
 .cat .lbl b small.from{display:block;font-family:var(--f-body);font-size:.74rem;font-weight:700;color:var(--gold);margin-top:4px;letter-spacing:0}
 .tile.liked{outline:3px solid var(--walnut-2);outline-offset:-3px}
 .lbacts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}

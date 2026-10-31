@@ -105,7 +105,7 @@ function renderLb(){
   const p=visible[li]; $("#lbImg").src=p.src; $("#lbImg").alt=alt(p);
   $("#lbCap").textContent=`${p.cat}${fromLabel(p.cat)?" · "+fromLabel(p.cat):""} · ${li+1} of ${visible.length}`;
   const on=isLiked(p); $("#lbLike").classList.toggle("on",on);
-  $("#lbLike").querySelector("span").textContent=on?"Added to your request":"I want one like this";
+  $("#lbLike").querySelector("span").textContent=on?"Added":"Ask price";
   $("#lbStrip").innerHTML=visible.map((v,i)=>`<img src="${v.src}" alt="" data-k="${i}" class="${i===li?"on":""}">`).join("");
   $("#lbStrip").children[li]?.scrollIntoView({block:"nearest",inline:"center"});
 }
