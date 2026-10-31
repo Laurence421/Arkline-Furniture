@@ -186,6 +186,8 @@ div.q.auth{background:var(--card);color:var(--ink);border:1px solid var(--line);
   .search{max-width:none}
   #qfilters,#afilters,#bfilters,#pfilters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
   #qfilters .chip,#afilters .chip,#bfilters .chip,#pfilters .chip{flex:none}
+  #qfilters{flex-wrap:wrap;overflow:visible;gap:6px}
+  #qfilters .chip{padding:7px 12px}
   .admin form.q,div.q.auth{padding:18px;border-radius:18px}
   .pc-img{grid-auto-flow:column;justify-content:start;align-items:center}
   .pc-img img,.pc-img .noimg{width:84px;height:84px}

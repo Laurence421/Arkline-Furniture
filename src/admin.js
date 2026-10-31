@@ -110,17 +110,19 @@ const isOrder=q=>(q.quote_items||[]).length>0;
 const ofType=(q,t)=>t==="all"||(t==="order")===isOrder(q);
 const QTYPES=[["all","All"],["order","Orders"],["price","Price requests"]];
 function renderQuotes(){
+  // Typing in search looks through every request (Trash only when Trash is open), whatever status button is on.
+  const s=qsearch.toLowerCase().replace(/^#/,""), searching=!!s&&qfilter!=="trash";
+  const shown=q=>searching?!inTrash(q):inView(q,qfilter);
   const n=k=>quotes.filter(q=>inView(q,k)&&ofType(q,qtype)).length;
   const fresh=quotes.filter(q=>inView(q,"new")).length; $("#newc").textContent=fresh; $("#newc").hidden=!fresh;
   $("#qcount").textContent=plural(quotes.filter(q=>!inTrash(q)).length,"request");
-  $("#qtype").innerHTML=QTYPES.map(([t,l])=>{ const c=quotes.filter(q=>inView(q,qfilter)&&ofType(q,t)).length, nw=t==="all"?0:quotes.filter(q=>inView(q,"new")&&ofType(q,t)).length;
+  $("#qtype").innerHTML=QTYPES.map(([t,l])=>{ const c=quotes.filter(q=>shown(q)&&ofType(q,t)).length, nw=t==="all"?0:quotes.filter(q=>inView(q,"new")&&ofType(q,t)).length;
     return `<button role="tab" aria-selected="${t===qtype}" data-qt="${t}">${l}<small>${c}</small>${nw?`<span class="badge" title="${nw} new" aria-label="${nw} new">${nw}</span>`:""}</button>`; }).join("");
-  $("#qfilters").innerHTML=[["active","Open"],...Object.entries(STATUS),["all","All"],["trash","Trash"]]
-    .map(([k,l])=>`<button class="chip${k===qfilter?" on":""}${k==="trash"?" trash":""}" data-qf="${k}">${k==="trash"?'<i data-lucide="trash-2"></i>':""}${l}<small>${n(k)}</small></button>`).join("");
-  const s=qsearch.toLowerCase().replace(/^#/,"");
-  const vis=quotes.filter(q=>inView(q,qfilter)&&ofType(q,qtype)
+  $("#qfilters").innerHTML=[["active","Open"],...Object.entries(STATUS),["trash","Trash"]]
+    .map(([k,l])=>`<button class="chip${k===qfilter&&!searching?" on":""}${k==="trash"?" trash":""}" data-qf="${k}"${k==="trash"?` title="Trash" aria-label="Trash, ${n(k)}"`:""}>${k==="trash"?'<i data-lucide="trash-2"></i>':l}<small>${n(k)}</small></button>`).join("");
+  const vis=quotes.filter(q=>shown(q)&&ofType(q,qtype)
     &&(!s||[q.id,q.full_name,q.mobile,q.email,q.message].some(v=>String(v??"").toLowerCase().includes(s))));
-  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(qfilter==="trash"?"Trash is empty.":quotes.length?`No ${qtype==="order"?"orders":qtype==="price"?"price requests":"requests"} match.`:"No price requests yet. They'll appear here as soon as a customer sends the form.");
+  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(qfilter==="trash"?"Trash is empty.":quotes.length?`No ${qtype==="order"?"orders":qtype==="price"?"price requests":"requests"} match${searching?` "${esc(qsearch)}"`:""}.`:"No price requests yet. They'll appear here as soon as a customer sends the form.");
   icons();
 }
 function card(q){
