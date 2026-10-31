@@ -79,7 +79,7 @@ $("#atabs").onclick=e=>{
 
 /* quotes */
 const STATUS={new:"New",contacted:"Contacted",quoted:"Price sent",closed:"Closed"};
-let quotes=[], qfilter="active", qsearch="";
+let quotes=[], qfilter="active", qtype="all", qsearch="";
 const peso=n=>"₱"+Number(n).toLocaleString("en-PH");
 const when=d=>new Date(d).toLocaleString("en-PH",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
 async function loadQuotes(){
@@ -105,16 +105,22 @@ document.addEventListener("visibilitychange",()=>{ if(!document.hidden) pollQuot
 // Requests in Trash have deleted_at set; every other view leaves them out.
 const inTrash=q=>!!q.deleted_at;
 const inView=(q,k)=>k==="trash"?inTrash(q):!inTrash(q)&&(k==="all"||(k==="active"?q.status!=="closed":q.status===k));
+// Orders (shop items) and price requests (custom work, liked photos) share one inbox; the type switch narrows it.
+const isOrder=q=>(q.quote_items||[]).length>0;
+const ofType=(q,t)=>t==="all"||(t==="order")===isOrder(q);
+const QTYPES=[["all","All"],["order","Orders"],["price","Price requests"]];
 function renderQuotes(){
-  const n=k=>quotes.filter(q=>inView(q,k)).length;
-  const fresh=n("new"); $("#newc").textContent=fresh; $("#newc").hidden=!fresh;
+  const n=k=>quotes.filter(q=>inView(q,k)&&ofType(q,qtype)).length;
+  const fresh=quotes.filter(q=>inView(q,"new")).length; $("#newc").textContent=fresh; $("#newc").hidden=!fresh;
   $("#qcount").textContent=plural(quotes.filter(q=>!inTrash(q)).length,"request");
+  $("#qtype").innerHTML=QTYPES.map(([t,l])=>{ const c=quotes.filter(q=>inView(q,qfilter)&&ofType(q,t)).length, nw=t==="all"?0:quotes.filter(q=>inView(q,"new")&&ofType(q,t)).length;
+    return `<button role="tab" aria-selected="${t===qtype}" data-qt="${t}">${l}<small>${c}</small>${nw?`<span class="badge" title="${nw} new" aria-label="${nw} new">${nw}</span>`:""}</button>`; }).join("");
   $("#qfilters").innerHTML=[["active","Open"],...Object.entries(STATUS),["all","All"],["trash","Trash"]]
     .map(([k,l])=>`<button class="chip${k===qfilter?" on":""}${k==="trash"?" trash":""}" data-qf="${k}">${k==="trash"?'<i data-lucide="trash-2"></i>':""}${l}<small>${n(k)}</small></button>`).join("");
   const s=qsearch.toLowerCase().replace(/^#/,"");
-  const vis=quotes.filter(q=>inView(q,qfilter)
+  const vis=quotes.filter(q=>inView(q,qfilter)&&ofType(q,qtype)
     &&(!s||[q.id,q.full_name,q.mobile,q.email,q.message].some(v=>String(v??"").toLowerCase().includes(s))));
-  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(qfilter==="trash"?"Trash is empty.":quotes.length?"No requests match.":"No price requests yet. They'll appear here as soon as a customer sends the form.");
+  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(qfilter==="trash"?"Trash is empty.":quotes.length?`No ${qtype==="order"?"orders":qtype==="price"?"price requests":"requests"} match.`:"No price requests yet. They'll appear here as soon as a customer sends the form.");
   icons();
 }
 function card(q){
@@ -144,6 +150,7 @@ function card(q){
   </article>`;
 }
 $("#qfilters").onclick=e=>{const b=e.target.closest("[data-qf]"); if(b){qfilter=b.dataset.qf; renderQuotes();}};
+$("#qtype").onclick=e=>{const b=e.target.closest("[data-qt]"); if(b){qtype=b.dataset.qt; renderQuotes();}};
 $("#qsearch").oninput=e=>{qsearch=e.target.value.trim(); renderQuotes();};
 
 /* Download: every request (Trash included, marked) as a CSV that opens in Excel or Google Sheets.

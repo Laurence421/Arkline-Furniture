@@ -29,6 +29,10 @@
 #atabs button{display:inline-flex;align-items:center;gap:8px}
 #atabs svg{width:17px;height:17px}
 .tabpane{display:grid;gap:56px}
+.qtype{margin-bottom:14px;max-width:100%}
+.qtype button{padding:9px 16px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.qtype small{opacity:.65;font-weight:700}
+@media (max-width:420px){.qtype{display:flex;width:100%}.qtype button{flex:1 1 auto;justify-content:center;padding:9px 10px;font-size:.84rem}}
 .qtools{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:20px}
 .search{position:relative;flex:1 1 260px;max-width:380px;display:block}
 .search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted)}
