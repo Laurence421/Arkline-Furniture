@@ -153,10 +153,6 @@ function renderQuote(){
     :(likes.length?"":`<div class="empty"><i data-lucide="clipboard-list"></i><p>Nothing here yet. Tap "Add to order" on a chair or table, or "I want one like this" on a project photo.</p></div>`);
   if(likes.length) $("#qitems").insertAdjacentHTML("beforeend",`<div class="likes"><div class="k">Want one like these <span>· priced for you</span></div><div class="lgrid">${likes.map((l,i)=>`<figure><img src="${esc(l.src)}" alt="${esc(l.cat)}"><figcaption>${esc(l.cat)}</figcaption><button class="rm" data-unlike="${i}">Remove</button></figure>`).join("")}</div></div>`);
   $("#qtotal").textContent=n?pt({min:a,max:z}):"₱0";
-  const sum=[];
-  if(n) sum.push(`<b style="color:var(--ink)">Your order: ${n} item${n>1?"s":""}</b> · total ${pt({min:a,max:z})}<br>${ids.map(id=>quote[id]+" × "+id).join(", ")}`);
-  if(likes.length) sum.push(`<b style="color:var(--ink)">Price one like ${likes.length>1?"these":"this"}:</b><span class="lthumbs">${likes.map(l=>`<img src="${esc(l.src)}" alt="${esc(l.cat)}" title="${esc(l.cat)}">`).join("")}</span>`);
-  $("#qsum").innerHTML=sum.length?sum.join("<hr>"):`Ordering from the <a href="#shop">shop</a>? Add items first. For custom work, just describe it below.`;
   updateMode(n);
   icons();
 }
@@ -171,22 +167,38 @@ $("#qitems").addEventListener("click",e=>{
 function openDrawer(){$("#drawer").classList.add("open");$("#drawer").setAttribute("aria-hidden","false");$("#scrim").hidden=false;$("#closeQ").focus();}
 function closeDrawer(){$("#drawer").classList.remove("open");$("#drawer").setAttribute("aria-hidden","true");$("#scrim").hidden=true;}
 $("#openQ").onclick=openDrawer; $("#closeQ").onclick=closeDrawer; $("#scrim").onclick=closeDrawer;
-$("#toForm").onclick=()=>{closeDrawer();$("#contact").scrollIntoView();setTimeout(()=>$("#f-name").focus({preventScroll:true}),450);};
+$("#toForm").onclick=()=>{closeDrawer();setMode(totals().n>0?"order":"ask");$("#contact").scrollIntoView();setTimeout(()=>$("#f-name").focus({preventScroll:true}),450);};
 $("#copyList").onclick=()=>{const ids=Object.keys(quote);if(!ids.length){toast("Add shop items to copy your order");return;}const{a,z}=totals();
   copy("Arkline order\n"+ids.map(id=>`${quote[id]} x ${id} ${ALL[id].name} (${pt(ALL[id])})`).join("\n")+`\nEstimated total: ${pt({min:a,max:z})}`,"List copied");};
 
-/* form adapts: shop items = an order; otherwise a price request (custom work or liked photos) */
+/* two tabs: "Ask for a price" (custom work, liked photos) and "Place an order" (shop items + delivery).
+   Until the customer picks a tab, it follows the order list: shop items = order. */
+let formMode="ask", picked=false;
+function setMode(m){ formMode=m; picked=true; updateMode(); }
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-mode]"); if(t) setMode(t.dataset.mode); });
 function updateMode(n=totals().n){
-  const order=n>0, liked=likes.length>0;
-  $("#fhead").textContent=order?"Send my order":"Ask for a price";
+  if(!picked) formMode=n>0?"order":"ask";
+  const order=formMode==="order", liked=likes.length>0, ids=Object.keys(quote).filter(id=>ALL[id]), {a,z}=totals();
+  document.querySelectorAll(".ftabs [data-mode]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.mode===formMode)));
+  document.querySelectorAll("#qform .ask-only").forEach(el=>el.hidden=order);
+  document.querySelectorAll("#qform .order-only").forEach(el=>el.hidden=!order);
+  $("#fhead").textContent=order?"Place an order":"Ask for a price";
   $("#fsub").textContent=order
     ?`We'll confirm stock, delivery fee and the 70% down payment within one business day.${liked?" We'll also price the photos you liked.":""}`
     :liked?"Tell us your size or how many seats, and we'll price one like the photo for you."
     :"Tell us your space and what you need. We'll send you the full price and details.";
-  $("#f-msg").placeholder=order?"e.g. Deliver to Makati, 3rd floor, no elevator":liked?"e.g. 8 seats like the photo, gray laminate, 60 sqm office":"e.g. 12-seat workstation for a 60 sqm office, gray laminate";
+  $("#msglbl").innerHTML=order?`Delivery notes <span class="hint">Optional</span>`:"Tell us about your space";
+  $("#f-msg").placeholder=order?"e.g. 3rd floor, no elevator, deliver after 5 pm":liked?"e.g. 8 seats like the photo, gray laminate, 60 sqm office":"e.g. 12-seat workstation for a 60 sqm office, gray laminate";
   $("#qsend span").textContent=order?"Send my order":"Ask for a price";
-  $("#dhead").textContent=order?"Your order":"Your request";
-  $("#toForm span").textContent=order?"Continue to order":"Continue to ask for a price";
+  $("#dhead").textContent=n>0?"Your order":"Your request";
+  $("#toForm span").textContent=n>0?"Continue to order":"Continue to ask for a price";
+  const sum=[], likeSum=liked&&`<b style="color:var(--ink)">Price one like ${likes.length>1?"these":"this"}:</b><span class="lthumbs">${likes.map(l=>`<img src="${esc(l.src)}" alt="${esc(l.cat)}" title="${esc(l.cat)}">`).join("")}</span>`;
+  if(order){
+    sum.push(n?`<b style="color:var(--ink)">Your order: ${n} item${n>1?"s":""}</b> · total ${pt({min:a,max:z})}<br>${ids.map(id=>quote[id]+" × "+id).join(", ")}`
+      :`Nothing in your order yet. Add chairs or tables from the <a href="#shop">shop</a> first.`);
+    if(likeSum) sum.push(likeSum);
+  } else sum.push(likeSum||`Describe what you need below. Buying chairs or tables from the <a href="#shop">shop</a>? Use <b>Place an order</b>.`);
+  $("#qsum").innerHTML=sum.join("<hr>");
 }
 
 /* misc */
@@ -233,15 +245,18 @@ const FALLBACK=()=>`Please call ${TEXT["contact.mobiles"][0]||""} or email ${TEX
 function formError(m){ $("#ferr").hidden=!m; $("#ferr").textContent=m; }
 $("#qform").addEventListener("submit",async e=>{
   e.preventDefault();
-  const name=$("#f-name").value.trim(),phone=$("#f-phone").value.replace(/[\s-]/g,""),email=$("#f-email").value.trim(),file=$("#f-photo").files[0];
+  const order=formMode==="order";
+  const name=$("#f-name").value.trim(),phone=$("#f-phone").value.replace(/[\s-]/g,""),email=$("#f-email").value.trim(),file=order?null:$("#f-photo").files[0];
   let m="";
-  if(!name) m="Add your name so we know who to send the price to.";
+  if(order&&!totals().n) m="Your order is empty. Add chairs or tables from the shop first, or use Ask for a price.";
+  else if(!name) m=order?"Add your name so we know who the order is for.":"Add your name so we know who to send the price to.";
   else if(!/^(09|\+639)\d{9}$/.test(phone)&&!/^\S+@\S+\.\S+$/.test(email)) m=$("#f-pref").value==="Messenger"
     ?"Add a mobile number (09XX XXX XXXX) or an email too, in case we can't find you on Messenger."
     :"Add a mobile number (09XX XXX XXXX) or an email so we can send you the price.";
   else if(["Call or text","Viber"].includes($("#f-pref").value)&&!/^(09|\+639)\d{9}$/.test(phone)) m=`Add your mobile number so we can reach you by ${$("#f-pref").value==="Viber"?"Viber":"call or text"}.`;
   else if($("#f-pref").value==="Email"&&!/^\S+@\S+\.\S+$/.test(email)) m="Add your email so we can reply by email.";
   else if($("#f-pref").value==="Messenger"&&!$("#f-fb").value.trim()) m="Add your Facebook name or link so we can message you.";
+  else if(order&&$("#f-addr").value.trim().length<5) m="Add your delivery address so we can tell you the delivery fee.";
   else if(file&&!file.type.startsWith("image/")) m="The reference photo must be an image.";
   else if(file&&file.size>25*1024*1024) m="The reference photo is over 25 MB. Try a smaller one.";
   formError(m); $("#fsent").hidden=true;
@@ -251,18 +266,20 @@ $("#qform").addEventListener("submit",async e=>{
   btn.disabled=true; label.textContent="Sending…";
   try{
     const fd=new FormData($("#qform"));
-    fd.delete("photo");
+    fd.delete("photo"); fd.set("mode",formMode);
+    if(order) fd.delete("type"); else fd.delete("address");
     if(file){
       try{ const w=await toWebp(file,1600,.82); fd.set("photo",w.blob,"reference."+w.ext); }
       catch(err){ if(file.size<=5*1024*1024) fd.set("photo",file); else throw new Error("We couldn't read that photo. Try a JPG or PNG under 5 MB."); }
     }
-    fd.set("items",JSON.stringify(Object.keys(quote).filter(id=>ALL[id]).map(id=>({id,qty:quote[id]}))));
+    fd.set("items",JSON.stringify(order?Object.keys(quote).filter(id=>ALL[id]).map(id=>({id,qty:quote[id]})):[]));
     fd.set("liked",JSON.stringify(likes));
-    const wasOrder=Object.keys(quote).some(id=>ALL[id]);
+    const wasOrder=order;
     const r=await fetch("/api/quote",{method:"POST",body:fd});
     const j=await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(j.error||"Something went wrong sending your request.");
-    $("#qform").reset(); $("#fbwrap").hidden=true; quote={}; save(); likes=[]; saveLikes(); renderQuote(); renderCatalogue(); buildGallery(); applyFilter();
+    // a price request leaves the shop items in the order list for later
+    $("#qform").reset(); $("#fbwrap").hidden=true; if(order){ quote={}; save(); } likes=[]; saveLikes(); renderQuote(); renderCatalogue(); buildGallery(); applyFilter();
     $("#fsent").textContent=`Thanks, ${name.split(" ")[0]}! Your ${wasOrder?"order":"request"}${j.id?" #"+j.id:""} is in. ${wasOrder?"We'll confirm delivery and payment":"We'll send you the full price and details"} within one business day.${j.id?" Mention #"+j.id+" when you message us.":""}`;
     $("#fsent").hidden=false; $("#fsent").focus();
   }catch(err){

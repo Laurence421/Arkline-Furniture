@@ -43,6 +43,8 @@
 .qc select{width:auto;padding:8px 12px;font-weight:700}
 .qc .acts2{display:flex;gap:8px;flex-wrap:wrap}
 .qc .acts2 .btn{padding:8px 14px;font-size:.85rem}
+.qc .addr{display:flex;gap:8px;align-items:flex-start;font-size:.93rem;overflow-wrap:anywhere}
+.qc .addr svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--muted)}
 .qc .msg{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:12px 14px;font-size:.93rem;overflow-wrap:anywhere}
 .qc .items{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:.9rem}
 .qc .items b{font-variant-numeric:tabular-nums}

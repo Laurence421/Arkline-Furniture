@@ -35,6 +35,7 @@ function gmailDraft(q){
     `Thank you for your ${order?"order":"price request"} #${q.id} (${q.project_type}).`, "",
     ...(order?["Your order:",...items.map(i=>`- ${i.qty} × ${i.id} ${i.name}`),`Total from our shop prices: ${est}`,""]:[]),
     ...(liked.length?["You'd like one like these:",...liked.map(l=>`- ${l.cat}: ${new URL(l.src,location.origin).href}`),""]:[]),
+    ...(q.delivery_address?[`Deliver to: ${q.delivery_address}`,""]:[]),
     ...(q.message?["Your notes:",`"${q.message}"`,""]:[]),
     order?"[Confirm availability, delivery date, delivery fee and the 70% down payment here]":"[Write the full price and details here]", "",
     "Feel free to reply to this email or call us at 0962 269 8229.", "",
@@ -134,6 +135,7 @@ function card(q){
       ${q.email?`<a class="btn btn-outline" href="${esc(gmailDraft(q))}" target="_blank" rel="noopener"><i data-lucide="mail"></i>Reply in Gmail</a>`:""}
       ${q.attachment_path?`<button class="btn btn-outline" data-photo="${esc(q.attachment_path)}"><i data-lucide="image"></i>Reference photo</button>`:""}
     </div>
+    ${q.delivery_address?`<div class="addr"><i data-lucide="map-pin"></i><span><b>Deliver to:</b> ${esc(q.delivery_address)}</span></div>`:""}
     ${q.message?`<div class="msg">${esc(q.message)}</div>`:""}
     ${items.length?`<ul class="items">${items.map(i=>`<li><b>${i.qty} ×</b> ${esc(i.id)} ${esc(i.name)}</li>`).join("")}</ul>
       <div class="est">Order total ${q.estimate_min===q.estimate_max?peso(q.estimate_min):peso(q.estimate_min)+" – "+peso(q.estimate_max)}</div>`:""}
@@ -154,7 +156,7 @@ $("#qexport").onclick=async()=>{
   const cell=v=>{ const s=String(v??""); return /[",\n\r]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
   const abs=u=>u?new URL(u,location.origin).href:"";
   const cols=[["Number",q=>q.id],["Date",q=>new Date(q.created_at).toLocaleString("en-PH")],["Type",kindOf],["Status",q=>STATUS[q.status]||q.status],
-    ["In Trash",q=>q.deleted_at?"yes":""],["Name",q=>q.full_name],["Mobile",q=>q.mobile],["Email",q=>q.email],["Contact by",q=>q.contact_pref],["Facebook",q=>q.facebook],
+    ["In Trash",q=>q.deleted_at?"yes":""],["Name",q=>q.full_name],["Mobile",q=>q.mobile],["Email",q=>q.email],["Contact by",q=>q.contact_pref],["Facebook",q=>q.facebook],["Delivery address",q=>q.delivery_address],
     ["Project type",q=>q.project_type],["Items",q=>(q.quote_items||[]).map(i=>`${i.qty} x ${i.id} ${i.name}`).join("; ")],
     ["Total from (PHP)",q=>q.estimate_min],["Total to (PHP)",q=>q.estimate_max],["Liked photos",q=>(q.liked_photos||[]).map(l=>`${l.cat}: ${abs(l.src)}`).join(" ; ")],
     ["Reference photo",q=>q.attachment_path?"yes":""],["Message",q=>q.message],["Private notes",q=>q.notes]];

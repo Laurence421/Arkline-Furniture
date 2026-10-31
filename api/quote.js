@@ -46,7 +46,11 @@ export async function handleQuote(request, env) {
   const name = field(fd, "name", 120);
   const phone = field(fd, "phone", 20).replace(/[\s-]/g, "");
   const email = field(fd, "email", 200);
-  const type = field(fd, "type", 60);
+  // "order" = the Place an order tab (shop items + delivery address); otherwise a price request.
+  // Older pages send no mode: shop items then still count as an order.
+  const sentMode = field(fd, "mode", 10), order = sentMode === "order";
+  const address = order ? field(fd, "address", 300) : "";
+  const type = field(fd, "type", 60) || (order ? "Single items" : "");
   const message = field(fd, "message", 5000);
   const okPhone = /^(09|\+639)\d{9}$/.test(phone), okEmail = /^\S+@\S+\.\S+$/.test(email);
 
@@ -62,6 +66,9 @@ export async function handleQuote(request, env) {
   let raw = [];
   try { raw = JSON.parse(field(fd, "items", 4000) || "[]"); } catch {}
   raw = (Array.isArray(raw) ? raw : []).filter(i => typeof i?.id === "string").slice(0, 50);
+  if (sentMode && !order) raw = []; // a price request carries no shop items
+  if (order && !raw.length) return json({ error: "Your order is empty. Add chairs or tables from the shop first." }, 400);
+  if (order && address.length < 5) return json({ error: "Add your delivery address so we can tell you the delivery fee." }, 400);
 
   // Gallery photos the customer tapped "I want one like this" on: only our own photos are accepted.
   let liked = [];
@@ -113,9 +120,15 @@ export async function handleQuote(request, env) {
     full_name: name, mobile: okPhone ? phone : null, email: okEmail ? email : null,
     project_type: type, message: message || null, quote_items: items,
     estimate_min: items.length ? min : null, estimate_max: items.length ? max : null, attachment_path, liked_photos: liked,
-    contact_pref: pref, facebook: facebook || null
+    contact_pref: pref, facebook: facebook || null, delivery_address: address || null
   };
   let { data: row, error } = await db.from("quotation_requests").insert(record).select("id, created_at").single();
+  if (error && /delivery_address/.test(error.message)) {
+    // Database not updated yet (008): keep the address in the message instead.
+    delete record.delivery_address;
+    record.message = [`Deliver to: ${address}`, message].filter(Boolean).join("\n\n");
+    ({ data: row, error } = await db.from("quotation_requests").insert(record).select("id, created_at").single());
+  }
   if (error && /liked_photos|contact_pref|facebook/.test(error.message)) {
     // Database not fully updated yet (004/005): keep these details in the message instead of losing the request.
     const { liked_photos, contact_pref, facebook: fb, ...rest } = record;
@@ -131,7 +144,7 @@ export async function handleQuote(request, env) {
 
   // The lead is saved; a failed alert is logged but never fails the request.
   const origin = new URL(request.url).origin;
-  try { await notify(env, db, row, { name, phone: okPhone ? phone : "", email: okEmail ? email : "", type, message, items, min, max, attachment_path, liked: liked.map(l => ({ ...l, url: new URL(l.src, origin).href })), pref, facebook }); }
+  try { await notify(env, db, row, { name, phone: okPhone ? phone : "", email: okEmail ? email : "", type, message, items, min, max, attachment_path, liked: liked.map(l => ({ ...l, url: new URL(l.src, origin).href })), pref, facebook, address }); }
   catch (e) { console.error("notify", e); }
 
   return json({ ok: true, id: row.id });
@@ -154,7 +167,7 @@ async function notify(env, db, row, q) {
     : "";
   const html = `<h2>New ${what} #${row.id}</h2>
     <p><b>${esc(q.name)}</b> · ${esc(q.type)}</p>
-    <p><b>Contact by: ${esc(q.pref)}</b><br>Mobile: ${esc(q.phone || "—")}<br>Email: ${esc(q.email || "—")}${q.facebook ? "<br>Facebook: " + esc(q.facebook) : ""}</p>
+    <p><b>Contact by: ${esc(q.pref)}</b><br>Mobile: ${esc(q.phone || "—")}<br>Email: ${esc(q.email || "—")}${q.facebook ? "<br>Facebook: " + esc(q.facebook) : ""}</p>${q.address ? `<p><b>Deliver to:</b> ${esc(q.address)}</p>` : ""}
     <p style="white-space:pre-wrap">${esc(q.message || "(no message)")}</p>${list}${likes}${photoLink}`;
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
