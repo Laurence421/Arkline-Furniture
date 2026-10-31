@@ -93,7 +93,7 @@ How: one cached data request instead of four database reads per visitor, 61 bund
 - **The server never trusts the browser.** Prices are recalculated server-side, only real gallery photos are accepted, uploads must be images under 5 MB, and project types are allow-listed.
 - **No cross-site scripting.** Customer input is escaped everywhere it's displayed. A script hidden in a customer's name renders as plain text in the admin page (tested in a real browser).
 - **Strict browser security headers:** Content-Security-Policy, no framing, HSTS, nosniff, Referrer-Policy and Permissions-Policy.
-- **Spam limits:** 5 sends per IP per 10 minutes, a hidden honeypot field, and optional Cloudflare Turnstile.
+- **Spam limits:** 10 sends per IP per 10 minutes, a hidden honeypot field, and optional Cloudflare Turnstile.
 - **Secrets stay server-side.** The service key exists only in server environment variables, never in the repo or the browser.
 
 ## Testing

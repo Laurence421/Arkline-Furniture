@@ -24,8 +24,8 @@ async function priceList(db) {
   return prices;
 }
 
-// Spam guard: at most 5 sends per visitor IP per 10 minutes (per server instance; Cloudflare always sends the IP).
-const LIMIT = 5, WINDOW = 10 * 60_000, hits = new Map();
+// Spam guard: at most 10 sends per visitor IP per 10 minutes (mobile networks often share one IP between customers) (per server instance; Cloudflare always sends the IP).
+const LIMIT = 10, WINDOW = 10 * 60_000, hits = new Map();
 function tooMany(ip) {
   if (!ip) return false;
   const now = Date.now(), recent = (hits.get(ip) || []).filter(t => now - t < WINDOW);
