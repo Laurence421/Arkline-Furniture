@@ -212,6 +212,9 @@ $("#copyList").onclick=()=>{const ids=Object.keys(quote);if(!ids.length){toast("
    Until the customer picks a tab, it follows the order list: shop items = order. */
 let formMode="ask", picked=false;
 function setMode(m){ formMode=m; picked=true; updateMode(); }
+// Preferred date: from tomorrow up to a year ahead (local dates, so it's right in the Philippines).
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+{ const t=new Date(); t.setDate(t.getDate()+1); $("#f-date").min=ymd(t); t.setFullYear(t.getFullYear()+1); $("#f-date").max=ymd(t); }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-mode]"); if(t) setMode(t.dataset.mode); });
 function updateMode(n=totals().n){
   if(!picked) formMode=n>0?"order":"ask";
@@ -225,6 +228,8 @@ function updateMode(n=totals().n){
     :liked?"Tell us your size or how many seats, and we'll price one like the photo for you."
     :"Tell us your space and what you need. We'll send you the full price and details.";
   $("#msglbl").innerHTML=order?`Delivery notes <span class="hint">Optional</span>`:"Tell us about your space";
+  $("#datelbl").textContent=order?"Preferred delivery date":"Best date to visit or call you";
+  $("#datehint").textContent=order?"We'll confirm if this date is available.":"For measuring your space or a quick call.";
   $("#f-msg").placeholder=order?"e.g. 3rd floor, no elevator, deliver after 5 pm":liked?"e.g. 8 seats like the photo, gray laminate, 60 sqm office":"e.g. 12-seat workstation for a 60 sqm office, gray laminate";
   $("#qsend span").textContent=order?"Send my order":"Ask for a price";
   $("#dhead").textContent=n>0?"Your order":"Your request";
@@ -236,7 +241,7 @@ function updateMode(n=totals().n){
     if(likeSum) sum.push(likeSum);
   } else sum.push(`Buying chairs or tables from the <a href="#shop">shop</a>? Use <b>Place an order</b>.`);
   $("#qsum").innerHTML=sum.join("<hr>");
-  renderPicked();
+  renderPicked(); icons(); // the tabs can switch without a full redraw, so draw the new icons here
 }
 
 /* misc */
@@ -301,6 +306,7 @@ $("#qform").addEventListener("submit",async e=>{
   else if($("#f-pref").value==="Email"&&!/^\S+@\S+\.\S+$/.test(email)) m="Add your email so we can reply by email.";
   else if($("#f-pref").value==="Messenger"&&!$("#f-fb").value.trim()) m="Add your Facebook name or link so we can message you.";
   else if(order&&$("#f-addr").value.trim().length<5) m="Add your delivery address so we can tell you the delivery fee.";
+  else if($("#f-date").value&&($("#f-date").value<$("#f-date").min||$("#f-date").value>$("#f-date").max)) m="Pick a date from tomorrow up to a year from now, or leave the date empty.";
   else if(file&&!file.type.startsWith("image/")) m="The reference photo must be an image.";
   else if(file&&file.size>25*1024*1024) m="The reference photo is over 25 MB. Try a smaller one.";
   formError(m); $("#fsent").hidden=true;

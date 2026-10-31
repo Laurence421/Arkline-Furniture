@@ -52,6 +52,11 @@ export async function handleQuote(request, env) {
   const address = order ? field(fd, "address", 300) : "";
   const type = field(fd, "type", 60) || (order ? "Single items" : "");
   const message = field(fd, "message", 5000);
+  // Optional preferred date (delivery, or a visit/call): a real date from today up to ~13 months ahead.
+  const prefDate = field(fd, "pref_date", 10);
+  if (prefDate) { const d = Date.parse(prefDate + "T00:00:00Z"), now = Date.now();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(prefDate) || isNaN(d) || d < now - 2 * 864e5 || d > now + 400 * 864e5)
+      return json({ error: "Pick a date from tomorrow up to a year from now, or leave the date empty." }, 400); }
   const okPhone = /^(09|\+639)\d{9}$/.test(phone), okEmail = /^\S+@\S+\.\S+$/.test(email);
 
   if (!name) return json({ error: "Add your name so we know who to send the price to." }, 400);
@@ -120,9 +125,17 @@ export async function handleQuote(request, env) {
     full_name: name, mobile: okPhone ? phone : null, email: okEmail ? email : null,
     project_type: type, message: message || null, quote_items: items,
     estimate_min: items.length ? min : null, estimate_max: items.length ? max : null, attachment_path, liked_photos: liked,
-    contact_pref: pref, facebook: facebook || null, delivery_address: address || null
+    contact_pref: pref, facebook: facebook || null,
+    // only when filled in, so a database without these newer columns still takes every other request as is
+    ...(address && { delivery_address: address }), ...(prefDate && { preferred_date: prefDate })
   };
   let { data: row, error } = await db.from("quotation_requests").insert(record).select("id, created_at").single();
+  if (error && /preferred_date/.test(error.message)) {
+    // Database not updated yet (009): keep the date in the message instead.
+    delete record.preferred_date;
+    record.message = [`${order ? "Preferred delivery date" : "Best date to visit or call"}: ${prefDate}`, record.message].filter(Boolean).join("\n\n");
+    ({ data: row, error } = await db.from("quotation_requests").insert(record).select("id, created_at").single());
+  }
   if (error && /delivery_address/.test(error.message)) {
     // Database not updated yet (008): keep the address in the message instead.
     delete record.delivery_address;
@@ -144,7 +157,7 @@ export async function handleQuote(request, env) {
 
   // The lead is saved; a failed alert is logged but never fails the request.
   const origin = new URL(request.url).origin;
-  try { await notify(env, db, row, { name, phone: okPhone ? phone : "", email: okEmail ? email : "", type, message, items, min, max, attachment_path, liked: liked.map(l => ({ ...l, url: new URL(l.src, origin).href })), pref, facebook, address }); }
+  try { await notify(env, db, row, { name, phone: okPhone ? phone : "", email: okEmail ? email : "", type, message, items, min, max, attachment_path, liked: liked.map(l => ({ ...l, url: new URL(l.src, origin).href })), pref, facebook, address, prefDate, order }); }
   catch (e) { console.error("notify", e); }
 
   return json({ ok: true, id: row.id });
@@ -167,7 +180,7 @@ async function notify(env, db, row, q) {
     : "";
   const html = `<h2>New ${what} #${row.id}</h2>
     <p><b>${esc(q.name)}</b> · ${esc(q.type)}</p>
-    <p><b>Contact by: ${esc(q.pref)}</b><br>Mobile: ${esc(q.phone || "—")}<br>Email: ${esc(q.email || "—")}${q.facebook ? "<br>Facebook: " + esc(q.facebook) : ""}</p>${q.address ? `<p><b>Deliver to:</b> ${esc(q.address)}</p>` : ""}
+    <p><b>Contact by: ${esc(q.pref)}</b><br>Mobile: ${esc(q.phone || "—")}<br>Email: ${esc(q.email || "—")}${q.facebook ? "<br>Facebook: " + esc(q.facebook) : ""}</p>${q.address ? `<p><b>Deliver to:</b> ${esc(q.address)}</p>` : ""}${q.prefDate ? `<p><b>${q.order ? "Wants delivery on" : "Best date to visit or call"}:</b> ${esc(q.prefDate)}</p>` : ""}
     <p style="white-space:pre-wrap">${esc(q.message || "(no message)")}</p>${list}${likes}${photoLink}`;
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
