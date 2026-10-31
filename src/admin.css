@@ -147,6 +147,12 @@ div.q.auth{background:var(--card);color:var(--ink);border:1px solid var(--line);
 
 /* request trash */
 .qc-side{display:flex;gap:8px;align-items:center}
+.qstep{padding:4px 11px;border-radius:999px;font-size:.78rem;font-weight:800;background:var(--muted-bg);color:var(--ink)}
+.qstep.s-new{background:hsl(30 58% 50%/.16);color:var(--walnut)}
+.qstep.s-closed{background:hsl(145 45% 32%/.12);color:var(--ok)}
+.qc .qsm{padding:7px 13px;font-size:.84rem}
+.qc .returning{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:.84rem;font-weight:700;color:var(--walnut)}
+.qc .returning svg{width:15px;height:15px}
 .qc .qdel{color:var(--err)}
 .qc .qdel:hover{background:var(--err);color:var(--on-dark);border-color:var(--err)}
 .qc.trashed{opacity:.8;border-left:4px solid var(--line)}
@@ -179,15 +185,16 @@ div.q.auth{background:var(--card);color:var(--ink);border:1px solid var(--line);
   .qc{padding:16px}
   .qc-top{flex-direction:column;align-items:stretch}
   .qc-side,.qc-trash{justify-content:space-between}
-  .qc-side select{flex:1}
+  .qc-side .qstep{margin-right:auto}
   .qc .acts2 .btn{flex:1 1 auto;justify-content:center}
   .qtools{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
   .qtools>*{min-width:0}
   .search{max-width:none}
   #qfilters,#afilters,#bfilters,#pfilters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
   #qfilters .chip,#afilters .chip,#bfilters .chip,#pfilters .chip{flex:none}
-  #qfilters{flex-wrap:wrap;overflow:visible;gap:6px}
-  #qfilters .chip{padding:7px 12px}
+  #qfilters{flex-wrap:wrap;overflow:visible;gap:4px}
+  #qfilters .chip{padding:7px 9px;font-size:.84rem}
+  #qfilters .chip small{margin-left:3px}
   .admin form.q,div.q.auth{padding:18px;border-radius:18px}
   .pc-img{grid-auto-flow:column;justify-content:start;align-items:center}
   .pc-img img,.pc-img .noimg{width:84px;height:84px}

@@ -27,9 +27,10 @@ let auth, recovering=false, adminEmail="", signedInId=null, idledOut=null;
 // Gmail compose in a new tab, from the signed-in admin's Google account, with a drafted reply.
 // Shop items = an order; only liked photos or a description = a price request.
 const kindOf=q=>{ const o=(q.quote_items||[]).length>0, l=(q.liked_photos||[]).length>0; return o&&l?"Order + price request":o?"Order":"Price request"; };
+const totalOf=q=>q.estimate_min===q.estimate_max?peso(q.estimate_min):`${peso(q.estimate_min)} – ${peso(q.estimate_max)}`;
 function gmailDraft(q){
   const first=q.full_name.split(" ")[0], items=q.quote_items||[], liked=q.liked_photos||[], order=items.length>0;
-  const est=q.estimate_min===q.estimate_max?peso(q.estimate_min):`${peso(q.estimate_min)} – ${peso(q.estimate_max)}`;
+  const est=totalOf(q);
   const body=[
     `Hi ${first},`, "",
     `Thank you for your ${order?"order":"price request"} #${q.id} (${q.project_type}).`, "",
@@ -44,6 +45,15 @@ function gmailDraft(q){
   const p=new URLSearchParams({view:"cm",fs:"1",to:q.email,su:order?`Arkline order #${q.id}`:`Arkline price for request #${q.id}`,body});
   if(adminEmail) p.set("authuser",adminEmail);
   return "https://mail.google.com/mail/?"+p;
+}
+// Short ready-made reply for Text, Viber and Messenger; the owner only fills in the blanks.
+function replyText(q){
+  const first=q.full_name.split(" ")[0], items=q.quote_items||[], liked=q.liked_photos||[];
+  if(items.length) return [`Hi ${first}! This is Arkline Home & Office Furniture about your order #${q.id}:`,
+    ...items.map(i=>`${i.qty} × ${i.name} (${i.id})`), `Items total: ${totalOf(q)}`,
+    `Delivery fee${q.delivery_address?" to "+q.delivery_address:""}: ₱___`, "70% down payment: ₱___", "Delivery date: ___", "Thank you!"].join("\n");
+  return [`Hi ${first}! This is Arkline Home & Office Furniture about your price request #${q.id}${liked.length?` (one like the photo${liked.length>1?"s":""} you sent)`:""}.`,
+    "Price: ₱___", "Includes: ___", "Thank you!"].join("\n");
 }
 async function route(session){
   if(recovering) return; // a reset-password link is open: the "Set a new password" form stays until it's saved
@@ -78,18 +88,41 @@ $("#atabs").onclick=e=>{
 };
 
 /* quotes */
-const STATUS={new:"New",contacted:"Contacted",quoted:"Price sent",closed:"Closed"};
+// Three steps, two of them automatic: New (the customer sent it) → Replied (the owner tapped a reply
+// button on the card) → Done (one tap, or by itself after 30 days without activity). "quoted" is an
+// older status and shows as Replied.
+const STATUS={new:"New",contacted:"Replied",quoted:"Replied",closed:"Done"};
+const STEPS=[["new","New"],["replied","Replied"],["closed","Done"]];
+const stepOf=q=>q.status==="closed"?"closed":q.status==="new"?"new":"replied";
+const AUTO_DONE_DAYS=30;
 let quotes=[], qfilter="active", qtype="all", qsearch="";
 const peso=n=>"₱"+Number(n).toLocaleString("en-PH");
 const when=d=>new Date(d).toLocaleString("en-PH",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
 async function loadQuotes(){
   const {data,error}=await supabase.from("quotation_requests").select("*").order("created_at",{ascending:false}).limit(500);
   if(error){ show($("#qerr"),"Couldn't load requests: "+error.message); return; }
-  quotes=data; renderQuotes();
+  quotes=data; renderQuotes(); autoDone();
+}
+// Replied requests with no activity (reply, note, reopen) for 30 days are Done. New ones never close by themselves.
+async function autoDone(){
+  const cut=Date.now()-AUTO_DONE_DAYS*864e5;
+  const old=quotes.filter(q=>!inTrash(q)&&stepOf(q)==="replied"&&new Date(q.last_activity_at||q.created_at)<cut);
+  if(!old.length) return;
+  const {error}=await supabase.from("quotation_requests").update({status:"closed"}).in("id",old.map(q=>q.id));
+  if(!error){ old.forEach(q=>q.status="closed"); renderQuotes(); }
+}
+// Saves a change and stamps the activity time (restarts the 30 days). Works before the 008 update too.
+async function touch(q,patch){
+  const at=new Date().toISOString();
+  let {error}=await supabase.from("quotation_requests").update({...patch,last_activity_at:at}).eq("id",q.id);
+  if(error&&/last_activity_at/.test(error.message)) ({error}=await supabase.from("quotation_requests").update(patch).eq("id",q.id));
+  else if(!error) q.last_activity_at=at;
+  if(!error) Object.assign(q,patch);
+  return error;
 }
 /* live: new or changed requests appear without reloading (every 20 s, and when the tab comes back).
    Never redraws while a note, status or search is being edited; it catches up on the next check. */
-const qsig=list=>JSON.stringify(list.map(q=>[q.id,q.status,q.deleted_at,q.notes]));
+const qsig=list=>JSON.stringify(list.map(q=>[q.id,q.status,q.deleted_at,q.notes,q.last_activity_at]));
 async function pollQuotes(){
   if(document.hidden||$("#app").hidden) return;
   const f=document.activeElement; if(f&&$("#qlist").contains(f)&&f.matches("textarea,select,input")) return;
@@ -104,12 +137,20 @@ setInterval(pollQuotes,20000);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) pollQuotes(); });
 // Requests in Trash have deleted_at set; every other view leaves them out.
 const inTrash=q=>!!q.deleted_at;
-const inView=(q,k)=>k==="trash"?inTrash(q):!inTrash(q)&&(k==="all"||(k==="active"?q.status!=="closed":q.status===k));
+const inView=(q,k)=>k==="trash"?inTrash(q):!inTrash(q)&&(k==="all"||(k==="active"?q.status!=="closed":stepOf(q)===k));
 // Orders (shop items) and price requests (custom work, liked photos) share one inbox; the type switch narrows it.
 const isOrder=q=>(q.quote_items||[]).length>0;
 const ofType=(q,t)=>t==="all"||(t==="order")===isOrder(q);
 const QTYPES=[["all","All"],["order","Orders"],["price","Price requests"]];
+// Earlier requests from the same mobile or email, for the "Returning customer" link.
+let earlier=new Map();
+const who=q=>[q.mobile,q.email&&q.email.toLowerCase()].filter(Boolean);
 function renderQuotes(){
+  const seen=new Map(); earlier=new Map();
+  for(const q of quotes.filter(q=>!inTrash(q)).sort((a,b)=>a.created_at<b.created_at?-1:1)){
+    earlier.set(q.id,Math.max(0,...who(q).map(k=>seen.get(k)||0)));
+    for(const k of who(q)) seen.set(k,(seen.get(k)||0)+1);
+  }
   // Typing in search looks through every request (Trash only when Trash is open), whatever status button is on.
   const s=qsearch.toLowerCase().replace(/^#/,""), searching=!!s&&qfilter!=="trash";
   const shown=q=>searching?!inTrash(q):inView(q,qfilter);
@@ -118,7 +159,7 @@ function renderQuotes(){
   $("#qcount").textContent=plural(quotes.filter(q=>!inTrash(q)).length,"request");
   $("#qtype").innerHTML=QTYPES.map(([t,l])=>{ const c=quotes.filter(q=>shown(q)&&ofType(q,t)).length, nw=t==="all"?0:quotes.filter(q=>inView(q,"new")&&ofType(q,t)).length;
     return `<button role="tab" aria-selected="${t===qtype}" data-qt="${t}">${l}<small>${c}</small>${nw?`<span class="badge" title="${nw} new" aria-label="${nw} new">${nw}</span>`:""}</button>`; }).join("");
-  $("#qfilters").innerHTML=[["active","Open"],...Object.entries(STATUS),["trash","Trash"]]
+  $("#qfilters").innerHTML=[["active","Open"],...STEPS,["trash","Trash"]]
     .map(([k,l])=>`<button class="chip${k===qfilter&&!searching?" on":""}${k==="trash"?" trash":""}" data-qf="${k}"${k==="trash"?` title="Trash" aria-label="Trash, ${n(k)}"`:""}>${k==="trash"?'<i data-lucide="trash-2"></i>':l}<small>${n(k)}</small></button>`).join("");
   const vis=quotes.filter(q=>shown(q)&&ofType(q,qtype)
     &&(!s||[q.id,q.full_name,q.mobile,q.email,q.message].some(v=>String(v??"").toLowerCase().includes(s))));
@@ -129,18 +170,21 @@ function card(q){
   const items=(q.quote_items||[]);
   return `<article class="qc st-${q.status}${inTrash(q)?" trashed":""}" data-id="${q.id}">
     <div class="qc-top">
-      <div><div class="qc-id"><span class="kind ${(q.quote_items||[]).length?"order":"price"}">${kindOf(q)}</span>${q.contact_pref?`<span class="kind pref">Prefers ${esc(q.contact_pref)}</span>`:""} #${q.id} · ${when(q.created_at)}</div><h3>${esc(q.full_name)}</h3><div class="meta">${esc(q.project_type)}${q.mobile?" · "+esc(q.mobile):""}${q.email?" · "+esc(q.email):""}</div></div>
+      <div><div class="qc-id"><span class="kind ${(q.quote_items||[]).length?"order":"price"}">${kindOf(q)}</span>${q.contact_pref?`<span class="kind pref">Prefers ${esc(q.contact_pref)}</span>`:""} #${q.id} · ${when(q.created_at)}</div><h3>${esc(q.full_name)}</h3><div class="meta">${esc(q.project_type)}${q.mobile?" · "+esc(q.mobile):""}${q.email?" · "+esc(q.email):""}</div>${earlier.get(q.id)?`<button class="link returning" data-history="${esc(q.mobile||q.email)}"><i data-lucide="history"></i>Returning customer · ${plural(earlier.get(q.id),"earlier request")}</button>`:""}</div>
       ${inTrash(q)
         ?`<div class="qc-trash"><span class="hint">In Trash since ${when(q.deleted_at)}</span><button class="btn btn-outline" data-qrestore><i data-lucide="rotate-ccw"></i>Restore</button><button class="btn btn-outline pc-del" data-qforever><i data-lucide="x"></i>Delete forever</button></div>`
-        :`<div class="qc-side"><select data-status aria-label="Status of request #${q.id}">${Object.entries(STATUS).map(([k,l])=>`<option value="${k}"${k===q.status?" selected":""}>${l}</option>`).join("")}</select><button class="mini qdel" data-qdel title="Move to Trash" aria-label="Move request #${q.id} to Trash"><i data-lucide="trash-2"></i></button></div>`}
+        :`<div class="qc-side"><span class="qstep s-${stepOf(q)}">${STATUS[q.status]||esc(q.status)}</span>${q.status==="closed"
+          ?`<button class="btn btn-outline qsm" data-qreopen><i data-lucide="rotate-ccw"></i>Reopen</button>`
+          :`<button class="btn btn-outline qsm" data-qdone title="Finished: ordered and delivered, or they decided not to"><i data-lucide="check"></i>Done</button>`}<button class="mini qdel" data-qdel title="Move to Trash" aria-label="Move request #${q.id} to Trash"><i data-lucide="trash-2"></i></button></div>`}
     </div>
     <div class="acts2">
-      ${q.mobile?`<a class="btn btn-dark" href="tel:${esc(q.mobile)}"><i data-lucide="phone"></i>Call</a><a class="btn btn-outline" href="sms:${esc(q.mobile)}"><i data-lucide="message-square"></i>Text</a>`:""}
-      ${viberUrl(q.mobile)?`<a class="btn btn-outline viber" href="${esc(viberUrl(q.mobile))}"><i data-lucide="phone-call"></i>Viber</a>`:""}
+      ${q.mobile?`<a class="btn btn-dark" data-reply href="tel:${esc(q.mobile)}"><i data-lucide="phone"></i>Call</a><a class="btn btn-outline" data-reply href="sms:${esc(q.mobile)}?&body=${encodeURIComponent(replyText(q))}"><i data-lucide="message-square"></i>Text</a>`:""}
+      ${viberUrl(q.mobile)?`<a class="btn btn-outline viber" data-reply href="${esc(viberUrl(q.mobile))}"><i data-lucide="phone-call"></i>Viber</a>`:""}
       ${q.facebook?(messengerUrl(q.facebook)
-        ?`<a class="btn btn-outline msgr" href="${esc(messengerUrl(q.facebook))}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>Messenger</a>`
-        :`<a class="btn btn-outline msgr" href="https://www.facebook.com/search/people/?q=${encodeURIComponent(q.facebook)}" target="_blank" rel="noopener" title="Search Facebook for ${esc(q.facebook)}"><i data-lucide="search"></i>Find on Facebook</a>`):""}
-      ${q.email?`<a class="btn btn-outline" href="${esc(gmailDraft(q))}" target="_blank" rel="noopener"><i data-lucide="mail"></i>Reply in Gmail</a>`:""}
+        ?`<a class="btn btn-outline msgr" data-reply href="${esc(messengerUrl(q.facebook))}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>Messenger</a>`
+        :`<a class="btn btn-outline msgr" data-reply href="https://www.facebook.com/search/people/?q=${encodeURIComponent(q.facebook)}" target="_blank" rel="noopener" title="Search Facebook for ${esc(q.facebook)}"><i data-lucide="search"></i>Find on Facebook</a>`):""}
+      ${q.email?`<a class="btn btn-outline" data-reply href="${esc(gmailDraft(q))}" target="_blank" rel="noopener"><i data-lucide="mail"></i>Reply in Gmail</a>`:""}
+      ${viberUrl(q.mobile)||q.facebook?`<button class="btn btn-outline" data-copymsg title="A ready reply to paste in Viber or Messenger"><i data-lucide="copy"></i>Copy message</button>`:""}
       ${q.attachment_path?`<button class="btn btn-outline" data-photo="${esc(q.attachment_path)}"><i data-lucide="image"></i>Reference photo</button>`:""}
     </div>
     ${q.delivery_address?`<div class="addr"><i data-lucide="map-pin"></i><span><b>Deliver to:</b> ${esc(q.delivery_address)}</span></div>`:""}
@@ -154,6 +198,14 @@ function card(q){
 $("#qfilters").onclick=e=>{const b=e.target.closest("[data-qf]"); if(b){qfilter=b.dataset.qf; renderQuotes();}};
 $("#qtype").onclick=e=>{const b=e.target.closest("[data-qt]"); if(b){qtype=b.dataset.qt; renderQuotes();}};
 $("#qsearch").oninput=e=>{qsearch=e.target.value.trim(); renderQuotes();};
+// Any reply button marks a New request Replied; Copy message also puts the ready reply on the clipboard.
+$("#qlist").addEventListener("click",async e=>{
+  const r=e.target.closest("[data-reply],[data-copymsg],[data-history]"); if(!r) return;
+  const q=quotes.find(x=>x.id===+r.closest(".qc").dataset.id);
+  if(r.dataset.history!==undefined){ $("#qsearch").value=qsearch=r.dataset.history; renderQuotes(); $("#qsearch").scrollIntoView({block:"center",behavior:"smooth"}); return; }
+  if(r.dataset.copymsg!==undefined) try{ await navigator.clipboard.writeText(replyText(q)); toast("Message copied. Paste it in Viber or Messenger, then fill in the blanks."); }catch{ toast("Copy is blocked here. Use Text or Reply in Gmail instead."); }
+  if(q.status==="new"&&!await touch(q,{status:"contacted"})) renderQuotes();
+});
 
 /* Download: every request (Trash included, marked) as a CSV that opens in Excel or Google Sheets.
    Arkline's own backup, since the free Supabase plan keeps none. */
@@ -176,22 +228,21 @@ $("#qexport").onclick=async()=>{
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   toast(`${plural(data.length,"request")} downloaded`);
 };
-$("#qlist").addEventListener("change",async e=>{
-  const sel=e.target.closest("[data-status]"); if(!sel) return;
-  const q=quotes.find(x=>x.id===+sel.closest(".qc").dataset.id), prev=q.status;
-  sel.disabled=true;
-  const {error}=await supabase.from("quotation_requests").update({status:sel.value}).eq("id",q.id);
-  sel.disabled=false;
-  if(error){ sel.value=prev; show($("#qerr"),"Couldn't change status: "+error.message); return; }
-  q.status=sel.value; toast(`#${q.id} marked ${STATUS[q.status]}`); renderQuotes();
+$("#qlist").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-qdone],[data-qreopen]"); if(!b) return;
+  const q=quotes.find(x=>x.id===+b.closest(".qc").dataset.id), done=b.dataset.qdone!==undefined;
+  b.disabled=true;
+  const error=await touch(q,{status:done?"closed":"contacted"});
+  if(error){ b.disabled=false; show($("#qerr"),"Couldn't change status: "+error.message); return; }
+  toast(done?`#${q.id} is Done`:`#${q.id} reopened`); renderQuotes();
 });
 $("#qlist").addEventListener("focusout",async e=>{
   const ta=e.target.closest("[data-notes]"); if(!ta) return;
   const q=quotes.find(x=>x.id===+ta.closest(".qc").dataset.id);
   if((q.notes||"")===ta.value) return;
-  const {error}=await supabase.from("quotation_requests").update({notes:ta.value||null}).eq("id",q.id);
+  const error=await touch(q,{notes:ta.value||null});
   if(error){ show($("#qerr"),/notes/.test(error.message)?"Notes need one database update: run supabase/002_quotes_admin.sql in Supabase.":"Couldn't save notes: "+error.message); return; }
-  q.notes=ta.value||null; toast(`Notes saved for #${q.id}`);
+  toast(`Notes saved for #${q.id}`);
 });
 const TRASH_DB="Deleting requests needs one database update: run supabase/006_request_trash.sql in the Supabase SQL Editor.";
 $("#qlist").addEventListener("click",async e=>{
