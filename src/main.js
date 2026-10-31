@@ -46,11 +46,28 @@ function buildCats(){
 }
 $("#cats").onclick=e=>{const b=e.target.closest("[data-go]"); if(!b) return; setFilter(b.dataset.go); $("#projects").scrollIntoView();};
 $("#filters").onclick=e=>{const b=e.target.closest("[data-cat]"); if(b) setFilter(b.dataset.cat);};
+// Each photo: tap it to view it big; its own "Ask price" button (kept apart from the photo) adds it to the price request.
+const askLabel=on=>`<i data-lucide="heart"></i>${on?"Added":"Ask price"}`;
 function buildGallery(){
-  $("#gallery").innerHTML = PHOTOS.map((p,i)=>`<button class="tile${isLiked(p)?" liked":""}" data-i="${i}" aria-label="View ${esc(p.cat)} photo"><img src="${p.src}" alt="${esc(alt(p))}" loading="lazy"><span class="tag">${esc(p.cat)}</span><span class="heart" aria-hidden="true"><i data-lucide="heart"></i></span><span class="zoom"><i data-lucide="maximize-2"></i></span></button>`).join("");
+  $("#gallery").innerHTML = PHOTOS.map((p,i)=>`<div class="tile${isLiked(p)?" liked":""}" data-i="${i}"><button class="tview" aria-label="View ${esc(p.cat)} photo"><img src="${p.src}" alt="${esc(alt(p))}" loading="lazy"><span class="tag">${esc(p.cat)}</span><span class="zoom"><i data-lucide="maximize-2"></i></span></button><button class="task" aria-pressed="${isLiked(p)}" aria-label="Ask for a price on one like this ${esc(p.cat)}">${askLabel(isLiked(p))}</button></div>`).join("");
   icons();
 }
-$("#gallery").onclick=e=>{const t=e.target.closest(".tile"); if(t) openLb(PHOTOS[+t.dataset.i]);};
+$("#gallery").onclick=e=>{const t=e.target.closest(".tile"); if(!t) return; const p=PHOTOS[+t.dataset.i]; if(e.target.closest(".task")) toggleLike(p); else openLb(p);};
+// Adds a project photo to the price request, or takes it out; Undo puts it back as it was.
+function toggleLike(p,quiet){
+  const on=!isLiked(p);
+  if(on) likes.push({src:p.src,cat:p.cat}); else likes=likes.filter(l=>l.src!==p.src);
+  saveLikes(); syncLike(p.src); renderQuote();
+  if(!quiet) toast(on?`${p.cat} photo added to your price request`:`${p.cat} photo removed`,
+    [["Undo",()=>toggleLike(p,true)],...(on?[["See form",()=>{ setMode("ask"); $("#contact").scrollIntoView(); }]]:[])]);
+}
+function syncLike(src){
+  const on=likes.some(l=>l.src===src);
+  document.querySelectorAll("#gallery .tile").forEach(t=>{ if(PHOTOS[+t.dataset.i]?.src!==src) return;
+    t.classList.toggle("liked",on); const b=t.querySelector(".task"); b.setAttribute("aria-pressed",on); b.innerHTML=askLabel(on); });
+  if(!$("#lb").hidden) renderLb();
+  icons();
+}
 function setFilter(c){
   filter=c; shown=12;
   document.querySelectorAll(".chip").forEach(b=>b.classList.toggle("on",b.dataset.cat===c));
@@ -94,12 +111,32 @@ function renderLb(){
 }
 $("#lbStrip").onclick=e=>{const k=e.target.dataset.k; if(k!=null){li=+k;renderLb();}};
 const stepLb=d=>{li=(li+d+visible.length)%visible.length;renderLb();};
-$("#lbLike").onclick=()=>{
-  const p=visible[li];
-  if(isLiked(p)) likes=likes.filter(l=>l.src!==p.src);
-  else { likes.push({src:p.src,cat:p.cat}); toast(`${p.cat} photo added. We'll price one like it for you.`); }
-  saveLikes(); renderLb(); renderQuote(); document.querySelector(`.tile[data-i="${PHOTOS.indexOf(p)}"]`)?.classList.toggle("liked",isLiked(p));
+$("#lbLike").onclick=()=>toggleLike(visible[li]);
+
+/* "Pick from our projects" in the Ask for a price form */
+let pcat="All";
+function renderPicked(){
+  $("#picked").innerHTML=likes.map((l,i)=>`<figure><img src="${esc(l.src)}" alt="${esc(l.cat)}"><figcaption>${esc(l.cat)}</figcaption><button type="button" class="unpick" data-unpick="${i}" aria-label="Remove ${esc(l.cat)} photo"><i data-lucide="x"></i></button></figure>`).join("")
+    +`<button type="button" class="pickadd" id="pickOpen"><i data-lucide="plus"></i><span>${likes.length?"Pick more":"Pick from our projects"}</span></button>`;
+}
+function renderPicker(){
+  $("#pickcats").innerHTML=["All",...shownCats()].map(c=>`<button type="button" class="chip${c===pcat?" on":""}" data-pc="${esc(c)}">${esc(c)}</button>`).join("");
+  $("#pickgrid").innerHTML=PHOTOS.filter(p=>pcat==="All"||p.cat===pcat).map(p=>`<button type="button" class="pk${isLiked(p)?" on":""}" data-src="${esc(p.src)}" aria-pressed="${isLiked(p)}" aria-label="${esc(p.cat)} photo"><img src="${p.src}" alt="" loading="lazy"><span class="ck"><i data-lucide="check"></i></span></button>`).join("");
+  pickCount(); icons();
+}
+const pickCount=()=>{ $("#pickDone span").textContent=likes.length?`Done · ${likes.length} picked`:"Done"; };
+$("#picked").onclick=e=>{
+  if(e.target.closest("#pickOpen")){ renderPicker(); $("#picker").showModal(); return; }
+  const u=e.target.closest("[data-unpick]"); if(u) toggleLike(likes[+u.dataset.unpick]);
 };
+$("#pickcats").onclick=e=>{ const c=e.target.closest("[data-pc]"); if(c){ pcat=c.dataset.pc; renderPicker(); $("#pickgrid").scrollTop=0; } };
+$("#pickgrid").onclick=e=>{
+  const b=e.target.closest(".pk"); if(!b) return;
+  const p=PHOTOS.find(x=>x.src===b.dataset.src); toggleLike(p,true);
+  b.classList.toggle("on",isLiked(p)); b.setAttribute("aria-pressed",isLiked(p)); pickCount();
+};
+$("#pickDone").onclick=$("#pickX").onclick=()=>$("#picker").close();
+$("#picker").addEventListener("click",e=>{ if(e.target===$("#picker")) $("#picker").close(); }); // tap outside closes
 $("#lbPrev").onclick=()=>stepLb(-1); $("#lbNext").onclick=()=>stepLb(1); $("#lbX").onclick=closeLb;
 let tx=0; $("#lb").addEventListener("touchstart",e=>tx=e.touches[0].clientX,{passive:true});
 $("#lb").addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50) stepLb(d<0?1:-1);});
@@ -150,7 +187,7 @@ function renderQuote(){
   $("#qitems").innerHTML=ids.length?ids.map(id=>{const it=ALL[id];return `<div class="qi"><div class="th">${it.image?`<img src="${esc(it.image)}" alt="">`:`<i data-lucide="table-2"></i>`}</div>
     <div style="min-width:0"><div class="nm">${esc(it.name)}</div><div class="sub">${id} · ${pt({min:it.min*quote[id],max:it.max*quote[id]})}</div><button class="rm" data-rm="${id}">Remove</button></div>
     <div class="qty"><button data-q="${id}" data-d="-1" aria-label="Fewer">−</button><b>${quote[id]}</b><button data-q="${id}" data-d="1" aria-label="More">+</button></div></div>`}).join("")
-    :(likes.length?"":`<div class="empty"><i data-lucide="clipboard-list"></i><p>Nothing here yet. Tap "Add to order" on a chair or table, or "I want one like this" on a project photo.</p></div>`);
+    :(likes.length?"":`<div class="empty"><i data-lucide="clipboard-list"></i><p>Nothing here yet. Tap "Add to order" on a chair or table, or "Ask price" on a project photo.</p></div>`);
   if(likes.length) $("#qitems").insertAdjacentHTML("beforeend",`<div class="likes"><div class="k">Want one like these <span>· priced for you</span></div><div class="lgrid">${likes.map((l,i)=>`<figure><img src="${esc(l.src)}" alt="${esc(l.cat)}"><figcaption>${esc(l.cat)}</figcaption><button class="rm" data-unlike="${i}">Remove</button></figure>`).join("")}</div></div>`);
   $("#qtotal").textContent=n?pt({min:a,max:z}):"₱0";
   updateMode(n);
@@ -197,15 +234,22 @@ function updateMode(n=totals().n){
     sum.push(n?`<b style="color:var(--ink)">Your order: ${n} item${n>1?"s":""}</b> · total ${pt({min:a,max:z})}<br>${ids.map(id=>quote[id]+" × "+id).join(", ")}`
       :`Nothing in your order yet. Add chairs or tables from the <a href="#shop">shop</a> first.`);
     if(likeSum) sum.push(likeSum);
-  } else sum.push(likeSum||`Describe what you need below. Buying chairs or tables from the <a href="#shop">shop</a>? Use <b>Place an order</b>.`);
+  } else sum.push(`Buying chairs or tables from the <a href="#shop">shop</a>? Use <b>Place an order</b>.`);
   $("#qsum").innerHTML=sum.join("<hr>");
+  renderPicked();
 }
 
 /* misc */
 // "0962 269 8229" → tel:+639622698229 (other formats: digits as typed), so a tap on a phone starts the call
 function telHref(n){const d=String(n).replace(/[^\d+]/g,"");return "tel:"+(/^09\d{9}$/.test(d)?"+63"+d.slice(1):d);}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function toast(m){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.innerHTML=`<i data-lucide="check-circle-2"></i>`;t.append(m);document.body.appendChild(t);icons();setTimeout(()=>t.remove(),2300);}
+// toast(message, [[label, action], …]): with actions (like Undo) it stays 5 s and replaces an older one.
+function toast(m,acts=[]){
+  if(acts.length) document.querySelectorAll(".toast.act").forEach(t=>t.remove());
+  const t=document.createElement("div");t.className="toast"+(acts.length?" act":"");t.setAttribute("role","status");t.innerHTML=`<i data-lucide="check-circle-2"></i>`;t.append(m);
+  for(const [l,fn] of acts){ const b=document.createElement("button"); b.type="button"; b.className="tact"; b.textContent=l; b.onclick=()=>{ t.remove(); fn(); }; t.append(b); }
+  document.body.appendChild(t);icons();setTimeout(()=>t.remove(),acts.length?5000:2300);
+}
 function copy(txt,m){try{navigator.clipboard.writeText(txt).then(()=>toast(m||"Copied"),()=>toast("Copy is blocked here. Select the text instead."));}catch(e){toast("Copy is blocked here. Select the text instead.");}}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-copy]"); if(b) copy(b.dataset.copy,"Copied "+b.dataset.copy);});
 $("#menu").onclick=()=>{const o=$("#links").classList.toggle("open");$("#menu").setAttribute("aria-expanded",o);};

@@ -55,6 +55,8 @@ function replyText(q){
   return [`Hi ${first}! This is Arkline Home & Office Furniture about your price request #${q.id}${liked.length?` (one like the photo${liked.length>1?"s":""} you sent)`:""}.`,
     "Price: ₱___", "Includes: ___", "Thank you!"].join("\n");
 }
+const smsHref=q=>`sms:${q.mobile}?&body=${encodeURIComponent(replyText(q))}`;
+const niceNum=m=>/^09\d{9}$/.test(m)?`${m.slice(0,4)} ${m.slice(4,7)} ${m.slice(7)}`:m;
 async function route(session){
   if(recovering) return; // a reset-password link is open: the "Set a new password" form stays until it's saved
   $("#logout").hidden=!session;
@@ -113,11 +115,10 @@ async function autoDone(){
 }
 // Saves a change and stamps the activity time (restarts the 30 days). Works before the 008 update too.
 async function touch(q,patch){
-  const at=new Date().toISOString();
-  let {error}=await supabase.from("quotation_requests").update({...patch,last_activity_at:at}).eq("id",q.id);
-  if(error&&/last_activity_at/.test(error.message)) ({error}=await supabase.from("quotation_requests").update(patch).eq("id",q.id));
-  else if(!error) q.last_activity_at=at;
-  if(!error) Object.assign(q,patch);
+  // Rows loaded with select("*") show whether the 008 column exists, so no request is sent that would fail.
+  const stamp="last_activity_at" in q?{last_activity_at:new Date().toISOString()}:{};
+  const {error}=await supabase.from("quotation_requests").update({...patch,...stamp}).eq("id",q.id);
+  if(!error) Object.assign(q,patch,stamp);
   return error;
 }
 /* live: new or changed requests appear without reloading (every 20 s, and when the tab comes back).
@@ -178,7 +179,7 @@ function card(q){
           :`<button class="btn btn-outline qsm" data-qdone title="Finished: ordered and delivered, or they decided not to"><i data-lucide="check"></i>Done</button>`}<button class="mini qdel" data-qdel title="Move to Trash" aria-label="Move request #${q.id} to Trash"><i data-lucide="trash-2"></i></button></div>`}
     </div>
     <div class="acts2">
-      ${q.mobile?`<a class="btn btn-dark" data-reply href="tel:${esc(q.mobile)}"><i data-lucide="phone"></i>Call</a><a class="btn btn-outline" data-reply href="sms:${esc(q.mobile)}?&body=${encodeURIComponent(replyText(q))}"><i data-lucide="message-square"></i>Text</a>`:""}
+      ${q.mobile?`<a class="btn btn-dark" data-reply href="tel:${esc(q.mobile)}"><i data-lucide="phone"></i>Call</a><a class="btn btn-outline" data-reply href="${esc(smsHref(q))}"><i data-lucide="message-square"></i>Text</a>`:""}
       ${viberUrl(q.mobile)?`<a class="btn btn-outline viber" data-reply href="${esc(viberUrl(q.mobile))}"><i data-lucide="phone-call"></i>Viber</a>`:""}
       ${q.facebook?(messengerUrl(q.facebook)
         ?`<a class="btn btn-outline msgr" data-reply href="${esc(messengerUrl(q.facebook))}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>Messenger</a>`
@@ -198,14 +199,53 @@ function card(q){
 $("#qfilters").onclick=e=>{const b=e.target.closest("[data-qf]"); if(b){qfilter=b.dataset.qf; renderQuotes();}};
 $("#qtype").onclick=e=>{const b=e.target.closest("[data-qt]"); if(b){qtype=b.dataset.qt; renderQuotes();}};
 $("#qsearch").oninput=e=>{qsearch=e.target.value.trim(); renderQuotes();};
-// Any reply button marks a New request Replied; Copy message also puts the ready reply on the clipboard.
+// Any reply button marks a New request Replied, with Undo for a tap by mistake. Copy message also puts the
+// ready reply on the clipboard. On a computer, Call / Text / Viber open a box instead (a PC usually can't call).
+const onPC=()=>matchMedia("(hover:hover) and (pointer:fine)").matches;
+async function markReplied(q,msg){
+  if(q.status!=="new"){ if(msg) toast(msg); return; }
+  if(await touch(q,{status:"contacted"})) return msg&&toast(msg);
+  renderQuotes();
+  toast(msg||`#${q.id} marked Replied`,[["Undo",async()=>{ if(!await touch(q,{status:"new"})) renderQuotes(); }]]);
+}
+const copyText=async t=>{ try{ await navigator.clipboard.writeText(t); return true; }catch{ return false; } };
 $("#qlist").addEventListener("click",async e=>{
   const r=e.target.closest("[data-reply],[data-copymsg],[data-history]"); if(!r) return;
   const q=quotes.find(x=>x.id===+r.closest(".qc").dataset.id);
   if(r.dataset.history!==undefined){ $("#qsearch").value=qsearch=r.dataset.history; renderQuotes(); $("#qsearch").scrollIntoView({block:"center",behavior:"smooth"}); return; }
-  if(r.dataset.copymsg!==undefined) try{ await navigator.clipboard.writeText(replyText(q)); toast("Message copied. Paste it in Viber or Messenger, then fill in the blanks."); }catch{ toast("Copy is blocked here. Use Text or Reply in Gmail instead."); }
-  if(q.status==="new"&&!await touch(q,{status:"contacted"})) renderQuotes();
+  const kind=(r.getAttribute("href")||"").match(/^(tel|sms|viber):/)?.[1];
+  if(kind&&onPC()){ e.preventDefault(); return pcBox(q,kind); }
+  if(r.dataset.copymsg!==undefined)
+    return (await copyText(replyText(q)))?markReplied(q,"Message copied. Paste it in Viber or Messenger, then fill in the blanks."):toast("Copy is blocked here. Use Text or Reply in Gmail instead.");
+  markReplied(q);
 });
+let pcd;
+function pcBox(q,kind){
+  if(!pcd){ pcd=document.createElement("dialog"); pcd.className="cdlg pcbox"; document.body.appendChild(pcd); }
+  const first=esc(q.full_name.split(" ")[0]), viber=kind==="viber";
+  const direct=kind==="tel"?`tel:${q.mobile}`:kind==="sms"?smsHref(q):viberUrl(q.mobile);
+  pcd.innerHTML=`<div class="cdlg-box">
+    <h3>${viber?`Message ${first} on Viber`:`Call or text ${first} from your phone`}</h3>
+    <p class="pcnum">${esc(niceNum(q.mobile))}</p>
+    <div class="pcrow"><button class="btn btn-outline" data-pc="num"><i data-lucide="copy"></i>Copy number</button><button class="btn btn-outline" data-pc="msg"><i data-lucide="copy"></i>Copy message</button></div>
+    <p class="hint">${viber
+      ?`Viber Desktop on this computer? <a href="${esc(direct)}">Open the chat in Viber Desktop</a>. No? <a href="https://www.viber.com/en/download/" target="_blank" rel="noopener">Install it free</a>, or use Viber on your phone.`
+      :`Phone connected with Windows Phone Link? <a href="${esc(direct)}">${kind==="tel"?"Call":"Text"} from this computer</a>.`}</p>
+    <div class="cdlg-acts"><button class="btn btn-outline" data-pc="close">Close</button><button class="btn btn-primary" data-pc="done"><i data-lucide="check"></i>${kind==="tel"?"I called":"I sent the message"}</button></div>
+  </div>`;
+  pcd.onclick=async e=>{
+    if(e.target===pcd) return pcd.close();
+    const b=e.target.closest("[data-pc]"); if(!b) return;
+    const a=b.dataset.pc;
+    if(a==="num"||a==="msg"){ // the box covers toasts, so the button itself confirms
+      const was=b.innerHTML, done=await copyText(a==="num"?niceNum(q.mobile):replyText(q));
+      b.innerHTML=done?'<i data-lucide="check"></i>Copied':"Copy blocked"; icons(); setTimeout(()=>{ b.innerHTML=was; icons(); },1600);
+    }
+    if(a==="close") pcd.close();
+    if(a==="done"){ pcd.close(); markReplied(q); }
+  };
+  icons(); pcd.showModal(); pcd.querySelector('[data-pc="num"]').focus();
+}
 
 /* Download: every request (Trash included, marked) as a CSV that opens in Excel or Google Sheets.
    Arkline's own backup, since the free Supabase plan keeps none. */
@@ -232,9 +272,9 @@ $("#qlist").addEventListener("click",async e=>{
   const b=e.target.closest("[data-qdone],[data-qreopen]"); if(!b) return;
   const q=quotes.find(x=>x.id===+b.closest(".qc").dataset.id), done=b.dataset.qdone!==undefined;
   b.disabled=true;
-  const error=await touch(q,{status:done?"closed":"contacted"});
+  const before=q.status, error=await touch(q,{status:done?"closed":"contacted"});
   if(error){ b.disabled=false; show($("#qerr"),"Couldn't change status: "+error.message); return; }
-  toast(done?`#${q.id} is Done`:`#${q.id} reopened`); renderQuotes();
+  renderQuotes(); toast(done?`#${q.id} is Done`:`#${q.id} reopened`,[["Undo",async()=>{ if(!await touch(q,{status:before})) renderQuotes(); }]]);
 });
 $("#qlist").addEventListener("focusout",async e=>{
   const ta=e.target.closest("[data-notes]"); if(!ta) return;
@@ -366,7 +406,13 @@ document.addEventListener("click",async e=>{
     rows=rows.filter(x=>x!==r); toast("Deleted forever"); }
   render();
 });
-function toast(m){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.innerHTML=`<i data-lucide="check-circle-2"></i>`;t.append(m);document.body.appendChild(t);icons();setTimeout(()=>t.remove(),2300);}
+// toast(message, [[label, action], …]): with actions (like Undo) it stays 5 s and replaces an older one.
+function toast(m,acts=[]){
+  if(acts.length) document.querySelectorAll(".toast.act").forEach(t=>t.remove());
+  const t=document.createElement("div");t.className="toast"+(acts.length?" act":"");t.setAttribute("role","status");t.innerHTML=`<i data-lucide="check-circle-2"></i>`;t.append(m);
+  for(const [l,fn] of acts){ const b=document.createElement("button"); b.type="button"; b.className="tact"; b.textContent=l; b.onclick=()=>{ t.remove(); fn(); }; t.append(b); }
+  document.body.appendChild(t);icons();setTimeout(()=>t.remove(),acts.length?5000:2300);
+}
 
 /* upload */
 /* categories: pick one for the upload, add a new one, delete the selected one */

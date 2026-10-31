@@ -108,6 +108,9 @@
 .cdlg-ico svg{width:22px;height:22px}
 .cdlg h3{font-size:1.3rem}
 .cdlg p{color:var(--muted);font-size:.95rem}
+.pcbox .pcnum{font-size:1.7rem;font-weight:800;letter-spacing:.02em;color:var(--ink)}
+.pcbox .pcrow{display:flex;gap:8px;flex-wrap:wrap}
+.pcbox .hint a{color:var(--walnut);font-weight:700}
 .cdlg-acts{display:flex;gap:10px;justify-content:flex-end;width:100%;margin-top:8px;flex-wrap:wrap}
 .btn-danger{background:var(--err);color:var(--on-dark)}
 .btn-danger:hover{transform:translateY(-2px);filter:brightness(1.08)}

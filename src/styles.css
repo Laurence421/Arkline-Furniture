@@ -120,7 +120,13 @@ section{padding-block:80px} @media (min-width:768px){section{padding-block:112px
 .tile img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
 .tile:hover img{transform:scale(1.06)}
 .tile .tag{position:absolute;left:12px;top:12px;background:hsl(36 33% 96%/.92);color:var(--ink);font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:999px;backdrop-filter:blur(6px)}
-.tile .zoom{position:absolute;right:12px;bottom:12px;width:38px;height:38px;border-radius:50%;background:hsl(36 33% 96%/.92);display:grid;place-items:center;opacity:0;transform:scale(.8);transition:.3s;color:var(--ink)}
+.tile .tview{display:block;width:100%;height:100%;border:0;padding:0;background:none;cursor:zoom-in}
+.tile .task{position:absolute;right:10px;bottom:10px;min-height:36px;display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border:0;border-radius:999px;background:hsl(36 33% 96%/.94);color:var(--ink);font-size:.8rem;font-weight:800;box-shadow:var(--shadow-card);backdrop-filter:blur(6px)}
+.tile .task svg{width:15px;height:15px}
+.tile .task:hover{background:var(--card)}
+.tile.liked .task{background:var(--walnut);color:var(--on-dark)}
+.tile.liked .task svg{fill:currentColor}
+.tile .zoom{position:absolute;right:12px;top:12px;width:38px;height:38px;border-radius:50%;background:hsl(36 33% 96%/.92);display:grid;place-items:center;opacity:0;transform:scale(.8);transition:.3s;color:var(--ink)}
 .tile .zoom svg{width:18px;height:18px}
 .tile:hover .zoom,.tile:focus-visible .zoom{opacity:1;transform:none}
 .tile.hide{display:none}
@@ -267,6 +273,36 @@ footer a{text-decoration:none} footer a:hover{color:var(--on-dark)}
 .empty svg{width:36px;height:36px;color:var(--line)}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--on-dark);padding:12px 18px;border-radius:999px;z-index:120;font-size:.9rem;font-weight:600;display:flex;gap:8px;align-items:center;box-shadow:0 12px 30px -10px hsl(0 0% 0%/.5);animation:fu .35s both;max-width:calc(100% - 32px)}
 .toast svg{width:18px;height:18px;color:var(--gold)}
+.toast.act{border-radius:16px;flex-wrap:wrap;row-gap:4px;width:max-content}
+.toast .tact{background:none;border:0;padding:4px 6px;color:var(--gold);font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+/* Pick from our projects (Ask for a price form) */
+.pickwrap{display:grid;gap:8px}
+.plabel{font-weight:600;font-size:.88rem}
+.picked{display:flex;flex-wrap:wrap;gap:10px}
+.picked figure{position:relative;width:84px;margin:0}
+.picked img{width:84px;height:64px;object-fit:cover;border-radius:10px;display:block}
+.picked figcaption{font-size:.7rem;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.picked .unpick{position:absolute;right:-6px;top:-6px;width:26px;height:26px;border-radius:50%;border:2px solid var(--card);background:var(--ink);color:var(--on-dark);display:grid;place-items:center;padding:0}
+.picked .unpick svg{width:13px;height:13px}
+.pickadd{width:150px;height:64px;border:1.5px dashed var(--line);border-radius:10px;background:var(--muted-bg);color:var(--walnut);font-weight:700;font-size:.8rem;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;line-height:1.2}
+.pickadd:hover{border-color:var(--walnut)}
+.pickadd svg{width:16px;height:16px;flex:none}
+.sheet{border:0;padding:0;border-radius:22px;background:var(--card);color:var(--ink);width:min(760px,calc(100% - 24px));max-height:min(88vh,860px);box-shadow:0 30px 70px -20px hsl(0 0% 0%/.45)}
+.sheet::backdrop{background:hsl(40 8% 5%/.55);backdrop-filter:blur(3px)}
+.sheet[open]{display:flex}
+.sheet-box{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:12px;padding:18px;width:100%;max-height:inherit}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sheet-head h3{font-size:1.3rem}
+.pickcats{margin:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.pickcats .chip{flex:none}
+.pickgrid{overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;align-content:start;min-height:200px}
+.pk{position:relative;border:0;padding:0;border-radius:12px;overflow:hidden;background:var(--muted-bg)}
+.pk img{width:100%;aspect-ratio:4/3;height:auto;object-fit:cover;display:block}
+.pk .ck{position:absolute;right:6px;top:6px;width:26px;height:26px;border-radius:50%;background:hsl(36 33% 96%/.9);border:2px solid var(--line);display:grid;place-items:center;color:transparent}
+.pk .ck svg{width:15px;height:15px}
+.pk.on{outline:3px solid var(--walnut-2);outline-offset:-3px}
+.pk.on .ck{background:var(--walnut);border-color:var(--walnut);color:var(--on-dark)}
+@media (max-width:540px){.pickgrid{grid-template-columns:repeat(2,1fr)}.sheet{width:calc(100% - 16px)}}
 
 /* live-site additions */
 .reply-note{color:var(--muted);font-size:.85rem;text-align:center;display:flex;gap:6px;justify-content:center;align-items:center;margin-top:-6px}
@@ -313,9 +349,6 @@ form.q.auth{box-shadow:var(--shadow-card);border:1px solid var(--line)}
 
 /* "I want one like this" + starting prices */
 .cat .lbl b small.from{display:block;font-family:var(--f-body);font-size:.74rem;font-weight:700;color:var(--gold);margin-top:4px;letter-spacing:0}
-.tile .heart{position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:50%;background:var(--walnut);color:var(--on-dark);display:none;place-items:center;box-shadow:var(--shadow-card)}
-.tile .heart svg{width:16px;height:16px;fill:currentColor}
-.tile.liked .heart{display:grid}
 .tile.liked{outline:3px solid var(--walnut-2);outline-offset:-3px}
 .lbacts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .lb .lblike{padding:9px 16px;font-size:.88rem}

@@ -77,7 +77,7 @@
     <div class="head">
       <span class="pill"><i data-lucide="badge-check"></i>Projects done</span>
       <h2>Take a look at the <span class="grad">work</span> we've done.</h2>
-      <p>Quality furniture solutions, built for comfort, productivity and style. Tap any photo to view it full screen, then tap "I want one like this" to ask for a price.</p>
+      <p>Quality furniture solutions, built for comfort, productivity and style. Like one? Tap <b>Ask price</b> on the photo and we'll price one like it for you. Tap the photo to see it full screen.</p>
     </div>
     <div class="filters" id="filters" role="toolbar" aria-label="Filter projects"></div>
     <div class="gallery" id="gallery"></div>
@@ -205,6 +205,7 @@
         <label for="f-fb" id="fbwrap" hidden>Facebook name or link <span class="hint">plus your mobile or email above, in case we can't find you on Messenger</span><input id="f-fb" name="facebook" maxlength="200" autocomplete="off" placeholder="facebook.com/yourname"></label>
       </div>
       <label for="f-addr" class="order-only" hidden>Delivery address<input id="f-addr" name="address" autocomplete="street-address" maxlength="300" placeholder="House no., street, barangay, city"></label>
+      <div class="ask-only pickwrap"><span class="plabel">Want one like our past work? <span class="hint">Optional</span></span><div class="picked" id="picked"></div></div>
       <label for="f-msg"><span id="msglbl">Tell us about your space</span><textarea id="f-msg" name="message" maxlength="5000" placeholder="e.g. 12-seat workstation for a 60 sqm office, gray laminate"></textarea></label>
       <label for="f-photo" class="ask-only">Reference photo <span class="hint">Optional. A layout, sketch or photo of furniture you like.</span><input id="f-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/heic"></label>
       <label class="hp" aria-hidden="true">Website<input id="f-web" name="website" tabindex="-1" autocomplete="off"></label>
@@ -218,6 +219,15 @@
   </div>
 </section>
 </main>
+
+<dialog class="sheet" id="picker" aria-labelledby="pickh">
+  <div class="sheet-box">
+    <div class="sheet-head"><h3 id="pickh">Pick photos you like</h3><button type="button" class="iconbtn" id="pickX" aria-label="Close"><i data-lucide="x"></i></button></div>
+    <div class="filters pickcats" id="pickcats"></div>
+    <div class="pickgrid" id="pickgrid"></div>
+    <button type="button" class="btn btn-primary" id="pickDone"><i data-lucide="check"></i><span>Done</span></button>
+  </div>
+</dialog>
 
 <a class="fab" id="fab" hidden target="_blank" rel="noopener" aria-label="Message us on Messenger"><i data-lucide="message-circle"></i><span>Message us</span></a>
 
