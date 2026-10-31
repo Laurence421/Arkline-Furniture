@@ -37,7 +37,6 @@ function gmailDraft(q){
     ...(order?["Your order:",...items.map(i=>`- ${i.qty} × ${i.id} ${i.name}`),`Total from our shop prices: ${est}`,""]:[]),
     ...(liked.length?["You'd like one like these:",...liked.map(l=>`- ${l.cat}: ${new URL(l.src,location.origin).href}`),""]:[]),
     ...(q.delivery_address?[`Deliver to: ${q.delivery_address}`,""]:[]),
-    ...(prefDay(q)?[`${order?"Preferred delivery date":"Best date for a visit or call"}: ${prefDay(q).label}`,""]:[]),
     ...(q.message?["Your notes:",`"${q.message}"`,""]:[]),
     order?"[Confirm availability, delivery date, delivery fee and the 70% down payment here]":"[Write the full price and details here]", "",
     "Feel free to reply to this email or call us at 0962 269 8229.", "",
@@ -52,17 +51,10 @@ function replyText(q){
   const first=q.full_name.split(" ")[0], items=q.quote_items||[], liked=q.liked_photos||[];
   if(items.length) return [`Hi ${first}! This is Arkline Home & Office Furniture about your order #${q.id}:`,
     ...items.map(i=>`${i.qty} × ${i.name} (${i.id})`), `Items total: ${totalOf(q)}`,
-    `Delivery fee${q.delivery_address?" to "+q.delivery_address:""}: ₱___`, "70% down payment: ₱___",
-    prefDay(q)?`You asked for delivery on ${prefDay(q).label}: ___`:"Delivery date: ___", "Thank you!"].join("\n");
+    `Delivery fee${q.delivery_address?" to "+q.delivery_address:""}: ₱___`, "70% down payment: ₱___", "Delivery date: ___", "Thank you!"].join("\n");
   return [`Hi ${first}! This is Arkline Home & Office Furniture about your price request #${q.id}${liked.length?` (one like the photo${liked.length>1?"s":""} you sent)`:""}.`,
-    "Price: ₱___", "Includes: ___", ...(prefDay(q)?[`You asked for ${prefDay(q).label}: ___`]:[]), "Thank you!"].join("\n");
+    "Price: ₱___", "Includes: ___", "Thank you!"].join("\n");
 }
-// "Sat, Nov 15 (in 14 days)"; a date that has passed is flagged so the owner notices.
-const prefDay=q=>{ if(!q.preferred_date) return null;
-  const d=new Date(q.preferred_date+"T00:00:00"), t=new Date(); t.setHours(0,0,0,0);
-  const n=Math.round((d-t)/864e5), label=d.toLocaleDateString("en-PH",{weekday:"short",month:"short",day:"numeric"});
-  return { label, past:n<0, rel:n===0?"today":n===1?"tomorrow":n>1?`in ${n} days`:"passed" }; };
-const prefWhat=q=>isOrder(q)?"Wants delivery":"Wants a visit or call";
 const smsHref=q=>`sms:${q.mobile}?&body=${encodeURIComponent(replyText(q))}`;
 const niceNum=m=>/^09\d{9}$/.test(m)?`${m.slice(0,4)} ${m.slice(4,7)} ${m.slice(7)}`:m;
 async function route(session){
@@ -196,7 +188,6 @@ function card(q){
       ${viberUrl(q.mobile)||q.facebook?`<button class="btn btn-outline" data-copymsg title="A ready reply to paste in Viber or Messenger"><i data-lucide="copy"></i>Copy message</button>`:""}
       ${q.attachment_path?`<button class="btn btn-outline" data-photo="${esc(q.attachment_path)}"><i data-lucide="image"></i>Reference photo</button>`:""}
     </div>
-    ${prefDay(q)?`<div class="addr${prefDay(q).past&&q.status!=="closed"?" late":""}"><i data-lucide="calendar"></i><span><b>${prefWhat(q)}:</b> ${esc(prefDay(q).label)} (${prefDay(q).rel})</span></div>`:""}
     ${q.delivery_address?`<div class="addr"><i data-lucide="map-pin"></i><span><b>Deliver to:</b> ${esc(q.delivery_address)}</span></div>`:""}
     ${q.message?`<div class="msg">${esc(q.message)}</div>`:""}
     ${items.length?`<ul class="items">${items.map(i=>`<li><b>${i.qty} ×</b> ${esc(i.id)} ${esc(i.name)}</li>`).join("")}</ul>
@@ -266,7 +257,7 @@ $("#qexport").onclick=async()=>{
   const cell=v=>{ const s=String(v??""); return /[",\n\r]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
   const abs=u=>u?new URL(u,location.origin).href:"";
   const cols=[["Number",q=>q.id],["Date",q=>new Date(q.created_at).toLocaleString("en-PH")],["Type",kindOf],["Status",q=>STATUS[q.status]||q.status],
-    ["In Trash",q=>q.deleted_at?"yes":""],["Name",q=>q.full_name],["Mobile",q=>q.mobile],["Email",q=>q.email],["Contact by",q=>q.contact_pref],["Facebook",q=>q.facebook],["Delivery address",q=>q.delivery_address],["Preferred date",q=>q.preferred_date],
+    ["In Trash",q=>q.deleted_at?"yes":""],["Name",q=>q.full_name],["Mobile",q=>q.mobile],["Email",q=>q.email],["Contact by",q=>q.contact_pref],["Facebook",q=>q.facebook],["Delivery address",q=>q.delivery_address],
     ["Project type",q=>q.project_type],["Items",q=>(q.quote_items||[]).map(i=>`${i.qty} x ${i.id} ${i.name}`).join("; ")],
     ["Total from (PHP)",q=>q.estimate_min],["Total to (PHP)",q=>q.estimate_max],["Liked photos",q=>(q.liked_photos||[]).map(l=>`${l.cat}: ${abs(l.src)}`).join(" ; ")],
     ["Reference photo",q=>q.attachment_path?"yes":""],["Message",q=>q.message],["Private notes",q=>q.notes]];
