@@ -2,6 +2,7 @@ import "./icons.js";
 // /admin — Feature A. Signed-in admins upload, trash, restore and permanently delete gallery photos.
 // Uploaded photos: projects.deleted_at set = in Trash. Bundled photos: a hidden_photos row = in Trash.
 import { ORDER, BUNDLED, messengerUrl, viberUrl } from "./data.js";
+import { CONTENT_DEFAULTS } from "./content.js";
 import { loadProducts, loadText, initContentTabs } from "./admin-content.js";
 import { categories, loadCategories, isBuiltIn, addCategory, deleteCategory } from "./categories.js";
 import { renderAccount, initAccount } from "./admin-account.js";
@@ -22,9 +23,10 @@ const plural = (n,w) => `${n} ${w}${n===1?"":"s"}`;
 let rows=[], hidden=new Map(), filter="All", bfilter="All";
 
 /* auth */
-let auth, recovering=false, adminEmail="", signedInId=null, idledOut=null;
+let auth, recovering=false, signedInId=null, idledOut=null;
 
-// Gmail compose in a new tab, from the signed-in admin's Google account, with a drafted reply.
+// Gmail compose in a new tab, from the shop's public email (the one customers see on the website), with a drafted reply.
+const REPLY_FROM=CONTENT_DEFAULTS["contact.email"];
 // Shop items = an order; only liked photos or a description = a price request.
 const kindOf=q=>{ const o=(q.quote_items||[]).length>0, l=(q.liked_photos||[]).length>0; return o&&l?"Order + price request":o?"Order":"Price request"; };
 const totalOf=q=>q.estimate_min===q.estimate_max?peso(q.estimate_min):`${peso(q.estimate_min)} – ${peso(q.estimate_max)}`;
@@ -43,7 +45,7 @@ function gmailDraft(q){
     "Best regards,", "Arkline Home & Office Furniture", "101 Lydia St., Brgy. Sta. Monica, Novaliches, Quezon City"
   ].join("\n");
   const p=new URLSearchParams({view:"cm",fs:"1",to:q.email,su:order?`Arkline order #${q.id}`:`Arkline price for request #${q.id}`,body});
-  if(adminEmail) p.set("authuser",adminEmail);
+  p.set("authuser",REPLY_FROM); // opens Gmail as the shop account (must be signed in to Gmail in this browser)
   return "https://mail.google.com/mail/?"+p;
 }
 // Short ready-made reply for Text, Viber and Messenger; the owner only fills in the blanks.
@@ -74,7 +76,7 @@ async function route(session){
     $("#login").querySelector("[data-signout]").onclick=()=>supabase.auth.signOut();
     icons(); return;
   }
-  adminEmail=session.user.email; renderAccount(session.user);
+  renderAccount(session.user);
   $("#login").hidden=true; $("#app").hidden=false;
   load(); loadQuotes(); loadProducts();
   loadCategories().then(err=>{ renderCats(); if(err) show($("#caterr"),err); render(); loadText(); });
