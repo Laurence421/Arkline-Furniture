@@ -158,13 +158,20 @@ function renderQuotes(){
   const n=k=>quotes.filter(q=>inView(q,k)&&ofType(q,qtype)).length;
   const fresh=quotes.filter(q=>inView(q,"new")).length; $("#newc").textContent=fresh; $("#newc").hidden=!fresh;
   $("#qcount").textContent=plural(quotes.filter(q=>!inTrash(q)).length,"request");
-  $("#qtype").innerHTML=QTYPES.map(([t,l])=>{ const c=quotes.filter(q=>shown(q)&&ofType(q,t)).length, nw=t==="all"?0:quotes.filter(q=>inView(q,"new")&&ofType(q,t)).length;
+  // The type buttons count every request of that type (Trash aside), whatever status is chosen below.
+  $("#qtype").innerHTML=QTYPES.map(([t,l])=>{ const c=quotes.filter(q=>!inTrash(q)&&ofType(q,t)).length, nw=t==="all"?0:quotes.filter(q=>inView(q,"new")&&ofType(q,t)).length;
     return `<button role="tab" aria-selected="${t===qtype}" data-qt="${t}">${l}<small>${c}</small>${nw?`<span class="badge" title="${nw} new" aria-label="${nw} new">${nw}</span>`:""}</button>`; }).join("");
   $("#qfilters").innerHTML=[["active","Open"],...STEPS,["trash","Trash"]]
     .map(([k,l])=>`<button class="chip${k===qfilter&&!searching?" on":""}${k==="trash"?" trash":""}" data-qf="${k}"${k==="trash"?` title="Trash" aria-label="Trash, ${n(k)}"`:""}>${k==="trash"?'<i data-lucide="trash-2"></i>':l}<small>${n(k)}</small></button>`).join("");
   const vis=quotes.filter(q=>shown(q)&&ofType(q,qtype)
     &&(!s||[q.id,q.full_name,q.mobile,q.email,q.message].some(v=>String(v??"").toLowerCase().includes(s))));
-  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(qfilter==="trash"?"Trash is empty.":quotes.length?`No ${qtype==="order"?"orders":qtype==="price"?"price requests":"requests"} match${searching?` "${esc(qsearch)}"`:""}.`:"No price requests yet. They'll appear here as soon as a customer sends the form.");
+  const what=qtype==="order"?"orders":qtype==="price"?"price requests":"requests";
+  const doneOnes=!searching&&qfilter!=="closed"&&qfilter!=="trash"?quotes.filter(q=>!inTrash(q)&&ofType(q,qtype)&&q.status==="closed").length:0;
+  $("#qlist").innerHTML=vis.length?vis.map(card).join(""):empty(qfilter==="trash"?"Trash is empty."
+    :!quotes.length?"No requests yet. They'll appear here as soon as a customer sends the form."
+    :searching?`No ${what} match "${esc(qsearch)}".`
+    :doneOnes?`No ${qfilter==="active"?"open":STATUS[qfilter==="replied"?"contacted":qfilter].toLowerCase()} ${what}. ${doneOnes} ${doneOnes===1?"is":"are"} Done: tap <b>Done</b> to see ${doneOnes===1?"it":"them"}.`
+    :`No ${what} here.`);
   icons();
 }
 function card(q){

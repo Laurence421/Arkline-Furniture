@@ -35,13 +35,24 @@ h1,h2,h3{font-family:var(--f-head);margin:0;line-height:1.08;letter-spacing:-.02
 h2{font-size:clamp(2rem,4.4vw,3.2rem);font-weight:600}
 h3{font-size:1.2rem;font-weight:600}
 p{margin:0}
-.grad{background:var(--gradient-hero);-webkit-background-clip:text;background-clip:text;color:transparent;font-style:italic}
+.grad{background:var(--grad-text,var(--gradient-hero));-webkit-background-clip:text;background-clip:text;color:transparent;font-style:italic}
 section{padding-block:80px} @media (min-width:768px){section{padding-block:112px}}
 .alt{background:var(--muted-bg)}
 /* Warm tan (client's option B) from Explore by category down to the footer, alternating lighter/darker; the admin page uses it too */
 .warm{background:var(--latte)} .warm.alt{background:var(--latte-2)}
-.warm,.contact,footer{--muted:hsl(30 12% 27%)} /* darker grey text so it stays easy to read on light brown */
+/* Premium text on the warm tan: espresso headings, warm brown body text, bronze accents, ivory cards */
+.warm,.contact,footer{color:var(--ink);--ink:hsl(22 40% 17%);--muted:hsl(25 22% 30%);--card:hsl(38 50% 98%);--line:hsl(30 30% 78%);
+  --grad-text:linear-gradient(120deg,hsl(32 62% 40%),hsl(22 62% 32%))}
+.warm .pill,.contact .pill{background:hsl(38 50% 98%/.6);border-color:hsl(30 35% 55%/.4);letter-spacing:.14em}
+.warm h2,.contact h2{font-weight:500}
+/* Espresso + gold details */
+.warm,.contact,footer{--ink:hsl(22 48% 11%);--line:hsl(36 42% 72%);--grad-text:linear-gradient(120deg,hsl(38 68% 38%),hsl(26 66% 30%))}
+.warm .head h2::after,.contact h2::after{content:"";display:block;width:56px;height:3px;border-radius:3px;margin-top:18px;background:linear-gradient(90deg,var(--gold),hsl(30 58% 50%))}
+.warm .head.center h2::after{margin-inline:auto}
+.warm .btn-dark,.contact .btn-dark,.warm .tabs button[aria-selected="true"],.contact .tabs button[aria-selected="true"]{color:hsl(40 72% 74%)}
+.warm .pill svg,.contact .pill svg{color:hsl(36 62% 42%)}
 .head{display:grid;gap:14px;margin-bottom:44px;max-width:640px}
+.head>.pill{justify-self:start} .head.center>.pill{justify-self:center} /* labels keep their own width */
 .head.center{margin-inline:auto;text-align:center;justify-items:center}
 .head p{color:var(--muted);font-size:1.05rem}
 .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--walnut)}
