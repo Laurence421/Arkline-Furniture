@@ -152,8 +152,9 @@ export async function handleQuote(request, env) {
 }
 
 async function notify(env, db, row, q) {
-  const key = env.RESEND_API_KEY, to = env.NOTIFY_EMAIL, from = env.NOTIFY_FROM || "Arkline Website <onboarding@resend.dev>";
-  if (!key || !to || !from) return;
+  // NOTIFY_EMAIL can list several addresses, separated by commas: everyone listed gets each alert.
+  const key = env.RESEND_API_KEY, to = String(env.NOTIFY_EMAIL || "").split(",").map(s => s.trim()).filter(Boolean), from = env.NOTIFY_FROM || "Arkline Website <onboarding@resend.dev>";
+  if (!key || !to.length || !from) return;
   let photoLink = "";
   if (q.attachment_path) {
     const { data } = await db.storage.from("quote-attachments").createSignedUrl(q.attachment_path, 60 * 60 * 24 * 7);

@@ -9,4 +9,4 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 SUPABASE_URL = "https://wtexrwkkijviptexvwmr.supabase.co"
 VITE_SUPABASE_ANON_KEY = "sb_publishable_K7YY0SZsMMpqjUIMASgGWQ_6djpugc6"
-NOTIFY_EMAIL = "arklinefurniture3@gmail.com"
+NOTIFY_EMAIL = "arklinefurniture3@gmail.com, arklinehomeandofficefurnitures@gmail.com"

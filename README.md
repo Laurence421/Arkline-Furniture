@@ -151,7 +151,7 @@ Without Supabase keys the site still runs on its built-in data, and the form wor
 |---|---|---|
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Browser and site-data | Public by design; RLS protects the data |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | `/api/quote` only | **Secret**: mark as encrypted |
-| `RESEND_API_KEY`, `NOTIFY_EMAIL`, `NOTIFY_FROM` | New-request emails | Optional. Free without a domain if `NOTIFY_EMAIL` is your Resend login email |
+| `RESEND_API_KEY`, `NOTIFY_EMAIL`, `NOTIFY_FROM` | New-request emails | Optional. `NOTIFY_EMAIL` takes one or more addresses, comma-separated. Before a domain is verified in Resend, only your Resend login email receives alerts |
 | `VITE_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Spam check | Optional, free |
 
 Update the Supabase project URL in `public/_headers` (Content-Security-Policy) and `.github/workflows/keep-supabase-awake.yml` to match your project.
