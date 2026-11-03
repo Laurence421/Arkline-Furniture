@@ -261,6 +261,15 @@ div.q.auth{background:var(--card);color:var(--ink);border:1px solid var(--line);
 #up .f2>label,#up .catpick{align-content:start}
 .idle-note{background:hsl(30 58% 50%/.12);border:1px solid hsl(30 58% 50%/.35);color:var(--walnut);font-weight:700;font-size:.9rem;border-radius:14px;padding:12px 16px;margin:0 0 14px}
 .acct select{width:auto;min-width:220px}
+/* Email alerts list */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.alist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.alist li:not(.hint){display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 14px;font-weight:600;overflow-wrap:anywhere}
+.alist li>svg{width:17px;height:17px;flex:none;color:var(--walnut)}
+.alist li span{flex:1;min-width:0}
+.aadd{display:flex;gap:8px}
+.aadd input{flex:1;min-width:0}
+.aadd .btn{flex:none}
 
 /* Photos tab: floating shortcut to Trash (turns into "Top" once Trash is on screen) */
 .gotrash{position:fixed;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:40;display:inline-flex;align-items:center;gap:8px;padding:12px 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.14)}

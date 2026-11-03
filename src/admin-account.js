@@ -30,6 +30,18 @@ export function renderAccount(user){
       <p class="err" role="alert" hidden></p>
       <div class="tf-foot"><button class="btn btn-primary" type="submit"><i data-lucide="key-round"></i><span>${pw ? "Change password" : "Set password"}</span></button></div>
     </form>
+    <div class="q auth" id="alerts">
+      <div><h3 style="font-size:1.25rem">Email alerts</h3>
+        <p class="sub">These emails get a message for every new order or price request. Any admin can add or remove them.</p></div>
+      <ul class="alist" id="alist"><li class="hint">Loading…</li></ul>
+      <form class="aadd" id="aadd" novalidate>
+        <label for="anew" class="sr">Add an email</label>
+        <input id="anew" type="email" autocomplete="email" maxlength="200" placeholder="name@gmail.com">
+        <button class="btn btn-outline" type="submit"><i data-lucide="plus"></i><span>Add</span></button>
+      </form>
+      <p class="err" role="alert" hidden></p>
+      <p class="hint">Alerts are sent once email sending (Resend) is set up. Until the website's own domain is added there, only the Resend sign-up email receives them.</p>
+    </div>
     <div class="q auth">
       <div><h3 style="font-size:1.25rem">Auto sign-out</h3>
         <p class="sub">Signs this device out of the admin page after a period with no clicks, typing or scrolling. A one-minute warning appears first.</p></div>
@@ -66,6 +78,7 @@ export function renderAccount(user){
     } catch (x) { fail(x.message); }
     finally { btn.disabled = false; span.textContent = label; }
   };
+  initAlerts();
   $("#idlemin").onchange = e => { const m = +e.target.value; setIdleMinutes(m); toast(m ? `Auto sign-out set to ${idleLabel(m)}` : "Auto sign-out turned off on this device"); };
   $("#signall").onclick = async () => {
     const ok = await confirmDialog({ title: "Sign out on all devices?", message: "You'll need to sign in again here and on every other phone or computer.", confirmLabel: "Sign out everywhere", danger: true, icon: "log-out" });
@@ -74,3 +87,41 @@ export function renderAccount(user){
 }
 
 export function initAccount(showToast){ toast = showToast; }
+
+/* Email alerts: the notify_emails list the server sends each new request to. */
+const NEEDS_009 = "Email alerts need one database update: run supabase/009_notify_emails.sql in the Supabase SQL Editor.";
+const okEmail = e => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+let alerts = [];
+async function initAlerts(){
+  const box = $("#alerts"), err = box.querySelector(".err");
+  const fail = m => { err.hidden = !m; err.textContent = m || ""; };
+  const draw = () => {
+    $("#alist").innerHTML = alerts.length
+      ? alerts.map(e => `<li><i data-lucide="mail"></i><span>${esc(e)}</span><button type="button" class="mini qdel" data-arm="${esc(e)}" title="Remove" aria-label="Remove ${esc(e)}"><i data-lucide="x"></i></button></li>`).join("")
+      : `<li class="hint">No one gets email alerts right now. New requests still appear under Requests.</li>`;
+    icons();
+  };
+  const { data, error } = await supabase.from("notify_emails").select("email").order("created_at");
+  if (error){ $("#alist").innerHTML = ""; $("#aadd").hidden = true; return fail(/notify_emails/.test(error.message) ? NEEDS_009 : "Couldn't load the alert emails: " + error.message); }
+  alerts = data.map(r => r.email); draw();
+  $("#aadd").onsubmit = async e => {
+    e.preventDefault(); fail();
+    const inp = $("#anew"), email = inp.value.trim().toLowerCase();
+    if (!okEmail(email)) return fail("Enter a full email address, like name@gmail.com.");
+    if (alerts.includes(email)) return fail(`${email} is already on the list.`);
+    const btn = e.target.querySelector("button"); btn.disabled = true;
+    const { error } = await supabase.from("notify_emails").insert({ email });
+    btn.disabled = false;
+    if (error) return fail(error.code === "23505" ? `${email} is already on the list.` : "Couldn't add it: " + error.message);
+    alerts.push(email); inp.value = ""; draw(); toast(`${email} will get email alerts`);
+  };
+  $("#alist").onclick = async e => {
+    const b = e.target.closest("[data-arm]"); if (!b) return;
+    const email = b.dataset.arm, last = alerts.length === 1; fail();
+    const ok = await confirmDialog({ title: `Stop email alerts to ${email}?`, message: last ? "This is the last email on the list: no one will get an email for new requests. They'll still appear under Requests." : "This email won't get messages for new requests any more. You can add it back at any time.", confirmLabel: "Remove", danger: true, icon: "mail" });
+    if (!ok) return;
+    const { data, error } = await supabase.from("notify_emails").delete().eq("email", email).select("email");
+    if (error || !data?.length) return fail("Couldn't remove it: " + (error?.message || "not allowed."));
+    alerts = alerts.filter(x => x !== email); draw(); toast(`${email} removed from email alerts`);
+  };
+}

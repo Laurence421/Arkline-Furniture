@@ -152,9 +152,14 @@ export async function handleQuote(request, env) {
 }
 
 async function notify(env, db, row, q) {
-  // NOTIFY_EMAIL can list several addresses, separated by commas: everyone listed gets each alert.
-  const key = env.RESEND_API_KEY, to = String(env.NOTIFY_EMAIL || "").split(",").map(s => s.trim()).filter(Boolean), from = env.NOTIFY_FROM || "Arkline Website <onboarding@resend.dev>";
-  if (!key || !to.length || !from) return;
+  const key = env.RESEND_API_KEY, from = env.NOTIFY_FROM || "Arkline Website <onboarding@resend.dev>";
+  if (!key) return;
+  // Recipients: the list admins keep in /admin → Account (notify_emails). Before that table exists,
+  // NOTIFY_EMAIL (one or more addresses, comma-separated) is used instead.
+  let to = String(env.NOTIFY_EMAIL || "").split(",").map(s => s.trim()).filter(Boolean);
+  const { data: saved, error: listErr } = await db.from("notify_emails").select("email");
+  if (!listErr) to = saved.map(r => r.email);
+  if (!to.length || !from) return;
   let photoLink = "";
   if (q.attachment_path) {
     const { data } = await db.storage.from("quote-attachments").createSignedUrl(q.attachment_path, 60 * 60 * 24 * 7);
