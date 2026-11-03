@@ -4,6 +4,8 @@ A production website for **Arkline Home & Office Furniture**, a custom furniture
 
 **Runs at ₱0 a month** on free plans. **Vanilla JS + Vite · Supabase · Cloudflare Pages.**
 
+**Live (dry run):** [arklineofficefurniture.pages.dev](https://arklineofficefurniture.pages.dev), admin at `/admin`. The client's own domain replaces this address once it's bought.
+
 ![Arkline home page](docs/screenshots/home.jpg)
 
 > 📄 **[Website guide (PDF)](docs/arkline-website-flow.pdf)**: how orders reach Arkline · **[Admin guide (PDF)](docs/admin-guide.pdf)**: how the team runs the site · **[Customer guide (PDF)](docs/customer-guide.pdf)**: what customers see, with a dry-run checklist · **[Deployment guide (PDF)](docs/deployment-guide.pdf)**: putting it live
@@ -19,6 +21,7 @@ A production website for **Arkline Home & Office Furniture**, a custom furniture
 | **Stack** | HTML/CSS/vanilla JavaScript (Vite), Supabase (Postgres, Auth, Storage), Cloudflare Pages Functions, Resend |
 | **Scale tested** | 100 simultaneous visitors and 100 simultaneous orders, 0 errors |
 | **Security tested** | 32 of 32 attack attempts blocked (anonymous and signed-in non-admin) |
+| **Tested end to end** | 30 automated browser test suites, phone and desktop, locally and on the live site |
 | **Cost** | ₱0 a month: every service on its free tier, commercial use allowed |
 
 ---
@@ -27,18 +30,18 @@ A production website for **Arkline Home & Office Furniture**, a custom furniture
 
 | | |
 |---|---|
-| ![Project gallery](docs/screenshots/gallery.jpg) | **Browse 69+ finished projects** by category, full screen, with a swipeable viewer. Each category can show a "starts at" price. |
-| ![I want one like this](docs/screenshots/like.jpg) | **"I want one like this"** on any project photo attaches it to their request, so Arkline sees exactly what they mean. |
-| ![Shop](docs/screenshots/shop.jpg) | **Shop chairs and tables** with live prices and scaled top-view drawings, then add items to an order. |
-| ![Order form](docs/screenshots/order-form.jpg) | **The form adapts:** shop items make it an **order**, custom work makes it a **price request**. Customers choose how to be contacted (call or text, Viber, Messenger, email) and get a reference number. |
+| ![Project gallery](docs/screenshots/gallery.jpg) | **Browse 73 finished projects** by category. Every photo has its own **Ask price** button: one tap adds it to the price request (with **Undo**), and scrolling past a photo never adds it by accident. Each category can show a "starts at" price. |
+| ![Photo viewer](docs/screenshots/like.jpg) | **Full-screen viewer** with swipe, arrows and thumbnails, and the same **Ask price** button. |
+| ![Shop](docs/screenshots/shop.jpg) | **Shop chairs and tables** with live prices and scaled top-view drawings, then add items to an order. The order list stays on the phone between visits. |
+| ![Order form](docs/screenshots/order-form.jpg) | **Two tabs.** **Ask for a price** (project type, what they need, an optional photo, and **Pick from our projects** to tick past work they like) or **Place an order** (items and total, **delivery address**, delivery notes). Customers choose how to be contacted (call or text, Viber, Messenger, email) and get a reference number. |
 
-Also: Messenger and Viber buttons, a fully responsive layout ([phone view](docs/screenshots/phone.jpg)), and plain wording for customers ("Ask for a price", not "Request a quotation").
+Also: Messenger and Viber buttons, tap-to-call numbers, a fully responsive layout ([phone view](docs/screenshots/phone.jpg)), a warm tan, espresso and gold theme chosen by the client, and plain wording for customers ("Ask for a price", not "Request a quotation").
 
 ## What the shop owner can do (`/admin`)
 
 | | |
 |---|---|
-| ![Requests inbox](docs/screenshots/admin-requests.jpg) | **Requests inbox**: orders and price requests with status (New → Contacted → Price sent → Closed), search, private notes, liked photos, one-tap **Call, Text, Viber, Messenger** or **Reply in Gmail** with a drafted reply, Trash with restore, and a **Download** backup that opens in Excel. |
+| ![Requests inbox](docs/screenshots/admin-requests.jpg) | **Requests inbox built for little manual work.** **All / Orders / Price requests** with counts and new badges. Statuses move by themselves: **New** → **Replied** the moment the owner taps a reply button → **Done** with one tap, or automatically after 30 days without activity (with **Reopen** and **Undo**). One-tap **Call, Text, Viber, Messenger** or **Reply in Gmail** with a ready-written message (or **Copy message** for chat apps). On a computer, Call and Text open a box with the number and **Phone Link** / **Viber Desktop** links. Also: delivery address, **Returning customer** link, search across all requests, private notes, Trash with restore, and a **Download** backup that opens in Excel. Several staff can use it at once; changes appear on every screen within 20 seconds. |
 | ![Prices](docs/screenshots/admin-prices.jpg) | **Prices**: edit, add, hide or delete products and photos. Quote estimates always use these prices, recalculated on the server. |
 | ![Website text](docs/screenshots/admin-text.jpg) | **Website text**: edit the hero, services, steps, FAQs and contact details, with "Restore original" for each section. |
 | ![Photos and Trash](docs/screenshots/admin-photos.jpg) | **Photos**: upload from a phone (converted to WebP and **watermarked** in the browser, so competitors can't reuse them), Trash with restore, delete forever. |
@@ -100,9 +103,10 @@ How: one cached data request instead of four database reads per visitor, 61 bund
 
 End-to-end tests drive real Chrome against the real database, using throwaway accounts and test data that are deleted afterwards:
 
-- **Customer and admin flow, 27 checks:** ordering, liked photos, contact rules, the admin inbox, status changes, prices, text and confirmations.
-- **Security, 32 attack attempts:** plus form abuse, cross-site scripting under the production security policy, and the rate limit.
-- **Account, 8 checks:** password change rules, and that the old password stops working.
+- **Customer side:** both form tabs and their rules, Ask price and the photo picker (including accidental-tap protection), contact choices, the shop and order list, tap-to-call, and the phone layout.
+- **Admin side:** the request inbox (automatic statuses, 30-day auto Done, Undo, ready replies, the computer call box, Orders / Price requests counts, returning customers), Trash, Download, photo upload with watermark, categories, prices, website text, account, password recovery and automatic sign-out.
+- **Security, 32 attack attempts:** plus form abuse, cross-site scripting under the production security policy, and the rate limit (10 sends accepted, the 11th refused).
+- **Readability:** every text on every page, site and admin, checked for colour contrast (4.5:1 or better) on phone and desktop.
 - **Load:** 100 simultaneous visitors and 100 simultaneous orders.
 
 ---
@@ -119,7 +123,7 @@ src/
   icons.js, image.js           Bundled icons; in-browser WebP conversion
 api/                           Host-neutral handlers: quote.js, site-data.js
 functions/api/                 Cloudflare Pages Function wrappers
-supabase/                      schema.sql, then migrations 002–007
+supabase/                      schema.sql, then migrations 002–008
 public/                        Images, _headers (security and cache headers)
 .github/workflows/             Daily ping that keeps the free Supabase project awake
 docs/                          ADR, website, customer, admin and deployment guide PDFs, screenshots
@@ -138,9 +142,9 @@ Without Supabase keys the site still runs on its built-in data, and the form wor
 
 ## Set up your own copy
 
-1. **Supabase**: create a free project. In the SQL Editor, run `supabase/schema.sql`, then `002` to `007` in order.
+1. **Supabase**: create a free project. In the SQL Editor, run `supabase/schema.sql`, then `002` to `008` in order.
 2. **Admin**: under Authentication → Users, add the admin user. Run the `insert into public.admins …` line at the end of `schema.sql` with that email. Then turn off public sign-ups.
-3. **Google sign-in (optional)**: create an OAuth client in Google Cloud with redirect URI `https://<project>.supabase.co/auth/v1/callback`, enable Google in Supabase, and add your site URLs under Authentication → URL Configuration.
+3. **Google sign-in (optional)**: create an OAuth client in Google Cloud with redirect URI `https://<project>.supabase.co/auth/v1/callback`, enable Google in Supabase, and under Authentication → URL Configuration set the **Site URL** to your live address and add `https://<your-site>/**` to the Redirect URLs (otherwise sign-in returns to localhost).
 4. **Deploy**: in Cloudflare Pages → Connect to Git, set the build command to `npm run build` and the output to `dist`, and add the environment variables below. (step by step: [deployment guide](docs/deployment-guide.pdf))
 
 | Variable | Where it's used | Notes |
