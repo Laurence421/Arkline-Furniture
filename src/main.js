@@ -59,7 +59,7 @@ function toggleLike(p,quiet){
   if(on) likes.push({src:p.src,cat:p.cat}); else likes=likes.filter(l=>l.src!==p.src);
   saveLikes(); syncLike(p.src); renderQuote();
   if(!quiet) toast(on?`${p.cat} photo added to your price request`:`${p.cat} photo removed`,
-    [["Undo",()=>toggleLike(p,true)],...(on?[["See form",()=>{ setMode("ask"); $("#contact").scrollIntoView(); }]]:[])]);
+    [["Undo",()=>toggleLike(p,true)],...(on?[["See form",()=>{ setMode("ask"); $("#qform").scrollIntoView(); }]]:[])]);
 }
 function syncLike(src){
   const on=likes.some(l=>l.src===src);
@@ -204,7 +204,8 @@ $("#qitems").addEventListener("click",e=>{
 function openDrawer(){$("#drawer").classList.add("open");$("#drawer").setAttribute("aria-hidden","false");$("#scrim").hidden=false;$("#closeQ").focus();}
 function closeDrawer(){$("#drawer").classList.remove("open");$("#drawer").setAttribute("aria-hidden","true");$("#scrim").hidden=true;}
 $("#openQ").onclick=openDrawer; $("#closeQ").onclick=closeDrawer; $("#scrim").onclick=closeDrawer;
-$("#toForm").onclick=()=>{closeDrawer();setMode(totals().n>0?"order":"ask");$("#contact").scrollIntoView();setTimeout(()=>$("#f-name").focus({preventScroll:true}),450);};
+// Continue to order / See form go to the form itself: on phones the contact details come first.
+$("#toForm").onclick=()=>{closeDrawer();setMode(totals().n>0?"order":"ask");$("#qform").scrollIntoView();setTimeout(()=>$("#f-name").focus({preventScroll:true}),450);};
 $("#copyList").onclick=()=>{const ids=Object.keys(quote);if(!ids.length){toast("Add shop items to copy your order");return;}const{a,z}=totals();
   copy("Arkline order\n"+ids.map(id=>`${quote[id]} x ${id} ${ALL[id].name} (${pt(ALL[id])})`).join("\n")+`\nEstimated total: ${pt({min:a,max:z})}`,"List copied");};
 

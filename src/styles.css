@@ -8,6 +8,7 @@
 @font-face{font-family:"Playfair Display";font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/playfair-display-latin.woff2) format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
 :root{
   --bg:hsl(36 33% 96%); --card:hsl(0 0% 100%); --muted-bg:hsl(34 28% 91%);
+  --latte:hsl(31 40% 81%); --latte-2:hsl(30 36% 74%); /* option B "warm tan"; option A was 33 38% 87% / 32 34% 81% */
   --ink:hsl(40 6% 13%); --muted:hsl(30 6% 38%); --line:hsl(32 18% 84%);
   --walnut:hsl(27 52% 36%); --walnut-2:hsl(30 58% 50%); --gold:hsl(36 62% 62%);
   --dark:hsl(40 8% 10%); --on-dark:hsl(36 33% 96%); --on-dark-muted:hsl(36 12% 72%);
@@ -37,6 +38,9 @@ p{margin:0}
 .grad{background:var(--gradient-hero);-webkit-background-clip:text;background-clip:text;color:transparent;font-style:italic}
 section{padding-block:80px} @media (min-width:768px){section{padding-block:112px}}
 .alt{background:var(--muted-bg)}
+/* Warm tan (client's option B) from Explore by category down to the footer, alternating lighter/darker; the admin page uses it too */
+.warm{background:var(--latte)} .warm.alt{background:var(--latte-2)}
+.warm,.contact,footer{--muted:hsl(30 12% 27%)} /* darker grey text so it stays easy to read on light brown */
 .head{display:grid;gap:14px;margin-bottom:44px;max-width:640px}
 .head.center{margin-inline:auto;text-align:center;justify-items:center}
 .head p{color:var(--muted);font-size:1.05rem}
@@ -204,6 +208,7 @@ section{padding-block:80px} @media (min-width:768px){section{padding-block:112px
 
 /* faq */
 .faq{display:grid;grid-template-columns:1fr 1.4fr;gap:clamp(28px,5vw,72px)}
+.faq>.head{align-content:start;justify-items:start} /* the left side stays its natural size instead of stretching to the questions' height */
 @media (max-width:860px){.faq{grid-template-columns:1fr}}
 .acc{display:grid;gap:12px}
 .acc details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 20px;transition:box-shadow .3s}
@@ -214,24 +219,24 @@ section{padding-block:80px} @media (min-width:768px){section{padding-block:112px
 .acc details p{color:var(--muted);padding-bottom:18px}
 
 /* cta + contact */
-.contact{background:var(--dark);color:var(--on-dark);position:relative;overflow:hidden}
-.contact::before{content:"";position:absolute;width:520px;height:520px;right:-160px;top:-200px;border-radius:50%;background:radial-gradient(hsl(30 58% 50%/.35),transparent 70%)}
+/* Contact: the same plain light brown as the sections above (client's choice) */
+.contact{background:var(--latte-2);color:var(--ink);position:relative;overflow:hidden}
 .contact .wrap{position:relative}
-.contact h2{color:var(--on-dark)}
-.contact .pill{background:hsl(0 0% 100%/.08);border-color:hsl(0 0% 100%/.2);color:var(--gold)}
+.contact .btn-glass{background:var(--card);color:var(--ink);border-color:var(--line);backdrop-filter:none}
+.contact .btn-glass:hover{border-color:var(--ink)}
 .cgrid{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(28px,5vw,64px)}
 @media (max-width:900px){.cgrid{grid-template-columns:1fr}}
 .info{display:grid;gap:14px;margin-top:32px}
-.irow{display:flex;gap:14px;align-items:flex-start;background:hsl(0 0% 100%/.05);border:1px solid hsl(0 0% 100%/.1);border-radius:14px;padding:14px 16px}
-.irow .i{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:hsl(30 58% 50%/.18);color:var(--gold);flex:none}
+.irow{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.irow .i{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:hsl(30 58% 50%/.14);color:var(--walnut);flex:none}
 .irow .i svg{width:20px;height:20px}
-.irow .k{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--on-dark-muted);font-weight:700}
+.irow .k{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .irow .v{display:flex;gap:10px;align-items:center;flex-wrap:wrap;word-break:break-word;font-weight:600}
-.tap{color:inherit;text-decoration:underline;text-decoration-color:hsl(0 0% 100%/.3);text-underline-offset:4px}
+.tap{color:inherit;text-decoration:underline;text-decoration-color:hsl(30 20% 40%/.4);text-underline-offset:4px}
 .tap:hover{text-decoration-color:currentColor}
-.copy{border:1px solid hsl(0 0% 100%/.25);background:none;color:var(--on-dark-muted);border-radius:999px;padding:2px 10px;font-size:.72rem;font-weight:700}
-.copy:hover{color:var(--on-dark);border-color:var(--on-dark)}
-form.q{background:var(--card);color:var(--ink);border-radius:24px;padding:clamp(20px,3.4vw,34px);display:grid;gap:16px;box-shadow:0 30px 60px -20px hsl(0 0% 0%/.5)}
+.copy{border:1px solid var(--line);background:none;color:var(--muted);border-radius:999px;padding:2px 10px;font-size:.72rem;font-weight:700}
+.copy:hover{color:var(--ink);border-color:var(--ink)}
+form.q{background:var(--card);color:var(--ink);border-radius:24px;padding:clamp(20px,3.4vw,34px);display:grid;gap:16px;box-shadow:0 24px 50px -24px hsl(30 30% 20%/.35)}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:16px 14px;align-items:end} @media (max-width:540px){.f2{grid-template-columns:1fr}}
 label{display:grid;gap:6px;font-size:.84rem;font-weight:700}
 input,select,textarea{font:inherit;font-weight:500;border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;background:var(--bg);color:var(--ink);width:100%;min-width:0;transition:border-color .2s,box-shadow .2s}
@@ -241,15 +246,15 @@ textarea{min-height:100px;resize:vertical}
 .err{color:var(--err);font-size:.85rem;font-weight:600}
 .sent{border:1.5px solid var(--ok);color:var(--ok);background:hsl(145 45% 32%/.06);padding:12px 14px;border-radius:12px;font-size:.9rem;font-weight:600}
 
-footer{background:var(--dark);color:var(--on-dark-muted);border-top:1px solid hsl(0 0% 100%/.08);padding-block:48px 28px;font-size:.88rem}
+footer{background:var(--latte);color:hsl(30 10% 26%);border-top:1px solid hsl(30 20% 40%/.25);padding-block:48px 28px;font-size:.88rem}
 .fgrid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:32px}
 @media (max-width:760px){.fgrid{grid-template-columns:1fr}}
 .flogo{background:var(--bg);border-radius:18px;padding:14px 18px;display:inline-block}
 .flogo img{width:170px;height:auto}
-footer h4{color:var(--on-dark);margin:0 0 12px;font-size:.9rem}
+footer h4{color:var(--ink);margin:0 0 12px;font-size:.9rem}
 footer ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-footer a{text-decoration:none} footer a:hover{color:var(--on-dark)}
-.fbottom{margin-top:36px;padding-top:20px;border-top:1px solid hsl(0 0% 100%/.08);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+footer a{text-decoration:none} footer a:hover{color:var(--walnut)}
+.fbottom{margin-top:36px;padding-top:20px;border-top:1px solid hsl(30 20% 40%/.25);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 /* drawer */
 .scrim{position:fixed;inset:0;z-index:80;background:hsl(40 8% 5%/.45);backdrop-filter:blur(2px)}

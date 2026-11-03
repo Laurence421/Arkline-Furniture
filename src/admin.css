@@ -1,4 +1,7 @@
 /* Admin page: reuses the site tokens and components from styles.css. */
+/* Same warm tan page background as the public site, with the darker grey text that stays readable on it. */
+body{background:var(--latte);--muted:hsl(30 12% 27%)}
+body::before{background:var(--latte)}
 .admin{padding-block:40px 80px;display:grid;gap:56px}
 .panel{max-width:440px;width:100%;margin:40px auto 0}
 .admin form.q{box-shadow:var(--shadow-card);border:1px solid var(--line)}
