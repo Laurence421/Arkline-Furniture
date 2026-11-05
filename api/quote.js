@@ -2,7 +2,7 @@
 // Host-neutral: handleQuote(request, env). Cloudflare Pages calls it from functions/api/quote.js;
 // POST below serves Vercel and the Vite dev server.
 import { createClient } from "@supabase/supabase-js";
-import { ALL, BUNDLED, CONTACT_PREFS, PROJECT_TYPES, fromRow, pt } from "../src/data.js";
+import { ALL, BUNDLED, CONTACT_PREFS, PROJECT_TYPES, cents, fromRow, mergeCatalog, pt } from "../src/data.js";
 
 const MAX_PHOTO = 5 * 1024 * 1024;
 const PHOTO_TYPES = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
@@ -20,7 +20,7 @@ async function priceList(db) {
   if (prices && Date.now() - pricesAt < 60_000) return prices;
   const { data, error } = await db.from("products").select("*").eq("visible", true);
   if (error) return prices || ALL; // table unavailable: last good copy, else the built-in list
-  prices = Object.fromEntries(data.map(r => [r.id, fromRow(r)])); pricesAt = Date.now();
+  prices = Object.fromEntries(mergeCatalog(data.map(fromRow)).map(i => [i.id, i])); pricesAt = Date.now();
   return prices;
 }
 
@@ -99,8 +99,8 @@ export async function handleQuote(request, env) {
   const catalog = raw.length ? await priceList(db) : ALL;
   const items = raw.filter(i => catalog[i.id])
     .map(i => ({ id: i.id, name: catalog[i.id].name, qty: Math.max(1, Math.min(99, parseInt(i.qty) || 1)) }));
-  const min = items.reduce((s, i) => s + catalog[i.id].min * i.qty, 0);
-  const max = items.reduce((s, i) => s + catalog[i.id].max * i.qty, 0);
+  const min = cents(items.reduce((s, i) => s + catalog[i.id].min * i.qty, 0));
+  const max = cents(items.reduce((s, i) => s + catalog[i.id].max * i.qty, 0));
 
   let attachment_path = null;
   const photo = fd.get("photo");
@@ -124,6 +124,11 @@ export async function handleQuote(request, env) {
     ...(address && { delivery_address: address }) // only when filled in, so price requests never depend on this newer column
   };
   let { data: row, error } = await db.from("quotation_requests").insert(record).select("id, created_at").single();
+  if (error && /integer/i.test(error.message) && record.estimate_min != null) {
+    // Database still keeps totals in whole pesos (before 010): save them rounded; the email shows the exact total.
+    record.estimate_min = Math.floor(record.estimate_min); record.estimate_max = Math.ceil(record.estimate_max);
+    ({ data: row, error } = await db.from("quotation_requests").insert(record).select("id, created_at").single());
+  }
   if (error && /delivery_address/.test(error.message)) {
     // Database not updated yet (008): keep the address in the message instead.
     delete record.delivery_address;

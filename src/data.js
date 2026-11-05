@@ -1,15 +1,17 @@
+import { EXTRA } from "./catalog-extra.js";
+export { EXTRA };
 // Catalogue and bundled project photos. Shared by the site and /api/quote, so keep it free of DOM code.
 
 export const CATS = {
   "Executive Table":[34,43,1,112,181,185,2,33,40],
   "Workstation":[72,10,80,124,141,183,103,165,166,175,195,203],
-  "Conference Table":[164,17,19,67,94,100,157],
-  "Cubicle Partition":[88,12,60,117,167,18,36,45,46,82,101,143],
+  "Conference Table":[164,17,19,67,94,100,157,400,401,402,403],
+  "Cubicle Partition":[88,12,60,117,167,18,36,45,46,82,101,143,404,405,406,407],
   "Reception Counter":[32,0,66,70,121,136,159,172],
-  "Toilet Partition":[21,22,38,120,169],
-  "Kitchen Cabinet":[162,39,53,115,180],
-  "Cabinet":[116,11,15,50,54,171],
-  "Printer Table":[20,41,59,140,188],
+  "Toilet Partition":[21,22,38,120,169,409,410],
+  "Kitchen Cabinet":[162,39,53,115,180,408],
+  "Cabinet":[116,11,15,50,54,171,414,415],
+  "Printer Table":[20,41,59,140,188,411,412,413],
   "Operable Wall":[300,301,302,303]
 };
 export const ORDER = Object.keys(CATS);
@@ -17,7 +19,7 @@ export const img = n => "/img/p"+n+".webp";
 
 // Bundled gallery photos, interleaved by category. Admins can hide any of them (hidden_photos table).
 export const BUNDLED = [];
-for(let i=0;i<12;i++) for(const c of ORDER) if(CATS[c][i]!=null) BUNDLED.push({n:CATS[c][i],src:img(CATS[c][i]),cat:c});
+for(let i=0;i<Math.max(...ORDER.map(c=>CATS[c].length));i++) for(const c of ORDER) if(CATS[c][i]!=null) BUNDLED.push({n:CATS[c][i],src:img(CATS[c][i]),cat:c});
 
 export const CHAIRS=[["001",6730,145,["Mesh back, fabric seat","Black plastic + glass fiber frame","Fixed lumbar support","T-shape adjustable armrest","High density foam","Single lock, tension adjustable"]],
  ["002",4750,161,["Mesh back, fabric seat","Black plastic + glass fiber frame","Fixed lumbar support","Seat-back linked fixed armrest","Single lock, tension adjustable"]],
@@ -62,11 +64,22 @@ export const messengerUrl = v => {
   return /^[A-Za-z0-9.\-]{5,}$/.test(v) ? `https://m.me/${v}` : "";
 };
 
-export const ALL=Object.fromEntries([...CHAIRS,...TABLES].map(i=>[i.id,i]));
+export const ALL=Object.fromEntries([...CHAIRS,...TABLES,...EXTRA].map(i=>[i.id,i]));
+// Products saved by the admin (products table), plus the built-in old-website items not saved there yet.
+export const mergeCatalog=items=>{ const have=new Set(items.map(i=>i.id)); return [...items,...EXTRA.filter(i=>!have.has(i.id))]; };
+
+// Shop categories, in the order the shop shows them: [kind, button label, code prefix].
+// Only the first two have built-in items; the rest come from the products table.
+export const KINDS=[["chair","Ergonomic chairs","AOC"],["exec-chair","Executive chairs","EXC"],["visitor-chair","Visitor chairs","VC"],["gang-chair","Gang chairs","GC"],
+  ["table","Office tables","OFT"],["exec-table","Executive tables","EXCT"],["conference","Conference tables","CTE"],["workstation","Workstations","WST"],
+  ["reception","Reception counters","REC"],["pedestal","Mobile pedestals","MPC"],["steel-cabinet","Steel cabinets","STC"],["locker","Steel lockers","STL"],["rack","Steel racks","STR"]];
+export const isChair=kind=>/chair/.test(kind);
+// Peso amounts keep their centavos; sums are rounded to the centavo so 0.1+0.2 never shows.
+export const cents=n=>Math.round(n*100)/100;
 
 // products table row → catalogue item (and back), shared by the site, admin and /api/quote.
-export const fromRow=r=>({id:r.id,kind:r.kind,name:r.name,min:r.price_min,max:r.price_max,image:r.image,L:r.length_mm,W:r.width_mm,x:r.plan_extra,f:r.features||[]});
+export const fromRow=r=>({id:r.id,kind:r.kind,name:r.name,min:+r.price_min,max:+r.price_max,image:r.image,L:r.length_mm,W:r.width_mm,x:r.plan_extra,f:r.features||[]});
 export const toRow=(p,sort)=>({id:p.id,kind:p.kind,name:p.name,price_min:p.min,price_max:p.max,image:p.image,length_mm:p.L??null,width_mm:p.W??null,plan_extra:p.x??null,features:p.f,sort});
 export const PROJECT_TYPES=["Office fit-out","Home furniture","Commercial / institutional","Single items"];
-export const peso=n=>"₱"+n.toLocaleString("en-PH");
+export const peso=n=>{ n=+n; return "₱"+n.toLocaleString("en-PH",{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2}); };
 export const pt=it=>it.min===it.max?peso(it.min):peso(it.min)+" – "+peso(it.max);

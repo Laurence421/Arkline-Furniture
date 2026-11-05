@@ -32,7 +32,7 @@ A production website for **Arkline Home & Office Furniture**, a custom furniture
 |---|---|
 | ![Project gallery](docs/screenshots/gallery.jpg) | **Browse 73 finished projects** by category. Every photo has its own **Ask price** button: one tap adds it to the price request (with **Undo**), and scrolling past a photo never adds it by accident. Each category can show a "starts at" price. |
 | ![Photo viewer](docs/screenshots/like.jpg) | **Full-screen viewer** with swipe, arrows and thumbnails, and the same **Ask price** button. |
-| ![Shop](docs/screenshots/shop.jpg) | **Shop chairs and tables** with live prices and scaled top-view drawings, then add items to an order. The order list stays on the phone between visits. |
+| ![Shop](docs/screenshots/shop.jpg) | **Shop 126 products in 13 categories** (chairs, executive and conference tables, workstations, reception counters, pedestals, steel cabinets, lockers and racks) with prices to the centavo, features and measurements, then add items to an order. The order list stays on the phone between visits. |
 | ![Order form](docs/screenshots/order-form.jpg) | **Two tabs.** **Ask for a price** (project type, what they need, an optional photo, and **Pick from our projects** to tick past work they like) or **Place an order** (items and total, **delivery address**, delivery notes). Customers choose how to be contacted (call or text, Viber, Messenger, email) and get a reference number. |
 
 Also: Messenger and Viber buttons, tap-to-call numbers, a fully responsive layout ([phone view](docs/screenshots/phone.jpg)), a warm tan, espresso and gold theme chosen by the client, and plain wording for customers ("Ask for a price", not "Request a quotation").

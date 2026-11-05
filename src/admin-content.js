@@ -1,5 +1,5 @@
 // /admin "Prices" and "Website text" tabs: edit the products table and the site_content table.
-import { fromRow, messengerUrl, viberUrl } from "./data.js";
+import { fromRow, messengerUrl, viberUrl, KINDS, isChair } from "./data.js";
 import { categories } from "./categories.js";
 import { CONTENT_DEFAULTS, CONTENT_SECTIONS } from "./content.js";
 import { supabase, photoUrl, PHOTO_BUCKET } from "./supabase.js";
@@ -29,7 +29,8 @@ export async function loadProducts(){
 function renderProducts(){
   const n=k=>products.filter(p=>p.kind===k).length;
   $("#pcount").textContent=plural(products.length,"product");
-  $("#pfilters").innerHTML=[["chair","Chairs"],["table","Tables"]].map(([k,l])=>`<button class="chip${k===pfilter?" on":""}" data-pf="${k}">${l}<small>${n(k)}</small></button>`).join("");
+  $("#pfilters").innerHTML=KINDS.map(([k,l])=>`<button class="chip${k===pfilter?" on":""}" data-pf="${k}">${l}<small>${n(k)}</small></button>`).join("");
+  $("#padd span").textContent=`Add to ${KINDS.find(([k])=>k===pfilter)[1].toLowerCase()}`;
   const vis=products.filter(p=>p.kind===pfilter);
   $("#plist").innerHTML=vis.length?vis.map(pcard).join(""):empty("No products here yet.");
   icons();
@@ -37,15 +38,15 @@ function renderProducts(){
 function pcard(p){
   const fresh=!!p._new;
   return `<form class="pc${p.visible?"":" off"}" data-id="${esc(p.id)}" novalidate>
-    <div class="pc-img">${p.image?`<img src="${esc(p.image)}" alt="">`:`<div class="noimg"><i data-lucide="${p.kind==="chair"?"armchair":"table-2"}"></i></div>`}
+    <div class="pc-img">${p.image?`<img src="${esc(p.image)}" alt="">`:`<div class="noimg"><i data-lucide="${isChair(p.kind)?"armchair":"table-2"}"></i></div>`}
       <label><span>${p.image?"Change photo":"Add photo"}</span><input type="file" accept="image/*" data-pimg></label>
       ${p.image&&p.kind==="table"?`<button type="button" class="link" data-noimg>Show drawing instead</button>`:""}
     </div>
     <div class="pc-body">
-      <div class="f2"><label>Code${fresh?` <span class="hint">e.g. ${p.kind==="chair"?"AOC":"OFT"}-015</span>`:""}<input name="code" value="${esc(p.id)}" ${fresh?"":"readonly"} maxlength="8"></label>
+      <div class="f2"><label>Code${fresh?` <span class="hint">e.g. ${prefixOf(p.kind)}-015</span>`:""}<input name="code" value="${esc(p.id)}" ${fresh?"":"readonly"} maxlength="8"></label>
         <label>Name<input name="pname" value="${esc(p.name)}" maxlength="120"></label></div>
-      <div class="f2"><label>Price from (₱)<input name="min" type="number" inputmode="numeric" min="1" step="1" value="${p.min??""}"></label>
-        <label>Price to (₱) <span class="hint">leave empty for one fixed price</span><input name="max" type="number" inputmode="numeric" min="1" step="1" value="${p.max!=null&&p.max!==p.min?p.max:""}"></label></div>
+      <div class="f2"><label>Price from (₱)<input name="min" type="number" inputmode="decimal" min="1" step="0.01" value="${p.min??""}"></label>
+        <label>Price to (₱) <span class="hint">leave empty for one fixed price</span><input name="max" type="number" inputmode="decimal" min="1" step="0.01" value="${p.max!=null&&p.max!==p.min?p.max:""}"></label></div>
       ${p.kind==="table"?`<div class="f2"><label>Length (mm)<input name="L" type="number" inputmode="numeric" min="300" max="6000" value="${p.L??""}"></label><label>Width (mm)<input name="W" type="number" inputmode="numeric" min="300" max="3000" value="${p.W??""}"></label></div>`:""}
       <label>Features <span class="hint">one per line</span><textarea name="feat" maxlength="2000">${esc((p.f||[]).join("\n"))}</textarea></label>
       <p class="err" hidden></p>
@@ -53,19 +54,20 @@ function pcard(p){
         <div class="acts2">${fresh?`<button type="button" class="btn btn-outline" data-cancel>Cancel</button>`:`<button type="button" class="btn btn-outline pc-del" data-pdel><i data-lucide="trash-2"></i>Delete</button>`}<button class="btn btn-primary" type="submit"><i data-lucide="save"></i><span>${fresh?"Add to shop":"Save"}</span></button></div></div>
     </div></form>`;
 }
+const prefixOf = kind => KINDS.find(([k])=>k===kind)?.[2]||"NEW";
 const pform = id => $("#plist").querySelector(`form[data-id="${CSS.escape(id)}"]`);
 const redraw = (p,oldId=p.id) => { const f=pform(oldId); if(f){ f.outerHTML=pcard(p); icons(); } };
 
 function bindPrices(){
   $("#pfilters").onclick=e=>{const b=e.target.closest("[data-pf]"); if(b){pfilter=b.dataset.pf; renderProducts();}};
-  document.querySelectorAll("[data-add-kind]").forEach(b=>b.onclick=()=>{
+  $("#padd").onclick=()=>{
     if(!products.length&&!$("#perr").hidden) return;
-    const kind=b.dataset.addKind, pre=kind==="chair"?"AOC-":"OFT-";
-    const next=Math.max(0,...products.filter(p=>p.id.startsWith(pre)).map(p=>+p.id.slice(4)||0))+1;
+    const kind=pfilter, pre=prefixOf(kind)+"-";
+    const next=Math.max(0,...products.filter(p=>p.id.startsWith(pre)).map(p=>+p.id.slice(pre.length)||0))+1;
     const p={_new:true,id:pre+String(next).padStart(3,"0"),kind,name:kind==="chair"?"Ergonomic Office Chair":"",min:null,max:null,f:[],visible:true,image:null,sort:Math.max(0,...products.map(x=>x.sort))+1};
     products.push(p); pfilter=kind; renderProducts();
     const f=pform(p.id); f.scrollIntoView({behavior:"smooth",block:"center"}); f.pname.focus({preventScroll:true});
-  });
+  };
   $("#plist").addEventListener("input",e=>e.target.closest(".pc")?.classList.add("dirty"));
   $("#plist").addEventListener("click",async e=>{
     const f=e.target.closest(".pc"); if(!f) return;
@@ -110,11 +112,11 @@ function bindPrices(){
     const id=f.code.value.trim().toUpperCase(), name=f.pname.value.trim(), min=+f.min.value, max=f.max.value?+f.max.value:min;
     const L=f.L?.value?+f.L.value:null, W=f.W?.value?+f.W.value:null;
     let m="";
-    if(!/^[A-Z]{2,4}-\d{3}$/.test(id)) m="Code must look like AOC-015 or OFT-015.";
+    if(!/^[A-Z]{2,4}-\d{3}$/.test(id)) m=`Code must look like ${prefixOf(p.kind)}-015: 2 to 4 letters, a dash and 3 numbers.`;
     else if(p._new&&products.some(x=>x!==p&&x.id===id)) m=`${id} is already used. Pick another code.`;
     else if(!name) m="Add a name.";
-    else if(!Number.isInteger(min)||min<1) m="Add a price in whole pesos.";
-    else if(!Number.isInteger(max)||max<min) m="\"Price to\" must be the same as or higher than \"Price from\".";
+    else if(!(min>=1)||Math.round(min*100)!==min*100) m="Add a price, like 4500 or 20446.99 (up to 2 decimals).";
+    else if(!(max>=min)||Math.round(max*100)!==max*100) m="\"Price to\" must be the same as or higher than \"Price from\".";
     else if(p.kind==="table"&&!p.image&&!(L&&W)) m="Add the length and width (used for the drawing), or add a photo.";
     if(m) return fail(err,m);
     err.hidden=true;

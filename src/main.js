@@ -1,10 +1,10 @@
 import "./icons.js";
-import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, ALL as ALL0, fromRow, messengerUrl, viberUrl, pt } from "./data.js";
+import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, EXTRA, mergeCatalog, ALL as ALL0, KINDS, isChair, cents, fromRow, messengerUrl, viberUrl, pt } from "./data.js";
 import { CONTENT_DEFAULTS } from "./content.js";
 import { toWebp } from "./image.js";
 
 // Catalogue and text start from the built-in copies and are replaced by the admin's saved versions (loadSiteData).
-let CHAIRS=CHAIRS0, TABLES=TABLES0, ALL=ALL0, TEXT={...CONTENT_DEFAULTS};
+let ITEMS=[...CHAIRS0,...TABLES0,...EXTRA], ALL=ALL0, TEXT={...CONTENT_DEFAULTS};
 
 const icons = () => { try{ window.lucide && lucide.createIcons(); }catch(e){} };
 const $ = s => document.querySelector(s);
@@ -70,7 +70,7 @@ function syncLike(src){
 }
 function setFilter(c){
   filter=c; shown=12;
-  document.querySelectorAll(".chip").forEach(b=>b.classList.toggle("on",b.dataset.cat===c));
+  document.querySelectorAll("#filters .chip").forEach(b=>b.classList.toggle("on",b.dataset.cat===c));
   applyFilter();
 }
 function applyFilter(){
@@ -161,18 +161,22 @@ function plan(t){
   const d=`<line x1="${ox}" y1="100" x2="${ox+t.L}" y2="100" stroke="hsl(30 58% 50%)" stroke-width="10"/><line x1="${ox}" y1="70" x2="${ox}" y2="130" stroke="hsl(30 58% 50%)" stroke-width="10"/><line x1="${ox+t.L}" y1="70" x2="${ox+t.L}" y2="130" stroke="hsl(30 58% 50%)" stroke-width="10"/><text x="${ox+t.L/2}" y="72" text-anchor="middle">${t.L} mm</text><text x="${ox+t.L+30}" y="${oy+t.W/2+24}">${t.W}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Top view ${t.L} by ${t.W} mm">${g}${s}${d}</svg>`;
 }
+// Shop: one button per category that has products, then that category's cards.
+let skind="chair";
+const card=it=>{ const drawing=!it.image&&it.L&&it.W;
+  return `<article class="card"><div class="${drawing?"plan":"ph"}"><span class="code">${it.id}</span>${it.image?`<img src="${esc(it.image)}" alt="${it.id} ${esc(it.name)}" loading="lazy">`:drawing?plan(it):`<i data-lucide="${isChair(it.kind)?"armchair":"table-2"}"></i>`}</div>
+    <div class="body">${it.L&&it.W?`<span class="dims">${it.L} × ${it.W} × 750 mm</span>`:""}<h3>${esc(it.name)}</h3><span class="price">${pt(it)}</span>
+    ${!it.f.length?"":it.kind==="table"?`<ul>${li_(it.f)}</ul>`:`<details><summary>Product features<i data-lucide="chevron-down"></i></summary><ul>${li_(it.f)}</ul></details>`}${addBtn(it)}</div></article>`; };
 function renderCatalogue(){
-  $("#pane-chairs").innerHTML=CHAIRS.map(c=>`<article class="card"><div class="ph"><span class="code">${c.id}</span>${c.image?`<img src="${esc(c.image)}" alt="${c.id} ${esc(c.name)}" loading="lazy">`:`<i data-lucide="armchair"></i>`}</div>
-    <div class="body"><h3>${esc(c.name)}</h3><span class="price">${pt(c)}</span>
-    <details><summary>Product features<i data-lucide="chevron-down"></i></summary><ul>${li_(c.f)}</ul></details>${addBtn(c)}</div></article>`).join("");
-  $("#tgrid").innerHTML=TABLES.map(t=>`<article class="card"><div class="${t.image?"ph":"plan"}"><span class="code" style="position:absolute;left:12px;top:12px;font-size:.72rem;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--card);color:var(--walnut)">${t.id}</span>${t.image?`<img src="${esc(t.image)}" alt="${t.id} ${esc(t.name)}" loading="lazy">`:t.L&&t.W?plan(t):""}</div>
-    <div class="body">${t.L&&t.W?`<span class="dims">${t.L} × ${t.W} × 750 mm</span>`:""}<h3>${esc(t.name)}</h3><span class="price">${pt(t)}</span><ul>${li_(t.f)}</ul>${addBtn(t)}</div></article>`).join("");
+  const kinds=KINDS.filter(([k])=>ITEMS.some(i=>i.kind===k));
+  if(kinds.length&&!kinds.some(([k])=>k===skind)) skind=kinds[0][0];
+  $("#shopcats").innerHTML=kinds.map(([k,l])=>`<button class="chip${k===skind?" on":""}" data-kind="${k}" aria-pressed="${k===skind}">${l}<small>${ITEMS.filter(i=>i.kind===k).length}</small></button>`).join("");
+  const list=ITEMS.filter(i=>i.kind===skind);
+  $("#plannote").hidden=!list.some(t=>!t.image&&t.L&&t.W);
+  $("#pgrid").innerHTML=list.map(card).join("");
   icons();
 }
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
-  $("#pane-chairs").hidden=b.dataset.tab!=="chairs"; $("#pane-tables").hidden=b.dataset.tab!=="tables";
-});
+$("#shopcats").onclick=e=>{ const b=e.target.closest("[data-kind]"); if(b){ skind=b.dataset.kind; renderCatalogue(); } };
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-add]"); if(!b) return;
   const id=b.dataset.add; if(quote[id]) delete quote[id]; else {quote[id]=1; toast(id+" added to your order");}
@@ -180,7 +184,7 @@ document.addEventListener("click",e=>{
 });
 
 /* quote */
-function totals(){let a=0,z=0,n=0;for(const[id,q] of Object.entries(quote)){const it=ALL[id];if(!it)continue;a+=it.min*q;z+=it.max*q;n+=q;}return{a,z,n};}
+function totals(){let a=0,z=0,n=0;for(const[id,q] of Object.entries(quote)){const it=ALL[id];if(!it)continue;a+=it.min*q;z+=it.max*q;n+=q;}return{a:cents(a),z:cents(z),n};}
 function renderQuote(){
   const ids=Object.keys(quote).filter(id=>ALL[id]); const{a,z,n}=totals();
   $("#qc").textContent=n+likes.length;
@@ -351,8 +355,8 @@ function applyText(){
 async function loadSiteData(){
   const d=await siteData; if(!d) return;
   if(d.products?.length){
-    const items=d.products.map(fromRow);
-    CHAIRS=items.filter(i=>i.kind==="chair"); TABLES=items.filter(i=>i.kind==="table");
+    const items=mergeCatalog(d.products.map(fromRow));
+    ITEMS=items;
     ALL=Object.fromEntries(items.map(i=>[i.id,i]));
     $("#statItems").textContent=items.length; renderCatalogue(); renderQuote();
   }
@@ -373,13 +377,13 @@ function refreshGallery(){
   lbPending=false;
   if(filter!=="All"&&!CATEGORIES.includes(filter)) filter="All"; // the category being viewed was removed
   buildCats(); buildGallery();
-  document.querySelectorAll(".chip").forEach(b=>b.classList.toggle("on",b.dataset.cat===filter));
+  document.querySelectorAll("#filters .chip").forEach(b=>b.classList.toggle("on",b.dataset.cat===filter));
   applyFilter();
 }
 function applyLive(d,prev){
   if(JSON.stringify(d.products)!==JSON.stringify(prev.products)&&d.products?.length){
-    const items=d.products.map(fromRow);
-    CHAIRS=items.filter(i=>i.kind==="chair"); TABLES=items.filter(i=>i.kind==="table");
+    const items=mergeCatalog(d.products.map(fromRow));
+    ITEMS=items;
     ALL=Object.fromEntries(items.map(i=>[i.id,i]));
     $("#statItems").textContent=items.length; renderCatalogue(); renderQuote();
   }
