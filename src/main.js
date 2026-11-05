@@ -1,5 +1,5 @@
 import "./icons.js";
-import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, EXTRA, mergeCatalog, ALL as ALL0, KINDS, isChair, cents, fromRow, messengerUrl, viberUrl, pt } from "./data.js";
+import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, EXTRA, ALL as ALL0, KINDS, isChair, cents, fromRow, messengerUrl, viberUrl, pt } from "./data.js";
 import { CONTENT_DEFAULTS } from "./content.js";
 import { toWebp } from "./image.js";
 
@@ -355,7 +355,7 @@ function applyText(){
 async function loadSiteData(){
   const d=await siteData; if(!d) return;
   if(d.products?.length){
-    const items=mergeCatalog(d.products.map(fromRow));
+    const items=d.products.map(fromRow);
     ITEMS=items;
     ALL=Object.fromEntries(items.map(i=>[i.id,i]));
     $("#statItems").textContent=items.length; renderCatalogue(); renderQuote();
@@ -382,7 +382,7 @@ function refreshGallery(){
 }
 function applyLive(d,prev){
   if(JSON.stringify(d.products)!==JSON.stringify(prev.products)&&d.products?.length){
-    const items=mergeCatalog(d.products.map(fromRow));
+    const items=d.products.map(fromRow);
     ITEMS=items;
     ALL=Object.fromEntries(items.map(i=>[i.id,i]));
     $("#statItems").textContent=items.length; renderCatalogue(); renderQuote();

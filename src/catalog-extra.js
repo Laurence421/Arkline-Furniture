@@ -1,6 +1,6 @@
 // Built-in catalogue copied from the old website (main-arklineofficefurniture.com): the 11 shop categories it had
 // besides ergonomic chairs and office tables. [code, kind, name, price from, price to, photo in /img/shop/, features]
-// Shown until the admin saves the same code in Prices (the products table then wins).
+// Now saved in the products table too (edited in /admin → Prices); this copy is the fallback when the database is unreachable.
 export const EXTRA=[
   ["EXC-001","exec-chair","Executive Chair",4900,4900,"exc-001.webp",["Spacious Fabric Mesh Seatrest","Heavy Duty Leather & Mesh Backrest","Wide Chrome Starbase"]],
   ["EXC-002","exec-chair","Executive Chair",4450,4450,"exc-002.webp",["Executive Mesh Chair w/ Headrest","Spacious Seatrest","Heavy Duty Single Mesh w/ Lumbar support"]],

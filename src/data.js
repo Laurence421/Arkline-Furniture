@@ -65,8 +65,8 @@ export const messengerUrl = v => {
 };
 
 export const ALL=Object.fromEntries([...CHAIRS,...TABLES,...EXTRA].map(i=>[i.id,i]));
-// Products saved by the admin (products table), plus the built-in old-website items not saved there yet.
-export const mergeCatalog=items=>{ const have=new Set(items.map(i=>i.id)); return [...items,...EXTRA.filter(i=>!have.has(i.id))]; };
+
+
 
 // Shop categories, in the order the shop shows them: [kind, button label, code prefix].
 // Only the first two have built-in items; the rest come from the products table.

@@ -2,7 +2,7 @@
 // Host-neutral: handleQuote(request, env). Cloudflare Pages calls it from functions/api/quote.js;
 // POST below serves Vercel and the Vite dev server.
 import { createClient } from "@supabase/supabase-js";
-import { ALL, BUNDLED, CONTACT_PREFS, PROJECT_TYPES, cents, fromRow, mergeCatalog, pt } from "../src/data.js";
+import { ALL, BUNDLED, CONTACT_PREFS, PROJECT_TYPES, cents, fromRow, pt } from "../src/data.js";
 
 const MAX_PHOTO = 5 * 1024 * 1024;
 const PHOTO_TYPES = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
@@ -20,7 +20,7 @@ async function priceList(db) {
   if (prices && Date.now() - pricesAt < 60_000) return prices;
   const { data, error } = await db.from("products").select("*").eq("visible", true);
   if (error) return prices || ALL; // table unavailable: last good copy, else the built-in list
-  prices = Object.fromEntries(mergeCatalog(data.map(fromRow)).map(i => [i.id, i])); pricesAt = Date.now();
+  prices = Object.fromEntries(data.map(r => [r.id, fromRow(r)])); pricesAt = Date.now();
   return prices;
 }
 
