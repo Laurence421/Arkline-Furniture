@@ -1,10 +1,10 @@
 import "./icons.js";
-import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, EXTRA, ALL as ALL0, KINDS, isChair, cents, fromRow, messengerUrl, viberUrl, pt } from "./data.js";
+import { CATS, ORDER, img, BUNDLED, CHAIRS as CHAIRS0, TABLES as TABLES0, ALL as ALL0, KINDS, isChair, cents, fromRow, messengerUrl, viberUrl, pt } from "./data.js";
 import { CONTENT_DEFAULTS } from "./content.js";
 import { toWebp } from "./image.js";
 
 // Catalogue and text start from the built-in copies and are replaced by the admin's saved versions (loadSiteData).
-let ITEMS=[...CHAIRS0,...TABLES0,...EXTRA], ALL=ALL0, TEXT={...CONTENT_DEFAULTS};
+let ITEMS=[...CHAIRS0,...TABLES0], ALL=ALL0, TEXT={...CONTENT_DEFAULTS};
 
 const icons = () => { try{ window.lucide && lucide.createIcons(); }catch(e){} };
 const $ = s => document.querySelector(s);
@@ -353,7 +353,13 @@ function applyText(){
   icons();
 }
 async function loadSiteData(){
-  const d=await siteData; if(!d) return;
+  const d=await siteData;
+  if(!d?.products?.length){ // database unreachable: the built-in copy of the old website's shop, loaded only now
+    const { EXTRA }=await import("./catalog-extra.js");
+    ITEMS=[...ITEMS,...EXTRA]; ALL=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+    $("#statItems").textContent=ITEMS.length; renderCatalogue(); renderQuote();
+  }
+  if(!d) return;
   if(d.products?.length){
     const items=d.products.map(fromRow);
     ITEMS=items;

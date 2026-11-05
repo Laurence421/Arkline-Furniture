@@ -1,5 +1,3 @@
-import { EXTRA } from "./catalog-extra.js";
-export { EXTRA };
 // Catalogue and bundled project photos. Shared by the site and /api/quote, so keep it free of DOM code.
 
 export const CATS = {
@@ -64,7 +62,7 @@ export const messengerUrl = v => {
   return /^[A-Za-z0-9.\-]{5,}$/.test(v) ? `https://m.me/${v}` : "";
 };
 
-export const ALL=Object.fromEntries([...CHAIRS,...TABLES,...EXTRA].map(i=>[i.id,i]));
+export const ALL=Object.fromEntries([...CHAIRS,...TABLES].map(i=>[i.id,i]));
 
 
 
